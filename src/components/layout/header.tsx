@@ -40,6 +40,7 @@ export function Header({ partnerId, userRole }: HeaderProps) {
         { name: "Calendar", href: "/calendar", icon: Calendar },
         { name: "Goals", href: "/goals", icon: Trophy },
         { name: "Profile", href: "/profile", icon: User },
+        { name: "Settings", href: "/settings", icon: Settings },
     ]
 
     return (
@@ -97,7 +98,7 @@ export function Header({ partnerId, userRole }: HeaderProps) {
                         Together Tasks
                     </span>
                     <span className="text-sm font-semibold text-foreground">
-                        {userRole === 'king' ? "King's Dashboard" : userRole === 'queen' ? "Queen's Dashboard" : "Today's Plan"}
+                        Today's Plan
                     </span>
                 </div>
 
