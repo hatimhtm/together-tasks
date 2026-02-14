@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Together Tasks — The Ultimate AI-Powered Couple's Task Manager
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Gemini AI](https://img.shields.io/badge/Gemini_AI-8E75B2?style=for-the-badge&logo=google-gemini&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer-black?style=for-the-badge&logo=framer&logoColor=blue)
 
-First, run the development server:
+> **"Love in Sync."**
+>
+> A premium, **AI-Native** shared task manager designed exclusively for couples. Built with **Next.js 14**, **Supabase Realtime**, and **Gemini AI**, it features a stunning glassmorphism UI, instant synchronization, and an AI that understands your relationship's unique rhythm.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎨 Design Philosophy
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This project rejects the sterile look of productivity tools, embracing a **Warm Glassmorphism** aesthetic.
+-   **Visuals:** Deep frosted glass layers, vibrant gradients, and fluid micro-interactions.
+-   **Motion:** Spring-based animations for instant feedback and a "tactile" feel.
+-   **Experience:** Gamified productivity with XP, levels, and celebration effects.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Tech Stack
 
-## Learn More
+| Category | Technologies |
+|----------|--------------|
+| **Core** | Next.js 14 (App Router), React 18, TypeScript |
+| **Backend** | Supabase (Auth, Database, Realtime) |
+| **AI** | Google Gemini (Natural Language Parsing & Chat) |
+| **Styling** | Tailwind CSS, Shadcn UI, Glassmorphism Tokens |
+| **Motion** | Framer Motion (Optimistic Updates, Transitions) |
 
-To learn more about Next.js, take a look at the following resources:
+## 🚀 Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+-   **Couple Pairing:** Unique invitation system linking two profiles ("King" & "Queen").
+-   **Instant Sync:** Real-time updates via Supabase WebSocket channels.
+-   **AI Command Center:** Type natural language (e.g., "Dinner with babe tomorrow at 7") and let AI handle the scheduling.
+-   **Gamification:** Earn XP for completing tasks, unlocking relationship milestones.
+-   **Role-Based UI:** Personalized dashboards and interactions based on your role.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📦 Installation
 
-## Deploy on Vercel
+To run this project locally:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/lorddecay/together-tasks.git
+    cd together-tasks
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Setup**
+    Create a `.env.local` file with your Supabase and Gemini credentials.
+
+4.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+5.  **Open locally**
+    Visit [http://localhost:3000](http://localhost:3000)
+
+## 🤝 Let's Connect
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/hatim-elhassak/)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:king@example.com)
