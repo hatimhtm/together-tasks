@@ -155,8 +155,8 @@ export function AIChatWidget({
                                     >
                                         <div
                                             className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === "user"
-                                                    ? "bg-primary text-white"
-                                                    : "bg-white/10 text-white"
+                                                ? "bg-primary text-primary-foreground shadow-sm"
+                                                : "bg-zinc-800 text-white shadow-sm border border-zinc-700"
                                                 }`}
                                         >
                                             <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -207,7 +207,7 @@ export function AIChatWidget({
                         </GlassCard>
                     </motion.div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
         </>
     )
 }
