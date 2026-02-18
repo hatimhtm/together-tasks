@@ -24,9 +24,12 @@ import { PartnerNotificationCenter } from "@/components/partner/notification-cen
 interface HeaderProps {
     partnerId?: string | null
     userRole?: "king" | "queen" | null
+    userId: string
 }
 
-export function Header({ partnerId, userRole }: HeaderProps) {
+import { LegacyBadge } from "@/components/gamification/legacy-badge"
+
+export function Header({ partnerId, userRole, userId }: HeaderProps) {
     const router = useRouter()
 
     const handleLogout = async () => {
@@ -94,12 +97,8 @@ export function Header({ partnerId, userRole }: HeaderProps) {
                 </Sheet>
 
                 <div className="flex flex-col items-center">
-                    <span className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
-                        Together Tasks
-                    </span>
-                    <span className="text-sm font-semibold text-foreground">
-                        Today's Plan
-                    </span>
+                    <User className="w-4 h-4 mb-1 text-muted-foreground/50 opacity-0" /> {/* Spacer/Alignment hack or remove */}
+                    <LegacyBadge userId={userId} />
                 </div>
 
                 <Popover>
