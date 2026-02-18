@@ -33,7 +33,7 @@ export default async function DashboardLayout({
 
     return (
         <div className="min-h-screen bg-transparent pb-32 pt-24">
-            <Header partnerId={profile?.partner_id} userRole={profile?.role} />
+            <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} />
             <main className="container mx-auto px-4">
                 {children}
             </main>
