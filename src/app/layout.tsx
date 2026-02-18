@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import Providers from "@/components/providers"
-import { Toaster } from "@/components/ui/sonner"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
@@ -46,7 +45,6 @@ export default async function RootLayout({
         <Providers>
           <div className="min-h-screen text-foreground overflow-x-hidden">
             {children}
-            <Toaster />
           </div>
         </Providers>
       </body>
