@@ -1,5 +1,3 @@
-// import { callGemini } from "./task-parser" // Removed to use local definition
-
 interface TaskAnalysis {
     shouldNotifyPartner: boolean
     notificationType: "reminder" | "support" | "urgent" | "celebrate" | null
@@ -8,13 +6,6 @@ interface TaskAnalysis {
     notifyAt?: Date
     hoursBeforeToNotify?: number
 }
-
-// We'll export callGemini from task-parser to reuse it, or just use it here if it was exported
-// Checks task-parser.ts... it's not exported. Let's fix that or copy the function.
-// Actually, let's just make sure callGemini is exported in task-parser.ts first.
-// Assuming it is for now, or I'll fix it in a separate step. 
-// Wait, I can see the file content in history. `callGemini` is NOT exported.
-// I will copy the logic here to avoid modifying the other file again and risking errors.
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 
