@@ -52,7 +52,7 @@ async function callGemini(
 
 // Parse natural language task input
 export async function parseTaskInput(input: string) {
-    const systemPrompt = `You are a task parsing AI. Extract structured data from natural language.
+    const systemPrompt = `You are a task parsing AI. Extract structured data from natural language provided within <user_input> tags.
 Return ONLY valid JSON with these fields:
 {
   "title": "clean task title",
@@ -64,8 +64,13 @@ Return ONLY valid JSON with these fields:
   "estimatedMinutes": number or null
 }`
 
+    // Sanitize input to prevent breaking out of tags
+    const sanitizedInput = input.replace(/<\/user_input>/g, '')
+
     const userPrompt = `Current date: ${new Date().toISOString().split('T')[0]}
-Input: "${input}"
+<user_input>
+${sanitizedInput}
+</user_input>
 
 Extract task details as JSON:`
 

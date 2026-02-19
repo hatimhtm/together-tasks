@@ -61,7 +61,7 @@ export async function analyzeTaskForPartnerNotification(
 ): Promise<TaskAnalysis> {
     const systemPrompt = `You are an AI butler helping a couple stay connected and supportive.
 
-Analyze tasks and decide if the PARTNER should be notified.
+Analyze the task details provided within <task_details> tags and decide if the PARTNER should be notified.
 
 Notify partner when:
 - Important events (doctor, meetings, deadlines)
@@ -83,7 +83,7 @@ Return JSON only:
   "hoursBeforeToNotify": numberOrNull
 }`
 
-    const taskContext = `
+    const rawTaskContext = `
 Task: ${task.title}
 ${task.description ? `Description: ${task.description}` : ""}
 Due: ${task.due_date ? new Date(task.due_date).toLocaleString() : "No due date"}
@@ -94,10 +94,13 @@ Partner: ${partner.role === "queen" ? "Their Queen" : "Their King"} (${partner.n
 Current time: ${new Date().toLocaleString()}
   `
 
+    // Sanitize input to prevent breaking out of tags
+    const sanitizedTaskContext = rawTaskContext.replace(/<\/task_details>/g, '')
+
     try {
         const response = await callGemini([
             { role: "system", content: systemPrompt },
-            { role: "user", content: `Analyze this task:\n${taskContext}` }
+            { role: "user", content: `Analyze this task:\n<task_details>\n${sanitizedTaskContext}\n</task_details>` }
         ])
 
         if (!response) throw new Error("No response from AI")
