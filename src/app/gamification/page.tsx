@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import XPBar from '@/components/gamification/XPBar';
 import AchievementCard from '@/components/gamification/AchievementCard';
 import Leaderboard from '@/components/gamification/Leaderboard';
@@ -46,6 +45,11 @@ const GamificationPage: React.FC = () => {
   const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardUser[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState<boolean>(true);
   const [errorLeaderboard, setErrorLeaderboard] = useState<string | null>(null);
+
+  // Memoize achieved achievement IDs for O(1) lookup
+  const achievedSet = useMemo(() => {
+    return new Set(userAchievements.map(ua => ua.achievement_id));
+  }, [userAchievements]);
 
   // Function to calculate max XP for a given level
   const calculateMaxXp = (level: number): number => {
@@ -149,7 +153,7 @@ const GamificationPage: React.FC = () => {
                 title={achievement.title}
                 description={achievement.description}
                 icon={achievement.icon}
-                achieved={userAchievements.some(ua => ua.achievement_id === achievement.id)}
+                achieved={achievedSet.has(achievement.id)}
               />
             ))}
             {allAchievements.length === 0 && <p className="text-muted-foreground">No achievements found.</p>}
