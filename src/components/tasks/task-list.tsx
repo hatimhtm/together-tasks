@@ -1,11 +1,13 @@
 "use client"
 
 import { GlassCard } from "@/components/ui/glass-card"
-import { Check, Circle, Trash2, Calendar, Clock } from "lucide-react"
+import { Check, Trash2, Calendar, Clock, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import confetti from "canvas-confetti"
 import { format } from "date-fns"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
+import { cn } from "@/lib/utils"
+import { motion, AnimatePresence } from "framer-motion"
 
 // Define TypeScript interface for type safety
 interface Task {
@@ -52,19 +54,21 @@ export function TaskList({
         // Optimistic Update call
         updateTask(taskId, {
             is_completed: newStatus,
-            completed_at: newStatus ? new Date().toISOString() : null // This might be string/null type mismatch in TS
+            completed_at: newStatus ? new Date().toISOString() : null
         })
 
         // CELEBRATION! 🎉
         if (newStatus) {
             confetti({
-                particleCount: 50,
-                spread: 60,
-                origin: { y: 0.7 }
+                particleCount: 40,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#FF69B4', '#00BFFF'] // Gold, Pink, Blue
             })
 
-            toast.success("Task completed! 🎉", {
-                description: "+10 XP earned"
+            toast.success("Task completed!", {
+                description: "Keep up the great work!",
+                className: "bg-background/80 backdrop-blur-md border-border/50",
             })
         }
     }
@@ -80,10 +84,10 @@ export function TaskList({
     // Get priority color for visual distinction
     const getPriorityColor = (priority: string) => {
         switch (priority) {
-            case "urgent": return "text-red-500 border-red-500/30"
-            case "high": return "text-orange-500 border-orange-500/30"
-            case "medium": return "text-yellow-500 border-yellow-500/30"
-            default: return "text-green-500 border-green-500/30"
+            case "urgent": return "bg-red-500"
+            case "high": return "bg-orange-500"
+            case "medium": return "bg-yellow-500"
+            default: return "bg-green-500" // Low
         }
     }
 
@@ -91,7 +95,7 @@ export function TaskList({
         return (
             <div className="space-y-4">
                 {[1, 2, 3].map(i => (
-                    <GlassCard key={i} className="h-20 animate-pulse" />
+                    <div key={i} className="h-16 rounded-2xl bg-muted/20 animate-pulse" />
                 ))}
             </div>
         )
@@ -102,105 +106,142 @@ export function TaskList({
     const completedTasks = tasks.filter(t => t.is_completed)
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 pb-24">
             {/* Active Tasks */}
-            {activeTasks.length > 0 && (
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white/90">
-                        Active Tasks ({activeTasks.length})
-                    </h3>
-                    {activeTasks.map(task => (
-                        <GlassCard
-                            key={task.id}
-                            className={`p-4 transition-all hover:scale-[1.01] border-l-4 ${getPriorityColor(task.priority)}`}
-                        >
-                            <div className="flex items-start gap-3">
-                                {/* Checkbox Button */}
-                                <button
-                                    onClick={() => handleComplete(task.id, task.is_completed)}
-                                    className="mt-1 shrink-0"
-                                >
-                                    <Circle className="h-5 w-5 text-white/50 hover:text-primary transition-colors" />
-                                </button>
+            <AnimatePresence mode="popLayout">
+                {activeTasks.length > 0 ? (
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                Active ({activeTasks.length})
+                            </h3>
+                        </div>
 
-                                {/* Task Content */}
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium text-white text-base">
-                                        {task.title}
-                                    </h4>
+                        {activeTasks.map(task => (
+                            <motion.div
+                                layout
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
+                                key={task.id}
+                                className="group relative"
+                            >
+                                <GlassCard className="p-4 active:scale-[0.99] transition-transform duration-200 hover:bg-muted/5">
+                                    <div className="flex items-start gap-4">
+                                        {/* Checkbox Button */}
+                                        <button
+                                            onClick={() => handleComplete(task.id, task.is_completed)}
+                                            className="mt-1 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary flex items-center justify-center transition-all shrink-0 active:scale-90"
+                                        >
+                                            {/* Empty circle for uncompleted */}
+                                        </button>
 
-                                    {task.description && (
-                                        <p className="text-sm text-white/60 mt-1">
-                                            {task.description}
-                                        </p>
-                                    )}
+                                        {/* Task Content */}
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <h4 className="font-medium text-foreground text-base leading-tight">
+                                                    {task.title}
+                                                </h4>
 
-                                    {/* Meta Info */}
-                                    <div className="flex items-center gap-3 mt-2 text-xs text-white/50">
-                                        {task.due_date && (
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" />
-                                                {format(new Date(task.due_date), "MMM d, h:mm a")}
+                                                {/* Priority Indicator */}
+                                                <div className={cn("w-2 h-2 rounded-full shrink-0 mt-1.5", getPriorityColor(task.priority))} />
                                             </div>
-                                        )}
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="h-3 w-3" />
-                                            {task.priority}
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {/* Delete Button */}
-                                <button
-                                    onClick={() => handleDelete(task.id)}
-                                    className="shrink-0 p-2 hover:bg-red-500/10 rounded-lg transition-colors"
-                                >
-                                    <Trash2 className="h-4 w-4 text-red-400/70 hover:text-red-400" />
-                                </button>
+                                            {task.description && (
+                                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                                    {task.description}
+                                                </p>
+                                            )}
+
+                                            {/* Meta Info */}
+                                            <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground/70">
+                                                {task.due_date && (
+                                                    <div className={cn(
+                                                        "flex items-center gap-1",
+                                                        new Date(task.due_date) < new Date() && "text-red-500 font-medium"
+                                                    )}>
+                                                        <Calendar className="h-3 w-3" />
+                                                        {format(new Date(task.due_date), "MMM d, h:mm a")}
+                                                    </div>
+                                                )}
+                                                {task.priority === 'urgent' && (
+                                                    <div className="flex items-center gap-1 text-red-500 font-medium">
+                                                        <AlertCircle className="h-3 w-3" />
+                                                        Urgent
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Delete Button (Visible on hover/group-focus or simply accessible) */}
+                                        <button
+                                            onClick={() => handleDelete(task.id)}
+                                            className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-2 -mr-2 -mt-2 hover:text-destructive"
+                                            aria-label="Delete task"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </GlassCard>
+                            </motion.div>
+                        ))}
+                    </div>
+                ) : (
+                    tasks.length === 0 && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="flex flex-col items-center justify-center py-12 text-center"
+                        >
+                            <div className="h-20 w-20 bg-muted/20 rounded-full flex items-center justify-center mb-4">
+                                <Check className="h-8 w-8 text-muted-foreground/50" />
                             </div>
-                        </GlassCard>
-                    ))}
-                </div>
-            )}
+                            <h3 className="text-lg font-medium text-foreground">All Tasks Completed!</h3>
+                            <p className="text-muted-foreground text-sm max-w-xs mt-2">
+                                You're all caught up. Take a break or add a new task to keep the momentum going.
+                            </p>
+                        </motion.div>
+                    )
+                )}
+            </AnimatePresence>
 
             {/* Completed Tasks (Collapsed) */}
             {completedTasks.length > 0 && (
-                <details className="group">
-                    <summary className="cursor-pointer text-sm font-medium text-white/60 hover:text-white/80 transition-colors">
-                        Completed ({completedTasks.length}) ▼
-                    </summary>
-                    <div className="space-y-2 mt-4">
+                <div className="space-y-2 pt-4 border-t border-border/20">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                        Completed ({completedTasks.length})
+                    </h3>
+                    <div className="space-y-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
                         {completedTasks.map(task => (
-                            <GlassCard key={task.id} className="p-3 opacity-50">
-                                <div className="flex items-center gap-3">
-                                    <Check className="h-4 w-4 text-green-500 shrink-0" />
-                                    <span className="line-through text-white/70 text-sm flex-1">
+                            <motion.div
+                                layout
+                                key={task.id}
+                                className="group relative"
+                            >
+                                <div className="p-3 rounded-xl bg-muted/10 border border-transparent flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                                    <button
+                                        onClick={() => handleComplete(task.id, task.is_completed)}
+                                        className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0"
+                                    >
+                                        <Check className="h-3 w-3" strokeWidth={3} />
+                                    </button>
+
+                                    <span className="flex-1 text-sm text-muted-foreground line-through decoration-muted-foreground/50">
                                         {task.title}
                                     </span>
+
                                     <button
                                         onClick={() => handleDelete(task.id)}
-                                        className="shrink-0"
+                                        className="opacity-0 group-hover:opacity-100 p-2 hover:text-destructive transition-opacity"
                                     >
-                                        <Trash2 className="h-3 w-3 text-white/40" />
+                                        <Trash2 className="h-3 w-3" />
                                     </button>
                                 </div>
-                            </GlassCard>
+                            </motion.div>
                         ))}
                     </div>
-                </details>
-            )}
-
-            {/* Empty State */}
-            {tasks.length === 0 && (
-                <GlassCard className="p-12 text-center">
-                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
-                        <Check className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-lg font-medium text-white mb-2">All clear!</h3>
-                    <p className="text-white/60 text-sm">
-                        No tasks yet. Add one above to get started.
-                    </p>
-                </GlassCard>
+                </div>
             )}
         </div>
     )
