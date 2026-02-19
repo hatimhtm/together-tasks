@@ -25,6 +25,8 @@ export interface Database {
                     level: number
                     avatar_url: string | null
                     partner_id: string | null
+                    streak: number | null
+                    last_active_date: string | null
                 }
                 Insert: {
                     id: string
@@ -41,6 +43,8 @@ export interface Database {
                     level?: number
                     avatar_url?: string | null
                     partner_id?: string | null
+                    streak?: number | null
+                    last_active_date?: string | null
                 }
                 Update: {
                     id?: string
@@ -57,6 +61,8 @@ export interface Database {
                     level?: number
                     avatar_url?: string | null
                     partner_id?: string | null
+                    streak?: number | null
+                    last_active_date?: string | null
                 }
                 Relationships: [
                     {

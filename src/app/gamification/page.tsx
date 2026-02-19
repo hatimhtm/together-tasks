@@ -1,8 +1,10 @@
 
+"use client";
+
 import React, { useState, useEffect } from 'react';
-import XPBar from '@/components/Gamification/XPBar';
-import AchievementCard from '@/components/Gamification/AchievementCard';
-import Leaderboard from '@/components/Gamification/Leaderboard';
+import XPBar from '@/components/gamification/XPBar';
+import AchievementCard from '@/components/gamification/AchievementCard';
+import Leaderboard from '@/components/gamification/Leaderboard';
 
 // Define interfaces for API responses
 interface UserGamificationStats {
