@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Calendar, CheckSquare, Home, Plus, Trophy, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -12,28 +12,32 @@ export function BottomNav() {
     const tabs = [
         { name: "Home", href: "/", icon: Home },
         { name: "Calendar", href: "/calendar", icon: Calendar },
-        { name: "Add", href: "#add", icon: Plus, isFab: true },
+        { name: "Add", href: "#add", icon: Plus, isAction: true },
         { name: "Goals", href: "/goals", icon: Trophy },
         { name: "Me", href: "/profile", icon: User },
     ]
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe pt-2 px-6 h-[88px] flex items-start justify-center pointer-events-none">
-            {/* Background */}
-            <div className="absolute inset-0 bg-glass-white/90 backdrop-blur-2xl border-t border-glass-border pointer-events-auto" />
-
-            <div className="relative z-10 w-full max-w-md flex items-center justify-between pointer-events-auto">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/40 pb-safe">
+            <div className="flex items-center justify-around h-[60px] max-w-md mx-auto px-2">
                 {tabs.map((tab) => {
                     const isActive = pathname === tab.href
 
-                    if (tab.isFab) {
+                    if (tab.isAction) {
                         return (
                             <motion.button
                                 key={tab.name}
-                                whileTap={{ scale: 0.95 }}
-                                className="relative -top-6 bg-primary text-primary-foreground p-4 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center border-4 border-background/50 backdrop-blur-sm"
+                                whileTap={{ scale: 0.9 }}
+                                className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 -mt-6 border-4 border-background"
+                                onClick={() => {
+                                    // Scroll to top or open modal logic here
+                                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                                    // Focus on input if possible
+                                    const input = document.querySelector('input[name="title"]') as HTMLInputElement
+                                    if (input) input.focus()
+                                }}
                             >
-                                <Plus className="w-8 h-8" strokeWidth={2.5} />
+                                <Plus className="w-6 h-6" strokeWidth={3} />
                             </motion.button>
                         )
                     }
@@ -42,25 +46,18 @@ export function BottomNav() {
                         <Link
                             key={tab.name}
                             href={tab.href}
-                            className="relative flex flex-col items-center justify-center w-12 h-12"
+                            className={cn(
+                                "flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors duration-200",
+                                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground/80"
+                            )}
                         >
-                            <div className="relative p-2">
-                                <tab.icon
-                                    className={cn(
-                                        "w-6 h-6 transition-colors duration-300",
-                                        isActive ? "text-primary" : "text-muted-foreground"
-                                    )}
-                                    strokeWidth={isActive ? 2.5 : 2}
-                                />
-
-                                {/* Active Indicator */}
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="nav-indicator"
-                                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
-                                    />
-                                )}
-                            </div>
+                            <tab.icon
+                                className="w-6 h-6"
+                                strokeWidth={isActive ? 2.5 : 2}
+                            />
+                            <span className="text-[10px] font-medium tracking-wide">
+                                {tab.name}
+                            </span>
                         </Link>
                     )
                 })}
