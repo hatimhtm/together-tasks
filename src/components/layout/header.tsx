@@ -95,10 +95,7 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
                     </SheetContent>
                 </Sheet>
 
-                <div className="flex flex-col items-center">
-                    <User className="w-4 h-4 mb-1 text-muted-foreground/50 opacity-0" /> {/* Spacer/Alignment hack or remove */}
-                    <LegacyBadge userId={userId} />
-                </div>
+                <LegacyBadge userId={userId} />
 
                 <Popover>
                     <PopoverTrigger asChild>
