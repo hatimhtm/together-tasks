@@ -18,6 +18,7 @@ export function QuickAdd({
 }) {
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
+    const [forPartner, setForPartner] = useState(false)
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -25,28 +26,31 @@ export function QuickAdd({
         if (!input.trim()) return
 
         setLoading(true)
+        const finalInput = forPartner ? `@partner ${input}` : input
+
         try {
             if (onAddTask) {
                 // Delegated creation (Optimistic)
-                await onAddTask(input)
-                toast.success("Task created! ✨")
+                await onAddTask(finalInput)
+                toast.success(forPartner ? "Task assigned to partner! 💕" : "Task created! ✨")
             } else {
                 // Local creation (Legacy/Standalone)
                 const response = await fetch("/api/tasks", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ input, useAI: true })
+                    body: JSON.stringify({ input: finalInput, useAI: true })
                 })
 
                 if (!response.ok) throw new Error("Failed to create task")
 
                 const { task } = await response.json()
-                toast.success("Task created! ✨", {
+                toast.success(forPartner ? "Task sent to partner! 💕" : "Task created! ✨", {
                     description: task.title
                 })
             }
 
             setInput("")
+            setForPartner(false) // reset toggle
             // Refresh the page/data
             router.refresh()
 
@@ -63,16 +67,30 @@ export function QuickAdd({
 
     return (
         <GlassCard className="p-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
+            <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+                <Button
+                    type="button"
+                    variant={forPartner ? "default" : "secondary"}
+                    onClick={() => setForPartner(!forPartner)}
+                    className="shrink-0 px-3 h-10 w-10 md:w-auto md:px-4 rounded-full transition-all duration-300 group"
+                    title={forPartner ? "Assigning to Partner" : "Assign to me"}
+                >
+                    <span className="md:hidden">
+                        {forPartner ? '💕' : '👤'}
+                    </span>
+                    <span className="hidden md:inline">
+                        {forPartner ? 'For Partner 💕' : 'For Me 👤'}
+                    </span>
+                </Button>
                 <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="What needs to be done? (e.g. 'Call mom tomorrow at 3pm')"
-                    className="flex-1"
+                    className="flex-1 h-10 rounded-full bg-background/50 border-white/20 focus-visible:ring-primary/50"
                     disabled={loading}
                     autoFocus
                 />
-                <Button type="submit" disabled={loading || !input.trim()}>
+                <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-full p-0">
                     {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (

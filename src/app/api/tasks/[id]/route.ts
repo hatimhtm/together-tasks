@@ -29,14 +29,22 @@ export async function PATCH(
 
         // If task was completed, update XP
         if (updates.is_completed) {
-            // XP logic handled by triggers ideally, or RPC call if exists
-            // TODO: Implement add_xp function in database
-            /* await supabase.rpc('add_xp', {
-              user_id: user.id,
-              amount: 10
-            }).catch(() => {
-              // RPC function doesn't exist yet, ignore error
-            }) */
+            // Fetch current profile stats
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('xp, level')
+                .eq('id', user.id)
+                .single()
+
+            if (profile) {
+                const newXp = (profile.xp || 0) + 10 // Base 10 XP per task! Can scale with priority later
+                const newLevel = Math.floor(newXp / 100) + 1
+
+                await supabase
+                    .from('profiles')
+                    .update({ xp: newXp, level: newLevel })
+                    .eq('id', user.id)
+            }
         }
 
         return NextResponse.json({ task })
