@@ -8,6 +8,7 @@ import { format } from "date-fns"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 // Define TypeScript interface for type safety
 interface Task {
@@ -43,6 +44,7 @@ export function TaskList({
     propUpdateTask?: (taskId: string, updates: Partial<Task>) => Promise<void>
     propDeleteTask?: (taskId: string) => Promise<void>
 }) {
+    const router = useRouter()
     // If props are provided, use them (Controlled mode)
     // Otherwise, use the hook locally (Uncontrolled mode)
     const hookData = useRealtimeTasks(userId, partnerId)
@@ -75,6 +77,11 @@ export function TaskList({
                 description: "Keep up the great work!",
                 className: "bg-background/80 backdrop-blur-md border-border/50",
             })
+
+            // Trigger server refresh to update XP globally on the page
+            setTimeout(() => {
+                router.refresh()
+            }, 1000)
         }
     }
 

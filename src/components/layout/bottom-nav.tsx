@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import { Calendar, CheckSquare, Home, Plus, Trophy, User } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 export function BottomNav() {
     const pathname = usePathname()
+    const router = useRouter()
 
     const tabs = [
         { name: "Home", href: "/", icon: Home },
@@ -30,11 +31,13 @@ export function BottomNav() {
                                 whileTap={{ scale: 0.9 }}
                                 className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 -mt-6 border-4 border-background"
                                 onClick={() => {
-                                    // Scroll to top or open modal logic here
-                                    window.scrollTo({ top: 0, behavior: 'smooth' })
-                                    // Focus on input if possible
-                                    const input = document.querySelector('input[name="title"]') as HTMLInputElement
-                                    if (input) input.focus()
+                                    if (pathname !== "/") {
+                                        router.push("/")
+                                    } else {
+                                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                                        const input = document.querySelector('input[placeholder*="What needs to be done"]') as HTMLInputElement
+                                        if (input) input.focus()
+                                    }
                                 }}
                             >
                                 <Plus className="w-6 h-6" strokeWidth={3} />

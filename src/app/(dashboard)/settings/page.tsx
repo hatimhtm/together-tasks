@@ -3,7 +3,8 @@ import { redirect } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bell, Moon, User, Shield, LogOut, ChevronRight } from "lucide-react"
+import { Bell, User, Shield, LogOut, ChevronRight, Palette } from "lucide-react"
+import { ThemeSelector } from "@/components/settings/theme-selector"
 
 export default async function SettingsPage() {
     const supabase = await createClient()
@@ -66,19 +67,13 @@ export default async function SettingsPage() {
 
             {/* Appearance */}
             <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-foreground px-1">Appearance</h2>
-                <GlassCard className="p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Moon className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                                <h3 className="font-medium text-foreground text-lg">Theme Engine</h3>
-                                <p className="text-sm text-muted-foreground">App seamlessly adapts to your system theme.</p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="flex items-center gap-2 px-1">
+                    <Palette className="h-5 w-5 text-primary" />
+                    <h2 className="text-xl font-semibold text-foreground">Aesthetic</h2>
+                </div>
+                <GlassCard className="p-6">
+                    <p className="text-sm text-muted-foreground mb-4">Choose your preferred app experience. This determines how Together Tasks looks for you.</p>
+                    <ThemeSelector userId={user.id} currentDbTheme={profile?.theme || 'light'} />
                 </GlassCard>
             </div>
 

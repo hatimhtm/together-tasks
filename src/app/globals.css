@@ -116,51 +116,189 @@
 }
 
 .dark {
-  --background: #0f172a;
-  /* Fallback */
-  --foreground: rgba(255, 255, 255, 0.92);
-
-  --card: rgba(30, 30, 30, 0.65);
-  --card-foreground: rgba(255, 255, 255, 0.92);
-
-  --popover: rgba(30, 30, 30, 0.95);
-  --popover-foreground: rgba(255, 255, 255, 0.92);
-
-  --primary: #0A84FF;
+  --background: #09090b;
+  /* Deep satisfying black/gray */
+  --foreground: #fafafa;
+  --card: rgba(24, 24, 27, 0.7);
+  --card-foreground: #fafafa;
+  --popover: rgba(24, 24, 27, 0.95);
+  --popover-foreground: #fafafa;
+  --primary: #3b82f6;
+  /* Brilliant Modern Blue */
   --primary-foreground: #ffffff;
-
-  --secondary: #5E5CE6;
+  --secondary: #8b5cf6;
+  /* Glowing Purple */
   --secondary-foreground: #ffffff;
-
-  --muted: rgba(255, 255, 255, 0.1);
-  --muted-foreground: rgba(255, 255, 255, 0.6);
-
-  --accent: #FF375F;
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: #a1a1aa;
+  --accent: #f43f5e;
+  /* Vibrant Rose */
   --accent-foreground: #ffffff;
-
-  --destructive: #FF453A;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-
   --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: rgba(10, 132, 255, 0.5);
-
-  --glass-white: rgba(30, 30, 30, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-
-  --sidebar: rgba(30, 30, 30, 0.75);
-  --sidebar-foreground: rgba(255, 255, 255, 0.92);
-  --sidebar-primary: #0A84FF;
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: rgba(59, 130, 246, 0.6);
+  --glass-white: rgba(24, 24, 27, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --sidebar: rgba(24, 24, 27, 0.8);
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #3b82f6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.1);
-  --sidebar-accent-foreground: rgba(255, 255, 255, 0.92);
   --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: rgba(10, 132, 255, 0.5);
+  --sidebar-ring: rgba(59, 130, 246, 0.5);
+}
+
+.neo-brutalist {
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius: 0px;
+
+  --background: #dfdfd6;
+  /* Raw architectural gray/tan */
+  --foreground: #111111;
+  --card: #f4f4f0;
+  /* Solid colors for brutalism, no glass */
+  --card-foreground: #111111;
+  --popover: #f4f4f0;
+  --popover-foreground: #111111;
+  --primary: #ff4a00;
+  /* Industrial Orange */
+  --primary-foreground: #ffffff;
+  --secondary: #0000ff;
+  /* Pure Blue */
+  --secondary-foreground: #ffffff;
+  --muted: #cccccc;
+  --muted-foreground: #555555;
+  --accent: #00ff00;
+  /* Neon Green */
+  --accent-foreground: #111111;
+  --destructive: #ff0000;
+  --destructive-foreground: #ffffff;
+  --border: #111111;
+  /* Hard black borders */
+  --input: #ffffff;
+  --ring: #111111;
+  --glass-white: #f4f4f0;
+  --glass-border: #111111;
+}
+
+.floral {
+  --background: #fff0f5;
+  /* Lavender blush */
+  --foreground: #5f4b8b;
+  /* Deep purple/blue */
+  --card: rgba(255, 255, 255, 0.8);
+  --card-foreground: #5f4b8b;
+  --popover: rgba(255, 255, 255, 0.95);
+  --popover-foreground: #5f4b8b;
+  --primary: #ff69b4;
+  /* Hot Pink */
+  --primary-foreground: #ffffff;
+  --secondary: #ffb6c1;
+  /* Light Pink */
+  --secondary-foreground: #5f4b8b;
+  --muted: rgba(255, 182, 193, 0.3);
+  --muted-foreground: #9370db;
+  /* Medium purple */
+  --accent: #ff1493;
+  /* Deep Pink */
+  --accent-foreground: #ffffff;
+  --destructive: #dc143c;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 105, 180, 0.3);
+  --input: rgba(255, 255, 255, 0.7);
+  --ring: rgba(255, 105, 180, 0.5);
+  --glass-white: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 105, 180, 0.2);
+}
+
+.creamy {
+  --background: #fdfbf7;
+  /* Off-white Claude/Notion vibe */
+  --foreground: #37352f;
+  /* Soft black */
+  --card: #f4f1eb;
+  /* Elegant Sand/Clay */
+  --card-foreground: #37352f;
+  --popover: #ffffff;
+  --popover-foreground: #37352f;
+  --primary: #d49a89;
+  /* Sophisticated dusty rose/terracotta */
+  --primary-foreground: #ffffff;
+  --secondary: #a3b18a;
+  /* Sage Green */
+  --secondary-foreground: #ffffff;
+  --muted: rgba(55, 53, 47, 0.06);
+  --muted-foreground: rgba(55, 53, 47, 0.6);
+  --accent: #e07a5f;
+  /* Deep terracotta */
+  --accent-foreground: #ffffff;
+  --destructive: #eb5757;
+  --destructive-foreground: #ffffff;
+  --border: rgba(55, 53, 47, 0.16);
+  --input: rgba(55, 53, 47, 0.04);
+  --ring: rgba(212, 154, 137, 0.5);
+  --glass-white: #f4f1eb;
+  --glass-border: rgba(55, 53, 47, 0.09);
+}
+
+.burgundy {
+  --background: #2b0b14;
+  /* Extremely deep, rich burgundy */
+  --foreground: #fcf1e3;
+  /* Soft cream/gold off-white */
+  --card: rgba(61, 15, 29, 0.85);
+  /* Slightly lighter burgundy */
+  --card-foreground: #fdf5ea;
+  --popover: rgba(43, 11, 20, 0.98);
+  --popover-foreground: #fcf1e3;
+  --primary: #d4af37;
+  /* Royal Metallic Gold */
+  --primary-foreground: #2b0b14;
+  /* Contrast on gold */
+  --secondary: #800020;
+  /* True Burgundy */
+  --secondary-foreground: #fcf1e3;
+  --muted: rgba(212, 175, 55, 0.15);
+  /* Tinted gold */
+  --muted-foreground: rgba(252, 241, 227, 0.7);
+  --accent: #ffd700;
+  /* Brighter gold for accents */
+  --accent-foreground: #2b0b14;
+  --destructive: #ff4d4d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(212, 175, 55, 0.3);
+  /* Gold borders */
+  --input: rgba(61, 15, 29, 0.6);
+  --ring: rgba(212, 175, 55, 0.6);
+  --glass-white: rgba(61, 15, 29, 0.7);
+  --glass-border: rgba(212, 175, 55, 0.25);
 }
 
 @layer base {
   * {
     @apply border-border;
+  }
+
+  .neo-brutalist * {
+    box-shadow: 4px 4px 0px 0px rgba(17, 17, 17, 1);
+    transition-property: transform, box-shadow;
+    transition-duration: 150ms;
+  }
+
+  .neo-brutalist *:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px rgba(17, 17, 17, 1);
+  }
+
+  /* Disable inner brutalist shadows for specific components */
+  .neo-brutalist nav *,
+  .neo-brutalist svg *,
+  .neo-brutalist .no-brutal {
+    box-shadow: none !important;
   }
 
   body {

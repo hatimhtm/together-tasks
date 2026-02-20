@@ -21,9 +21,11 @@ export function PushNotifier() {
 
     const checkSubscription = async () => {
         try {
-            const registration = await navigator.serviceWorker.ready
-            const subscription = await registration.pushManager.getSubscription()
-            setIsSubscribed(!!subscription)
+            const registration = await navigator.serviceWorker.getRegistration()
+            if (registration) {
+                const subscription = await registration.pushManager.getSubscription()
+                setIsSubscribed(!!subscription)
+            }
         } catch (error) {
             console.error("Error checking subscription", error)
         } finally {
