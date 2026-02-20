@@ -16,13 +16,15 @@ export async function POST(request: Request) {
         // Get user profile for context
         const { data: profile } = await supabase
             .from('profiles')
-            .select('username, role')
+            .select('username, role, partner_id')
             .eq('id', user.id)
             .single()
 
         const response = await chatWithAI(message, {
             userName: profile?.username || 'User',
-            role: profile?.role || undefined
+            role: profile?.role || undefined,
+            userId: user.id,
+            partnerId: profile?.partner_id
         })
 
         return NextResponse.json({ response })

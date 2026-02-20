@@ -17,15 +17,15 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
-                    "relative overflow-hidden rounded-2xl border transition-all duration-300",
-                    // Default variant: Standard Glass
-                    variant === "default" && "bg-background/60 backdrop-blur-xl border-border/40 shadow-sm hover:bg-background/70",
-                    // Clear variant: More transparent, good for overlays
-                    variant === "clear" && "bg-background/30 backdrop-blur-md border-border/20 shadow-none",
-                    // Solid variant: Less transparent, good for content that needs contrast
-                    variant === "solid" && "bg-background/90 backdrop-blur-3xl border-border/60 shadow-md",
+                    "relative overflow-hidden rounded-[24px] border transition-all duration-500",
+                    // Default variant: Deep Frost Spatial Glass
+                    variant === "default" && "bg-white/40 dark:bg-black/40 backdrop-blur-[32px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] hover:shadow-[0_16px_48px_0_rgba(31,38,135,0.1)] hover:-translate-y-1",
+                    // Clear variant: Super subtle overlay
+                    variant === "clear" && "bg-white/10 dark:bg-black/10 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-none",
+                    // Solid variant: Heavy frosted
+                    variant === "solid" && "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-[64px] border-white/60 dark:border-white/20 shadow-lg",
 
-                    gradient && "bg-gradient-to-br from-white/10 to-transparent",
+                    gradient && "bg-gradient-to-br from-white/20 to-transparent dark:from-white/5 dark:to-transparent",
                     className
                 )}
                 {...props}

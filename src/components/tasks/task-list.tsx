@@ -24,7 +24,8 @@ interface Task {
     emergency_level?: "low" | "medium" | "high" | "critical"
     importance_level?: "low" | "medium" | "high" | "critical"
     duration_estimate?: number
-    subtasks?: string[]
+    scope?: string | null
+    subtasks?: { id: string, title: string, is_completed: boolean }[] | null
 }
 
 export function TaskList({
@@ -83,6 +84,21 @@ export function TaskList({
         // Optimistic Delete call
         deleteTask(taskId)
         toast.success("Task deleted")
+    }
+
+    // Handle Subtask Toggle
+    const handleSubtaskToggle = (taskId: string, subtaskId: string) => {
+        const task = tasks.find(t => t.id === taskId)
+        if (!task || !task.subtasks) return
+
+        const updatedSubtasks = task.subtasks.map((st: any) => {
+            if (typeof st !== 'string' && st.id === subtaskId) {
+                return { ...st, is_completed: !st.is_completed }
+            }
+            return st
+        })
+
+        updateTask(taskId, { subtasks: updatedSubtasks })
     }
 
     // Get priority color for visual distinction
@@ -150,6 +166,11 @@ export function TaskList({
 
                                                 {/* Priority/Emergency Indicator */}
                                                 <div className="flex items-center gap-1 shrink-0 mt-1.5">
+                                                    {task.scope === 'shared' && (
+                                                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
+                                                            Shared
+                                                        </span>
+                                                    )}
                                                     {(task.emergency_level === 'high' || task.emergency_level === 'critical') && (
                                                         <span className="flex h-2 w-2 rounded-full bg-red-600 animate-pulse" title="High Emergency" />
                                                     )}
@@ -192,12 +213,36 @@ export function TaskList({
                                             {task.subtasks && task.subtasks.length > 0 && (
                                                 <div className="mt-2 pl-1 border-l-2 border-primary/20 space-y-1">
                                                     <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">AI Breakdown</p>
-                                                    {task.subtasks.map((st: string, i: number) => (
-                                                        <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground/80">
-                                                            <div className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                                                            <span className="truncate">{st}</span>
-                                                        </div>
-                                                    ))}
+                                                    {task.subtasks.map((st: any, i: number) => {
+                                                        if (typeof st === 'string') {
+                                                            return (
+                                                                <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground/80">
+                                                                    <div className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
+                                                                    <span className="truncate">{st}</span>
+                                                                </div>
+                                                            )
+                                                        }
+
+                                                        return (
+                                                            <label key={st.id} className="flex items-center gap-2 text-xs cursor-pointer group/st py-0.5">
+                                                                <div className="relative flex items-center justify-center shrink-0">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={st.is_completed}
+                                                                        onChange={() => handleSubtaskToggle(task.id, st.id)}
+                                                                        className="peer h-3.5 w-3.5 appearance-none rounded-sm border border-muted-foreground/40 checked:border-primary checked:bg-primary hover:border-primary transition-all"
+                                                                    />
+                                                                    <Check className="absolute h-2.5 w-2.5 text-primary-foreground opacity-0 peer-checked:opacity-100 pointer-events-none" strokeWidth={3} />
+                                                                </div>
+                                                                <span className={cn(
+                                                                    "truncate transition-colors user-select-none",
+                                                                    st.is_completed ? "text-muted-foreground line-through decoration-muted-foreground/50" : "text-foreground group-hover/st:text-primary/90"
+                                                                )}>
+                                                                    {st.title}
+                                                                </span>
+                                                            </label>
+                                                        )
+                                                    })}
                                                 </div>
                                             )}
                                         </div>

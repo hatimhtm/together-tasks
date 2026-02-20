@@ -16,17 +16,20 @@ interface Task {
     emergency_level?: "low" | "medium" | "high" | "critical"
     importance_level?: "low" | "medium" | "high" | "critical"
     duration_estimate?: number
-    subtasks?: string[]
+    scope?: string | null
+    subtasks?: { id: string, title: string, is_completed: boolean }[] | null
 }
 
-export function useRealtimeTasks(userId: string, partnerId?: string | null) {
-    const [tasks, setTasks] = useState<Task[]>([])
-    const [loading, setLoading] = useState(true)
+export function useRealtimeTasks(userId: string, partnerId?: string | null, initialTasks?: Task[]) {
+    const [tasks, setTasks] = useState<Task[]>(initialTasks || [])
+    const [loading, setLoading] = useState(!initialTasks)
     const supabase = createClient()
 
     useEffect(() => {
-        // Initial fetch
-        fetchTasks()
+        // Initial fetch only if we don't have initial tasks
+        if (!initialTasks) {
+            fetchTasks()
+        }
 
         // Set up real-time subscription
         let channel: RealtimeChannel | null = null;

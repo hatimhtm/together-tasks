@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendWebPush } from '@/lib/web-push/sender'
 
 export async function POST(request: Request) {
     try {
@@ -10,67 +11,44 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const { code } = await request.json()
+        const { partnerEmail } = await request.json()
 
-        // Find the partner link with this code
-        const { data: linkRequest, error: findError } = (await supabase
-            .from('partner_links' as any)
-            .select('*')
-            .eq('link_code', code)
-            .eq('status', 'pending')
-            .single()) as any
-
-        if (findError || !linkRequest) {
-            console.error('Link error (find):', findError)
-            return NextResponse.json(
-                { error: 'Invalid or expired code' },
-                { status: 400 }
-            )
+        if (!partnerEmail) {
+            return NextResponse.json({ error: 'Partner email is required' }, { status: 400 })
         }
 
-        // Can't link with yourself
-        if (linkRequest.user1_id === user.id) {
-            return NextResponse.json(
-                { error: 'Cannot link with yourself' },
-                { status: 400 }
-            )
+        if (partnerEmail.toLowerCase() === user.email?.toLowerCase()) {
+            return NextResponse.json({ error: 'You cannot link with yourself' }, { status: 400 })
         }
 
-        // Update partner link to active
-        const { error: updateLinkError } = (await supabase
-            .from('partner_links' as any)
-            .update({
-                user2_id: user.id,
-                status: 'active',
-                activated_at: new Date().toISOString()
-            })
-            .eq('id', linkRequest.id)) as any
-
-        if (updateLinkError) throw updateLinkError
-
-        // Update both profiles with partner_id
-        const { error: update1Error } = await supabase
+        // 1. Find partner by email
+        const { data: partnerProfile, error: partnerError } = await supabase
             .from('profiles')
-            .update({ partner_id: user.id })
-            .eq('id', linkRequest.user1_id)
+            .select('id, username')
+            .ilike('email', partnerEmail)
+            .single()
 
-        if (update1Error) throw update1Error
+        if (partnerError || !partnerProfile) {
+            return NextResponse.json({ error: 'Partner not found. Ensure they have signed up first!' }, { status: 404 })
+        }
 
-        const { error: update2Error } = await supabase
-            .from('profiles')
-            .update({ partner_id: linkRequest.user1_id })
-            .eq('id', user.id)
+        // 2. Perform Mutual Link (Update both profiles)
+        await supabase.from('profiles').update({ partner_id: partnerProfile.id }).eq('id', user.id)
+        await supabase.from('profiles').update({ partner_id: user.id }).eq('id', partnerProfile.id)
 
-        if (update2Error) throw update2Error
+        // 3. Send Notification to Partner
+        const myName = user.user_metadata?.full_name || user.email?.split('@')[0] || "Your partner";
+        await sendWebPush(
+            partnerProfile.id,
+            "You are now linked! 💕",
+            `${myName} just linked their account with yours. You can now share tasks!`
+        ).catch(console.error)
 
-        return NextResponse.json({
-            success: true,
-            partnerId: linkRequest.user1_id
-        })
+        return NextResponse.json({ success: true })
     } catch (error: any) {
-        console.error('Link error:', error)
+        console.error('Partner link error:', error)
         return NextResponse.json(
-            { error: error.message },
+            { error: error.message || 'Failed to link partner' },
             { status: 500 }
         )
     }
