@@ -27,6 +27,7 @@ interface Task {
     duration_estimate?: number
     scope?: string | null
     subtasks?: { id: string, title: string, is_completed: boolean }[] | null
+    completed_by?: string[] | null
 }
 
 export function TaskList({
@@ -56,13 +57,40 @@ export function TaskList({
 
     // Handle task completion
     const handleComplete = async (taskId: string, isCompleted: boolean) => {
-        const newStatus = !isCompleted
+        const task = tasks.find(t => t.id === taskId)
+        if (!task) return
+
+        let updates: Partial<Task> = {}
+        let newStatus = !isCompleted
+
+        if (task.scope === 'shared') {
+            const currentArray = task.completed_by || []
+            let newArray = [...currentArray]
+
+            if (currentArray.includes(userId)) {
+                // Unmark
+                newArray = newArray.filter(id => id !== userId)
+                newStatus = false // Definitively not complete
+            } else {
+                // Mark
+                newArray.push(userId)
+                // If partner already marked it, it will now be 2!
+                if (newArray.length >= 2) {
+                    newStatus = true
+                } else {
+                    newStatus = false
+                }
+            }
+            updates = { completed_by: newArray, is_completed: newStatus }
+        } else {
+            updates = {
+                is_completed: newStatus,
+                completed_at: newStatus ? new Date().toISOString() : null
+            }
+        }
 
         // Optimistic Update call
-        updateTask(taskId, {
-            is_completed: newStatus,
-            completed_at: newStatus ? new Date().toISOString() : null
-        })
+        updateTask(taskId, updates)
 
         // CELEBRATION! 🎉
         if (newStatus) {
@@ -163,9 +191,16 @@ export function TaskList({
                                         {/* Checkbox Button */}
                                         <button
                                             onClick={() => handleComplete(task.id, task.is_completed)}
-                                            className="mt-1 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary flex items-center justify-center transition-all shrink-0 active:scale-90"
+                                            className={cn(
+                                                "mt-1 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary flex items-center justify-center transition-all shrink-0 active:scale-90",
+                                                task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "border-primary/50 bg-primary/20",
+                                                task.scope === 'shared' && task.completed_by && task.completed_by.length === 1 && !task.completed_by.includes(userId) && "border-primary/50 bg-transparent ring-2 ring-primary/20 ring-offset-1"
+                                            )}
+                                            title={task.scope === 'shared' ? (task.completed_by?.includes(userId) ? "Waiting for partner..." : task.completed_by && task.completed_by.length === 1 ? "Partner finished! Your turn." : "Mark complete") : "Complete task"}
                                         >
-                                            {/* Empty circle for uncompleted */}
+                                            {task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && (
+                                                <div className="h-2.5 w-2.5 rounded-full bg-primary/70 animate-pulse" />
+                                            )}
                                         </button>
 
                                         {/* Task Content */}
@@ -185,7 +220,24 @@ export function TaskList({
                                                     {(task.emergency_level === 'high' || task.emergency_level === 'critical') && (
                                                         <span className="flex h-2 w-2 rounded-full bg-red-600 animate-pulse" title="High Emergency" />
                                                     )}
-                                                    <div className={cn("w-2 h-2 rounded-full", getPriorityColor(task.priority))} title={`Priority: ${task.priority}`} />
+                                                    <div className={cn(
+                                                        "relative flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/50 border border-muted-foreground/10 hover:border-primary/30 transition-colors cursor-pointer",
+                                                    )} title={`Click to change Priority`}>
+                                                        <div className={cn("w-1.5 h-1.5 rounded-full pointer-events-none", getPriorityColor(task.priority))} />
+                                                        <span className="hidden sm:inline-block text-[10px] font-medium text-muted-foreground capitalize tracking-wide pointer-events-none">
+                                                            {task.priority}
+                                                        </span>
+                                                        <select
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-[10px]"
+                                                            value={task.priority}
+                                                            onChange={(e) => updateTask(task.id, { priority: e.target.value as any })}
+                                                        >
+                                                            <option value="low">Low</option>
+                                                            <option value="medium">Medium</option>
+                                                            <option value="high">High</option>
+                                                            <option value="urgent">Urgent</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
 

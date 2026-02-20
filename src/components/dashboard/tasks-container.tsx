@@ -29,8 +29,8 @@ export function TasksContainer({
     // Filter tasks based on selected tab and scope
     const filteredTasks = tasks.filter(task => {
         if (activeTab === "shared") return task.scope === 'shared'
-        if (activeTab === "my") return task.assignee_id === userId && task.scope !== 'shared'
-        if (activeTab === "partner") return task.assignee_id === partnerId && task.scope !== 'shared'
+        if (activeTab === "my") return task.assignee_id === userId || task.scope === 'shared'
+        if (activeTab === "partner") return task.assignee_id === partnerId || task.scope === 'shared'
         return true
     })
 
