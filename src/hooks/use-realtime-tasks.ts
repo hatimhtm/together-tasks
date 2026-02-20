@@ -144,6 +144,11 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
             t.id === taskId ? { ...t, ...updates } : t
         ))
 
+        // If they marked it complete, bounce the XP badge!
+        if (updates.is_completed) {
+            window.dispatchEvent(new Event('profile-updated'))
+        }
+
         try {
             // 2. API Call
             const response = await fetch(`/api/tasks/${taskId}`, {
@@ -156,8 +161,6 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
 
             // No need to update state again if successful, as realtime will confirm it 
             // or the optimistic update is already there. 
-            // Actually, to be safe against server-side sanitization, we could update with response data
-            // but for "instant" feel, we stick with optimistic.
         } catch (error) {
             console.error("Update failed, rolling back", error)
             // 3. Rollback (re-fetch or undo)

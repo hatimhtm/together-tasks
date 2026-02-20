@@ -22,10 +22,20 @@ export function PushNotifier() {
 
     const checkSubscription = async () => {
         try {
-            const registration = await navigator.serviceWorker.getRegistration()
+            // Add a timeout in case getRegistration hangs on certain browsers
+            const registrationPromise = navigator.serviceWorker.getRegistration()
+            const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 2000))
+
+            const registration = await Promise.race([registrationPromise, timeoutPromise]) as ServiceWorkerRegistration | null
+
             if (registration) {
                 const subscription = await registration.pushManager.getSubscription()
                 setIsSubscribed(!!subscription)
+            } else {
+                // If they already granted permission but SW isn't active, we might need them to click "Enable" to register the SW
+                if (Notification.permission === 'granted') {
+                    setIsSubscribed(false)
+                }
             }
         } catch (error) {
             console.error("Error checking subscription", error)
