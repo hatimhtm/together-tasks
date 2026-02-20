@@ -78,19 +78,31 @@ export function TaskList({
                 className: "bg-background/80 backdrop-blur-md border-border/50",
             })
 
-            // Trigger server refresh to update XP globally on the page
+            // Trigger server refresh and force client gamification badges to refetch their XP
             setTimeout(() => {
                 router.refresh()
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('profile-updated'))
+                }
             }, 1000)
         }
     }
 
     const handleDelete = async (taskId: string) => {
-        if (!confirm("Delete this task?")) return
-
-        // Optimistic Delete call
-        deleteTask(taskId)
-        toast.success("Task deleted")
+        toast("Delete this task?", {
+            description: "This action cannot be undone.",
+            action: {
+                label: "Delete",
+                onClick: () => {
+                    deleteTask(taskId)
+                    toast.success("Task deleted permanently.")
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => { }
+            }
+        })
     }
 
     // Handle Subtask Toggle

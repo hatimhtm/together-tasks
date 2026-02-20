@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Bell, BellOff, Loader2 } from "lucide-react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 export function PushNotifier() {
     const [isSubscribed, setIsSubscribed] = useState(false)
@@ -49,11 +50,21 @@ export function PushNotifier() {
     const subscribe = async () => {
         setIsLoading(true)
         try {
-            const registration = await navigator.serviceWorker.ready
-            const pubKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-            if (!pubKey) throw new Error("VAPID Key not found")
+            const registration = await navigator.serviceWorker.getRegistration()
+            if (!registration) {
+                // Try registering it
+                await navigator.serviceWorker.register('/sw.js')
+            }
+            const activeRegistration = await navigator.serviceWorker.ready
 
-            const subscription = await registration.pushManager.subscribe({
+            const pubKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+            if (!pubKey) {
+                toast.error("VAPID Key missing. Push Notifications cannot be enabled in this environment.")
+                setIsLoading(false)
+                return
+            }
+
+            const subscription = await activeRegistration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: base64ToUint8Array(pubKey)
             })
@@ -66,9 +77,9 @@ export function PushNotifier() {
             })
 
             setIsSubscribed(true)
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to subscribe user", error)
-            alert("Please allow notifications in your browser settings to receive task updates.")
+            toast.error(error.message || "Please allow notifications in your browser settings.")
         } finally {
             setIsLoading(false)
         }

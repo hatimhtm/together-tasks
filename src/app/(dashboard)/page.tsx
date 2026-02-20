@@ -59,9 +59,9 @@ export default async function Home() {
 
   const tasksCount = initialTasks?.filter(t => {
     if (t.is_completed) return false;
-    if (!t.due_date) return false;
-    const due = new Date(t.due_date);
-    return due >= new Date(todayStart) && due <= new Date(todayEnd);
+    // Count tasks assigned to the current user (my tasks) that are pending
+    if (t.assignee_id === user.id) return true;
+    return false;
   }).length || 0;
 
   const displayName = profile?.role === 'king' ? 'King Hatim' : (profile?.role === 'queen' ? 'Queen Pookie' : (profile?.username?.includes('hatimhtm2003') || profile?.username?.includes('.official') ? 'Love' : (profile?.username || 'Love')));
