@@ -1,8 +1,7 @@
 import { GlassCard } from "@/components/ui/glass-card"
 import { TasksContainer } from "@/components/dashboard/tasks-container"
 import { AiNudge } from "@/components/dashboard/ai-nudge"
-import { PushNotifier } from "@/components/pwa/push-notifier"
-import { PartnerPairingFlow } from "@/components/partner/pairing-flow"
+
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-button"
 import { createClient } from "@/lib/supabase/server"
@@ -29,6 +28,27 @@ export default async function Home() {
 
   if (profile && !profile.has_completed_onboarding) {
     redirect("/onboarding")
+  }
+
+  // Self-Healing Hardlink Logic (For King and Queen Pairing)
+  if (profile && !profile.partner_id) {
+    // If they don't have a partner, look up the opposite role
+    const oppositeRole = profile.role === 'king' ? 'queen' : 'king'
+    const { data: partnerProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('role', oppositeRole)
+      .single()
+
+    if (partnerProfile) {
+      // Because RLS allows users to update their OWN profile, this works perfectly.
+      await supabase
+        .from('profiles')
+        .update({ partner_id: partnerProfile.id })
+        .eq('id', user.id)
+
+      profile.partner_id = partnerProfile.id
+    }
   }
 
   let partnerTheme = "light"
@@ -71,10 +91,8 @@ export default async function Home() {
         </p>
       </div>
 
-      {/* AI Nudge & Notifications */}
       <div className="space-y-4">
         <AiNudge />
-        <PushNotifier />
       </div>
 
       {/* Stats / Quick Glance */}
@@ -87,7 +105,6 @@ export default async function Home() {
 
       {/* Main Tasks Container (Handles QuickAdd and List) */}
       <div id="tasks">
-        {profile && !profile.partner_id && <PartnerPairingFlow profile={profile as any} />}
         <TasksContainer
           userId={user.id}
           partnerId={profile?.partner_id}
