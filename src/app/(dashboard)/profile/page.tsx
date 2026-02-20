@@ -57,7 +57,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 rounded-xl bg-background/40 border border-white/10 text-center">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">Theme</p>
-                        <p className="font-medium capitalize">{profile?.theme || "Default"}</p>
+                        <p className="font-medium capitalize">{profile?.theme || "Glass (Light)"}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-background/40 border border-white/10 text-center">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">Level</p>
@@ -71,7 +71,7 @@ export default function ProfilePage() {
                         <Crown size={18} />
                         Retake Onboarding
                     </Button>
-                    <Button variant="outline" className="w-full justify-start h-12 gap-3">
+                    <Button variant="outline" className="w-full justify-start h-12 gap-3" onClick={() => router.push('/settings')}>
                         <Settings size={18} />
                         App Settings
                     </Button>

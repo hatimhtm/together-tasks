@@ -23,7 +23,7 @@ export default function OnboardingPage() {
     const [currentStep, setCurrentStep] = useState(0)
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
-        theme: "gold",
+        theme: "light",
         goals: "",
         habits: "",
         personality: "sage",
@@ -150,31 +150,33 @@ export default function OnboardingPage() {
                                 <div className="space-y-6">
                                     <h2 className="text-2xl font-bold text-center">Establish Your Aesthetic</h2>
                                     <div className="grid grid-cols-1 gap-4">
-                                        {['gold', 'rose', 'blue'].map((theme) => (
-                                            <button
-                                                key={theme}
-                                                onClick={() => setFormData({ ...formData, theme })}
-                                                className={`
-                          p-4 rounded-xl border-2 transition-all flex items-center gap-4 group relative overflow-hidden
-                          ${formData.theme === theme ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50"}
-                        `}
-                                            >
-                                                <div className={`absolute inset-0 opacity-10 ${theme === 'gold' ? 'bg-amber-500' :
-                                                    theme === 'rose' ? 'bg-rose-500' : 'bg-blue-500'
-                                                    }`} />
-                                                <div className={`w-12 h-12 rounded-full shadow-lg z-10 ${theme === 'gold' ? 'bg-gradient-to-br from-amber-300 to-amber-600' :
-                                                    theme === 'rose' ? 'bg-gradient-to-br from-rose-300 to-rose-600' : 'bg-gradient-to-br from-blue-300 to-blue-600'
-                                                    }`} />
-                                                <div className="text-left z-10">
-                                                    <h3 className="font-semibold capitalize text-lg">{theme}</h3>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {theme === 'gold' ? 'Luxurious, Classic, Eternal' :
-                                                            theme === 'rose' ? 'Romantic, Warm, Passionate' : 'Calm, Majestic, Serene'}
-                                                    </p>
-                                                </div>
-                                                {formData.theme === theme && <Check className="ml-auto text-primary z-10" />}
-                                            </button>
-                                        ))}
+                                        {
+                                            [
+                                                { id: 'light', name: 'Glass (Light)', desc: 'Clean, bright, professional', gradient: 'from-zinc-100 to-zinc-300', tint: 'bg-zinc-500' },
+                                                { id: 'dark', name: 'Midnight', desc: 'Sleek, deep greys, glowing accents', gradient: 'from-zinc-700 to-zinc-900', tint: 'bg-black' },
+                                                { id: 'neo-brutalist', name: 'Neo-Brutalist', desc: 'High contrast, bold, engineering focus', gradient: 'from-[#ff90e8] to-[#ffc900]', tint: 'bg-black' },
+                                                { id: 'floral', name: 'Floral Blush', desc: 'Soft pinks, floating petals', gradient: 'from-pink-300 to-rose-400', tint: 'bg-pink-500' },
+                                                { id: 'creamy', name: 'Vintage Cream', desc: 'Warm sepia, elegant, minimalist', gradient: 'from-[#fdfbf7] to-[#eaddcf]', tint: 'bg-amber-700' },
+                                                { id: 'burgundy', name: 'Royal Burgundy', desc: 'Deep luscious red, gold accents', gradient: 'from-[#651028] to-[#2b0b14]', tint: 'bg-rose-900' }
+                                            ].map((theme) => (
+                                                <button
+                                                    key={theme.id}
+                                                    onClick={() => setFormData({ ...formData, theme: theme.id })}
+                                                    className={`
+                                                      p-4 rounded-xl border-2 transition-all flex items-center gap-4 group relative overflow-hidden text-left
+                                                      ${formData.theme === theme.id ? "border-primary bg-primary/5 shadow-[0_0_15px_rgba(var(--primary),0.2)]" : "border-transparent bg-muted/30 hover:bg-muted/50"}
+                                                    `}
+                                                >
+                                                    <div className={`absolute inset-0 opacity-10 ${theme.tint}`} />
+                                                    <div className={`w-12 h-12 rounded-full shadow-lg z-10 shrink-0 border border-white/20 bg-gradient-to-br ${theme.gradient}`} />
+                                                    <div className="text-left z-10 flex-1">
+                                                        <h3 className="font-semibold text-[15px]">{theme.name}</h3>
+                                                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{theme.desc}</p>
+                                                    </div>
+                                                    {formData.theme === theme.id && <Check className="ml-auto text-primary z-10 shrink-0" />}
+                                                </button>
+                                            ))
+                                        }
                                     </div>
                                 </div>
                             )}

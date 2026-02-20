@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X, Send, Loader2, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 // Message type definition
 interface Message {
@@ -32,6 +33,7 @@ export function AIChatWidget({
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const router = useRouter()
 
     // Auto-scroll to bottom when new messages arrive
     const scrollToBottom = () => {
@@ -76,6 +78,13 @@ export function AIChatWidget({
             }
 
             setMessages(prev => [...prev, assistantMessage])
+
+            // If the AI actually took action (create task, etc.), refresh the page data
+            if (aiResponse.includes("I've created the task") || aiResponse.includes("to memory")) {
+                setTimeout(() => {
+                    router.refresh()
+                }, 1000)
+            }
         } catch (error) {
             console.error("AI chat error:", error)
 

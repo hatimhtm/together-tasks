@@ -40,8 +40,12 @@ export function useRealtimeProfile(userId: string | undefined) {
             )
             .subscribe()
 
+        const handleRefresh = () => fetchProfile()
+        window.addEventListener('profile-updated', handleRefresh)
+
         return () => {
             channel.unsubscribe()
+            window.removeEventListener('profile-updated', handleRefresh)
         }
     }, [userId])
 

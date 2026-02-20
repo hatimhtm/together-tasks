@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Crown, Star, Sparkles, Shield } from "lucide-react"
 import { useRealtimeProfile } from "@/hooks/use-realtime-profile"
 import { cn } from "@/lib/utils"
@@ -65,8 +65,20 @@ export function LegacyBadge({ userId, className }: LegacyBadgeProps) {
                 <span className="text-[10px] uppercase tracking-wider font-bold opacity-70">
                     Tier {profile.level}
                 </span>
-                <span className="text-xs font-semibold">
-                    {profile.xp} XP
+                <span className="text-xs font-semibold flex items-center gap-1 overflow-hidden">
+                    <AnimatePresence mode="popLayout">
+                        <motion.span
+                            key={profile.xp}
+                            initial={{ y: 15, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -15, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="inline-block"
+                        >
+                            {profile.xp}
+                        </motion.span>
+                    </AnimatePresence>
+                    XP
                 </span>
             </div>
 
