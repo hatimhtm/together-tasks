@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Plus, Gift, Check, Coins } from "lucide-react"
-import { PartnerInvite } from "@/components/dashboard/partner-invite"
+import { PartnerPairingFlow } from "@/components/partner/pairing-flow"
 
 export default async function RewardsPage() {
     const supabase = await createClient()
@@ -16,7 +16,7 @@ export default async function RewardsPage() {
     // Fetch profile for XP/Level info
     const { data: profile } = await supabase
         .from("profiles")
-        .select("xp, partner_id")
+        .select("*")
         .eq("id", user.id)
         .single()
 
@@ -35,7 +35,7 @@ export default async function RewardsPage() {
 
             {!profile?.partner_id ? (
                 <div className="mt-8">
-                    <PartnerInvite partnerId={null} />
+                    <PartnerPairingFlow profile={profile as any} />
                 </div>
             ) : (
                 <>
