@@ -18,6 +18,7 @@ interface Task {
     duration_estimate?: number
     scope?: string | null
     subtasks?: { id: string, title: string, is_completed: boolean }[] | null
+    completed_by?: string[] | null
 }
 
 export function useRealtimeTasks(userId: string, partnerId?: string | null, initialTasks?: Task[]) {
