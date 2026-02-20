@@ -89,20 +89,12 @@ export function TaskList({
     }
 
     const handleDelete = async (taskId: string) => {
-        toast("Delete this task?", {
-            description: "This action cannot be undone.",
-            action: {
-                label: "Delete",
-                onClick: () => {
-                    deleteTask(taskId)
-                    toast.success("Task deleted permanently.")
-                }
-            },
-            cancel: {
-                label: "Cancel",
-                onClick: () => { }
-            }
-        })
+        if (window.confirm("Delete this task? This action cannot be undone.")) {
+            deleteTask(taskId)
+            toast.success("Task deleted permanently.", {
+                className: "bg-background/80 backdrop-blur-md border-border/50",
+            })
+        }
     }
 
     // Handle Subtask Toggle
@@ -266,10 +258,9 @@ export function TaskList({
                                             )}
                                         </div>
 
-                                        {/* Delete Button (Visible on hover/group-focus or simply accessible) */}
                                         <button
                                             onClick={() => handleDelete(task.id)}
-                                            className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-2 -mr-2 -mt-2 hover:text-destructive"
+                                            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity p-2 -mr-2 -mt-2 text-muted-foreground hover:text-destructive"
                                             aria-label="Delete task"
                                         >
                                             <Trash2 className="h-4 w-4" />

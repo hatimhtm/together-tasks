@@ -22,8 +22,8 @@ export function DashboardStats({
     // Calculate dynamic active tasks left for the user today
     const tasksCount = tasks.filter(t => {
         if (t.is_completed) return false;
-        // Count my tasks that are active
-        if (t.assignee_id === userId) return true;
+        // Count my tasks that are active AND Shared tasks
+        if (t.assignee_id === userId || t.scope === 'shared') return true;
         return false;
     }).length || 0;
 
