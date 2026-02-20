@@ -16,9 +16,15 @@ export async function POST(request: Request) {
 
         let rawInput = input
         let isForPartner = false
-        if (typeof rawInput === 'string' && rawInput.startsWith('@partner ')) {
-            isForPartner = true
-            rawInput = rawInput.replace('@partner ', '')
+        let isShared = false
+        if (typeof rawInput === 'string') {
+            if (rawInput.startsWith('@partner ')) {
+                isForPartner = true
+                rawInput = rawInput.replace('@partner ', '')
+            } else if (rawInput.startsWith('@shared ')) {
+                isShared = true
+                rawInput = rawInput.replace('@shared ', '')
+            }
         }
 
         let taskData: any = {}
@@ -63,6 +69,16 @@ export async function POST(request: Request) {
 
         const assignee_id = isForPartner && profile?.partner_id ? profile.partner_id : user.id;
 
+        // Map AI string subtasks into actionable checklist objects
+        let formattedSubtasks: any[] = []
+        if (taskData.subtasks && Array.isArray(taskData.subtasks)) {
+            formattedSubtasks = taskData.subtasks.map((st: string) => ({
+                id: crypto.randomUUID(),
+                title: st,
+                is_completed: false
+            }))
+        }
+
         // Create task in database
         const { data: task, error } = await supabase
             .from('tasks')
@@ -75,10 +91,11 @@ export async function POST(request: Request) {
                 priority: taskData.priority || 'medium',
                 category_id: null,
                 is_completed: false,
+                scope: isShared ? 'shared' : null,
                 emergency_level: taskData.emergency_level || 'medium',
                 importance_level: taskData.importance_level || 'medium',
                 duration_estimate: taskData.duration_estimate || 15,
-                subtasks: taskData.subtasks || []
+                subtasks: formattedSubtasks
             })
             .select()
             .single()
@@ -94,12 +111,12 @@ export async function POST(request: Request) {
                 body: JSON.stringify({ taskId: task.id })
             }).catch(err => console.error("Analysis trigger failed:", err))
 
-            // Trigger real-time web push to partner if it was assigned to them
-            if (isForPartner && profile?.partner_id) {
+            // Trigger real-time web push to partner if it was assigned to them OR shared
+            if ((isForPartner || isShared) && profile?.partner_id) {
                 sendWebPush(
                     profile.partner_id,
-                    "New Task! 💕",
-                    `Your partner assigned: ${task.title}`
+                    isShared ? "New Shared Goal! 🤝" : "New Task! 💕",
+                    isShared ? `You both have a new task: ${task.title}` : `Your partner assigned: ${task.title}`
                 ).catch(e => console.error("Push failed:", e))
             }
         }

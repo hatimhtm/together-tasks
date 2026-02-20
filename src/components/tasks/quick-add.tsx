@@ -6,19 +6,21 @@ import { Input } from "@/components/ui/input"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
-
+import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 
 export function QuickAdd({
     onTaskCreated,
-    onAddTask
+    onAddTask,
+    hasPartner
 }: {
     onTaskCreated?: () => void
     onAddTask?: (input: string) => Promise<any>
+    hasPartner?: boolean
 }) {
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
-    const [forPartner, setForPartner] = useState(false)
+    const [assignMode, setAssignMode] = useState<"me" | "partner" | "shared">("me")
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -26,13 +28,16 @@ export function QuickAdd({
         if (!input.trim()) return
 
         setLoading(true)
-        const finalInput = forPartner ? `@partner ${input}` : input
+        const prefix = assignMode === "partner" ? "@partner " : assignMode === "shared" ? "@shared " : ""
+        const finalInput = prefix + input
+
+        const toastTarget = assignMode === "partner" ? "partner! 💕" : assignMode === "shared" ? "both of you! 🤝" : "you! ✨"
 
         try {
             if (onAddTask) {
                 // Delegated creation (Optimistic)
                 await onAddTask(finalInput)
-                toast.success(forPartner ? "Task assigned to partner! 💕" : "Task created! ✨")
+                toast.success(`Task created for ${toastTarget}`)
             } else {
                 // Local creation (Legacy/Standalone)
                 const response = await fetch("/api/tasks", {
@@ -44,13 +49,13 @@ export function QuickAdd({
                 if (!response.ok) throw new Error("Failed to create task")
 
                 const { task } = await response.json()
-                toast.success(forPartner ? "Task sent to partner! 💕" : "Task created! ✨", {
+                toast.success(`Task created for ${toastTarget}`, {
                     description: task.title
                 })
             }
 
             setInput("")
-            setForPartner(false) // reset toggle
+            setAssignMode("me") // reset toggle
             // Refresh the page/data
             router.refresh()
 
@@ -68,20 +73,29 @@ export function QuickAdd({
     return (
         <GlassCard className="p-4">
             <form onSubmit={handleSubmit} className="flex gap-2 items-center">
-                <Button
-                    type="button"
-                    variant={forPartner ? "default" : "secondary"}
-                    onClick={() => setForPartner(!forPartner)}
-                    className="shrink-0 px-3 h-10 w-10 md:w-auto md:px-4 rounded-full transition-all duration-300 group"
-                    title={forPartner ? "Assigning to Partner" : "Assign to me"}
-                >
-                    <span className="md:hidden">
-                        {forPartner ? '💕' : '👤'}
-                    </span>
-                    <span className="hidden md:inline">
-                        {forPartner ? 'For Partner 💕' : 'For Me 👤'}
-                    </span>
-                </Button>
+                {hasPartner && (
+                    <Button
+                        type="button"
+                        variant={assignMode === "me" ? "secondary" : "default"}
+                        onClick={() => {
+                            if (assignMode === "me") setAssignMode("partner")
+                            else if (assignMode === "partner") setAssignMode("shared")
+                            else setAssignMode("me")
+                        }}
+                        className={cn(
+                            "shrink-0 px-3 h-10 w-10 md:w-auto md:px-4 rounded-full transition-all duration-300 group",
+                            assignMode === "shared" && "bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
+                        )}
+                        title={`Currently assigning to: ${assignMode}`}
+                    >
+                        <span className="md:hidden">
+                            {assignMode === 'partner' ? '💕' : assignMode === 'shared' ? '🤝' : '👤'}
+                        </span>
+                        <span className="hidden md:inline">
+                            {assignMode === 'partner' ? 'For Partner 💕' : assignMode === 'shared' ? 'For Both 🤝' : 'For Me 👤'}
+                        </span>
+                    </Button>
+                )}
                 <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}

@@ -2,19 +2,68 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { TasksContainer } from "@/components/dashboard/tasks-container"
 import { AiNudge } from "@/components/dashboard/ai-nudge"
 import { PushNotifier } from "@/components/pwa/push-notifier"
+import { PartnerInvite } from "@/components/dashboard/partner-invite"
+import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-button"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { startOfDay, endOfDay } from "date-fns"
 
 export default async function Home() {
-  // ... omitting unchanged lines for speed in thought process ...
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  // Fetch profile to get role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single()
+
+  if (profile && !profile.has_completed_onboarding) {
+    redirect("/onboarding")
+  }
+
+  // Calculate Tasks Today
+  const todayStart = startOfDay(new Date()).toISOString()
+  const todayEnd = endOfDay(new Date()).toISOString()
+
+  // Server-side fetch for immediate display (Optimistic UI enhancement)
+  let tasksQuery = supabase
+    .from("tasks")
+    .select("*")
+
+  if (profile?.partner_id) {
+    tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`)
+  } else {
+    tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
+  }
+
+  const { data: initialTasks } = await tasksQuery.order("created_at", { ascending: false })
+
+  const tasksCount = initialTasks?.filter(t => {
+    if (t.is_completed) return false;
+    if (!t.due_date) return false;
+    const due = new Date(t.due_date);
+    return due >= new Date(todayStart) && due <= new Date(todayEnd);
+  }).length || 0;
+
   return (
     <div className="space-y-8 pb-10">
       {/* Header / Greeting */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-sm">
-          Hello, {profile?.username || "Love"} 👋
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-sm">
+            Hello, {profile?.username || "Love"} 👋
+          </h1>
+          {profile?.partner_id && <ThinkingOfYouButton partnerId={profile.partner_id} />}
+        </div>
         <p className="text-muted-foreground">
           Ready to conquer the day together?
         </p>
@@ -44,7 +93,8 @@ export default async function Home() {
       </GlassCard>
 
       {/* Main Tasks Container (Handles QuickAdd and List) */}
-      <TasksContainer userId={user.id} partnerId={profile?.partner_id} />
+      {!profile?.partner_id && <PartnerInvite partnerId={profile?.partner_id} />}
+      <TasksContainer userId={user.id} partnerId={profile?.partner_id} initialTasks={initialTasks || []} />
     </div>
   )
 }
