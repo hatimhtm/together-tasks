@@ -30,6 +30,16 @@ export default async function Home() {
     redirect("/onboarding")
   }
 
+  let partnerTheme = "light"
+  if (profile?.partner_id) {
+    const { data: partnerProfile } = await supabase
+      .from("profiles")
+      .select("theme")
+      .eq("id", profile.partner_id)
+      .single()
+    if (partnerProfile?.theme) partnerTheme = partnerProfile.theme
+  }
+
   // Calculate Tasks Today
   const todayStart = startOfDay(new Date()).toISOString()
   const todayEnd = endOfDay(new Date()).toISOString()
@@ -54,13 +64,15 @@ export default async function Home() {
     return due >= new Date(todayStart) && due <= new Date(todayEnd);
   }).length || 0;
 
+  const displayName = profile?.role === 'king' ? 'King Hatim' : (profile?.role === 'queen' ? 'Queen Pookie' : (profile?.username?.includes('hatimhtm2003') || profile?.username?.includes('.official') ? 'Love' : (profile?.username || 'Love')));
+
   return (
     <div className="space-y-8 pb-10">
       {/* Header / Greeting */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-sm">
-            Hello, {profile?.username || "Love"} 👋
+            Hello, {displayName} 👋
           </h1>
           {profile?.partner_id && <ThinkingOfYouButton partnerId={profile.partner_id} />}
         </div>
@@ -76,25 +88,35 @@ export default async function Home() {
       </div>
 
       {/* Stats / Quick Glance */}
-      <GlassCard className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Tasks Today</p>
-            <p className="text-3xl font-bold text-foreground">{tasksCount || 0} <span className="text-sm font-normal text-muted-foreground">left</span></p>
-          </div>
+      <a href="#tasks" className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+        <GlassCard className="p-6 transition-all hover:bg-muted/10 active:scale-[0.98]">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Tasks Today</p>
+              <p className="text-3xl font-bold text-foreground">{tasksCount || 0} <span className="text-sm font-normal text-muted-foreground">left</span></p>
+            </div>
 
-          <div className="h-12 w-px bg-border/50" />
+            <div className="h-12 w-px bg-border/50" />
 
-          <div className="space-y-1 text-right">
-            <p className="text-sm font-medium text-muted-foreground">Couple Streak</p>
-            <p className="text-3xl font-bold text-accent">🔥 {profile?.streak || 0}</p>
+            <div className="space-y-1 text-right">
+              <p className="text-sm font-medium text-muted-foreground">Couple Streak</p>
+              <p className="text-3xl font-bold text-accent">🔥 {profile?.streak || 0}</p>
+            </div>
           </div>
-        </div>
-      </GlassCard>
+        </GlassCard>
+      </a>
 
       {/* Main Tasks Container (Handles QuickAdd and List) */}
-      {!profile?.partner_id && <PartnerInvite partnerId={profile?.partner_id} />}
-      <TasksContainer userId={user.id} partnerId={profile?.partner_id} initialTasks={initialTasks || []} />
+      <div id="tasks">
+        {!profile?.partner_id && <PartnerInvite partnerId={profile?.partner_id} />}
+        <TasksContainer
+          userId={user.id}
+          partnerId={profile?.partner_id}
+          initialTasks={initialTasks || []}
+          userTheme={profile?.theme || 'light'}
+          partnerTheme={partnerTheme}
+        />
+      </div>
     </div>
   )
 }

@@ -5,12 +5,26 @@ import { QuickAdd } from "@/components/tasks/quick-add"
 import { TaskList } from "@/components/tasks/task-list"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { cn } from "@/lib/utils"
+import { useTheme } from "next-themes"
 
 type Tab = "my" | "partner" | "shared"
 
-export function TasksContainer({ userId, partnerId, initialTasks }: { userId: string, partnerId?: string | null, initialTasks?: any[] }) {
+export function TasksContainer({
+    userId,
+    partnerId,
+    initialTasks,
+    userTheme = 'light',
+    partnerTheme = 'light'
+}: {
+    userId: string,
+    partnerId?: string | null,
+    initialTasks?: any[],
+    userTheme?: string,
+    partnerTheme?: string
+}) {
     const { tasks, loading, addTask, updateTask, deleteTask } = useRealtimeTasks(userId, partnerId, initialTasks)
     const [activeTab, setActiveTab] = useState<Tab>("my")
+    const { setTheme } = useTheme()
 
     // Filter tasks based on selected tab and scope
     const filteredTasks = tasks.filter(task => {
@@ -39,7 +53,14 @@ export function TasksContainer({ userId, partnerId, initialTasks }: { userId: st
                             {(['my', 'partner', 'shared'] as Tab[]).map((tab) => (
                                 <button
                                     key={tab}
-                                    onClick={() => setActiveTab(tab)}
+                                    onClick={() => {
+                                        setActiveTab(tab)
+                                        if (tab === 'partner') {
+                                            setTheme(partnerTheme)
+                                        } else {
+                                            setTheme(userTheme)
+                                        }
+                                    }}
                                     className={cn(
                                         "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                                         activeTab === tab
