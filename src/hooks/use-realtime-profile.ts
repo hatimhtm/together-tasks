@@ -10,6 +10,9 @@ export interface Profile {
     level: number
     avatar_url: string | null
     theme: string
+    streak: number
+    partner_id: string | null
+    has_completed_onboarding: boolean
 }
 
 export function useRealtimeProfile(userId: string | undefined) {

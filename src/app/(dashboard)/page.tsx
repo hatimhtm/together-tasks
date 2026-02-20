@@ -41,6 +41,19 @@ export default async function Home() {
     if (partnerProfile?.theme) partnerTheme = partnerProfile.theme
   }
 
+  // Server-side fetch for immediate display (Optimistic UI enhancement)
+  let tasksQuery = supabase
+    .from("tasks")
+    .select("*")
+
+  if (profile?.partner_id) {
+    tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`)
+  } else {
+    tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
+  }
+
+  const { data: initialTasks } = await tasksQuery.order("created_at", { ascending: false })
+
   const displayName = profile?.role === 'king' ? 'King Hatim' : (profile?.role === 'queen' ? 'Queen Pookie' : (profile?.username?.includes('hatimhtm2003') || profile?.username?.includes('.official') ? 'Love' : (profile?.username || 'Love')));
 
   return (
@@ -74,7 +87,7 @@ export default async function Home() {
 
       {/* Main Tasks Container (Handles QuickAdd and List) */}
       <div id="tasks">
-        {!profile?.partner_id && <PartnerPairingFlow profile={profile} />}
+        {profile && !profile.partner_id && <PartnerPairingFlow profile={profile as any} />}
         <TasksContainer
           userId={user.id}
           partnerId={profile?.partner_id}
