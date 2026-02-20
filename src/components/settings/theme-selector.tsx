@@ -10,7 +10,6 @@ import { createClient } from "@/lib/supabase/client"
 const themes = [
     { id: 'light', name: 'Glass (Light)', color: '#f8fafc', icon: '✨' },
     { id: 'dark', name: 'Midnight', color: '#09090b', icon: '🌙' },
-    { id: 'neo-brutalist', name: 'Neo-Brutalist', color: '#dfdfd6', icon: '🚧' },
     { id: 'floral', name: 'Floral Blush', color: '#fff0f5', icon: '🌸' },
     { id: 'creamy', name: 'Vintage Cream', color: '#fdfbf7', icon: '☕' },
     { id: 'burgundy', name: 'Royal Burgundy', color: '#2b0b14', icon: '👑' },

@@ -39,10 +39,14 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
             channel = setupRealtimeSubscription()
         }, 100)
 
+        const handleTasksUpdate = () => fetchTasks()
+        window.addEventListener('tasks-updated', handleTasksUpdate)
+
         // Cleanup
         return () => {
             clearTimeout(timer)
             if (channel) channel.unsubscribe()
+            window.removeEventListener('tasks-updated', handleTasksUpdate)
         }
     }, [userId, partnerId])
 

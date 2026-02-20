@@ -11,25 +11,25 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const { partnerEmail } = await request.json()
+        const { code } = await request.json()
 
-        if (!partnerEmail) {
-            return NextResponse.json({ error: 'Partner email is required' }, { status: 400 })
+        if (!code) {
+            return NextResponse.json({ error: 'Partner code is required' }, { status: 400 })
         }
 
-        if (partnerEmail.toLowerCase() === user.email?.toLowerCase()) {
-            return NextResponse.json({ error: 'You cannot link with yourself' }, { status: 400 })
-        }
-
-        // 1. Find partner by email
+        // 1. Find partner by code
         const { data: partnerProfile, error: partnerError } = await supabase
             .from('profiles')
             .select('id, username')
-            .ilike('email', partnerEmail)
+            .eq('link_code', code.toUpperCase())
             .single()
 
         if (partnerError || !partnerProfile) {
-            return NextResponse.json({ error: 'Partner not found. Ensure they have signed up first!' }, { status: 404 })
+            return NextResponse.json({ error: 'Partner not found or code is invalid.' }, { status: 404 })
+        }
+
+        if (partnerProfile.id === user.id) {
+            return NextResponse.json({ error: 'You cannot link with yourself' }, { status: 400 })
         }
 
         // 2. Perform Mutual Link (Update both profiles)

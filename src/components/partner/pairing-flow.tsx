@@ -16,9 +16,10 @@ interface Profile {
 }
 
 export function PartnerPairingFlow({ profile }: { profile: Profile }) {
-    const [step, setStep] = useState<"initial" | "generate" | "enter">("initial")
+    const [step, setStep] = useState<"initial" | "generate" | "enter" | "confirm">("initial")
     const [linkCode, setLinkCode] = useState("")
     const [partnerCode, setPartnerCode] = useState("")
+    const [partnerName, setPartnerName] = useState("")
     const [loading, setLoading] = useState(false)
     const [copied, setCopied] = useState(false)
 
@@ -64,13 +65,32 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
         }
     }
 
-    // Enter partner's code to link
-    const handleLinkWithCode = async () => {
+    // Check partner's code to link
+    const handleCheckCode = async () => {
         if (!partnerCode.trim()) {
             toast.error("Please enter a code")
             return
         }
 
+        setLoading(true)
+        try {
+            const checkRes = await fetch(`/api/partner/check-code?code=${partnerCode}`)
+            if (!checkRes.ok) {
+                const errData = await checkRes.json()
+                throw new Error(errData.error || "Invalid or expired code")
+            }
+
+            const { partner } = await checkRes.json()
+            setPartnerName(partner.username || "Your Partner")
+            setStep("confirm")
+        } catch (error: any) {
+            toast.error(error.message || "Failed to find partner")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleConfirmLink = async () => {
         setLoading(true)
         try {
             const response = await fetch("/api/partner/link", {
@@ -227,7 +247,7 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
                             />
 
                             <Button
-                                onClick={handleLinkWithCode}
+                                onClick={handleCheckCode}
                                 disabled={loading || partnerCode.length !== 6}
                                 className="w-full"
                                 size="lg"
@@ -235,7 +255,7 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
                                 {loading ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />
                                 ) : (
-                                    "Link Together 💕"
+                                    "Find Partner"
                                 )}
                             </Button>
 
@@ -246,6 +266,49 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
                                 className="w-full"
                             >
                                 Back
+                            </Button>
+                        </div>
+                    </div>
+                </GlassCard>
+            )}
+
+            {/* Romantic Confirmation Step */}
+            {step === "confirm" && (
+                <GlassCard className="p-8 border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.15)] bg-pink-500/5">
+                    <div className="space-y-6 text-center">
+                        <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 shadow-xl mb-4 animate-in zoom-in duration-500">
+                            <Heart className="h-12 w-12 text-white fill-white animate-pulse" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-rose-400 leading-tight">
+                                {partnerName} wants to pair their heart with yours! 💕
+                            </h3>
+                            <p className="text-muted-foreground">
+                                Do you accept this invitation to share your tasks, goals, and journey together?
+                            </p>
+                        </div>
+
+                        <div className="pt-4 space-y-3">
+                            <Button
+                                onClick={handleConfirmLink}
+                                disabled={loading}
+                                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg shadow-pink-500/25 h-12 text-lg font-semibold"
+                            >
+                                {loading ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    "Yes, I Accept! ✨"
+                                )}
+                            </Button>
+
+                            <Button
+                                onClick={() => setStep("enter")}
+                                variant="ghost"
+                                className="w-full"
+                                disabled={loading}
+                            >
+                                Wait, not yet
                             </Button>
                         </div>
                     </div>

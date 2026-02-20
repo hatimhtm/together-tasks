@@ -82,6 +82,7 @@ export function AIChatWidget({
             // If the AI actually took action (create task, etc.), refresh the page data
             if (aiResponse.includes("I've created the task") || aiResponse.includes("to memory")) {
                 setTimeout(() => {
+                    window.dispatchEvent(new Event('tasks-updated'))
                     router.refresh()
                 }, 1000)
             }

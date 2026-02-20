@@ -50,10 +50,15 @@ export function PushNotifier() {
     const subscribe = async () => {
         setIsLoading(true)
         try {
-            const registration = await navigator.serviceWorker.getRegistration()
+            const permission = await Notification.requestPermission()
+            if (permission !== 'granted') {
+                throw new Error("You must grant notification permissions in your browser.")
+            }
+
+            let registration = await navigator.serviceWorker.getRegistration()
             if (!registration) {
                 // Try registering it
-                await navigator.serviceWorker.register('/sw.js')
+                registration = await navigator.serviceWorker.register('/sw.js')
             }
             const activeRegistration = await navigator.serviceWorker.ready
 

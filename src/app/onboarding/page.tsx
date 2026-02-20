@@ -154,7 +154,6 @@ export default function OnboardingPage() {
                                             [
                                                 { id: 'light', name: 'Glass (Light)', desc: 'Clean, bright, professional', gradient: 'from-zinc-100 to-zinc-300', tint: 'bg-zinc-500' },
                                                 { id: 'dark', name: 'Midnight', desc: 'Sleek, deep greys, glowing accents', gradient: 'from-zinc-700 to-zinc-900', tint: 'bg-black' },
-                                                { id: 'neo-brutalist', name: 'Neo-Brutalist', desc: 'High contrast, bold, engineering focus', gradient: 'from-[#ff90e8] to-[#ffc900]', tint: 'bg-black' },
                                                 { id: 'floral', name: 'Floral Blush', desc: 'Soft pinks, floating petals', gradient: 'from-pink-300 to-rose-400', tint: 'bg-pink-500' },
                                                 { id: 'creamy', name: 'Vintage Cream', desc: 'Warm sepia, elegant, minimalist', gradient: 'from-[#fdfbf7] to-[#eaddcf]', tint: 'bg-amber-700' },
                                                 { id: 'burgundy', name: 'Royal Burgundy', desc: 'Deep luscious red, gold accents', gradient: 'from-[#651028] to-[#2b0b14]', tint: 'bg-rose-900' }
