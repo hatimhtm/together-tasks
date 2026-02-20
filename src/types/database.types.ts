@@ -89,6 +89,10 @@ export interface Database {
                     recurrence_rule: string | null
                     is_private: boolean
                     scope: string | null
+                    emergency_level: 'low' | 'medium' | 'high' | 'critical' | null
+                    importance_level: 'low' | 'medium' | 'high' | 'critical' | null
+                    duration_estimate: number | null
+                    subtasks: Json | null
                     created_at: string
                 }
                 Insert: {
@@ -105,6 +109,10 @@ export interface Database {
                     recurrence_rule?: string | null
                     is_private?: boolean
                     scope?: string | null
+                    emergency_level?: 'low' | 'medium' | 'high' | 'critical' | null
+                    importance_level?: 'low' | 'medium' | 'high' | 'critical' | null
+                    duration_estimate?: number | null
+                    subtasks?: Json | null
                     created_at?: string
                 }
                 Update: {
@@ -121,6 +129,10 @@ export interface Database {
                     recurrence_rule?: string | null
                     is_private?: boolean
                     scope?: string | null
+                    emergency_level?: 'low' | 'medium' | 'high' | 'critical' | null
+                    importance_level?: 'low' | 'medium' | 'high' | 'critical' | null
+                    duration_estimate?: number | null
+                    subtasks?: Json | null
                     created_at?: string
                 }
                 Relationships: [

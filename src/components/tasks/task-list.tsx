@@ -21,6 +21,10 @@ interface Task {
     assignee_id: string
     created_at: string
     completed_at: string | null
+    emergency_level?: "low" | "medium" | "high" | "critical"
+    importance_level?: "low" | "medium" | "high" | "critical"
+    duration_estimate?: number
+    subtasks?: string[]
 }
 
 export function TaskList({
@@ -144,8 +148,13 @@ export function TaskList({
                                                     {task.title}
                                                 </h4>
 
-                                                {/* Priority Indicator */}
-                                                <div className={cn("w-2 h-2 rounded-full shrink-0 mt-1.5", getPriorityColor(task.priority))} />
+                                                {/* Priority/Emergency Indicator */}
+                                                <div className="flex items-center gap-1 shrink-0 mt-1.5">
+                                                    {(task.emergency_level === 'high' || task.emergency_level === 'critical') && (
+                                                        <span className="flex h-2 w-2 rounded-full bg-red-600 animate-pulse" title="High Emergency" />
+                                                    )}
+                                                    <div className={cn("w-2 h-2 rounded-full", getPriorityColor(task.priority))} title={`Priority: ${task.priority}`} />
+                                                </div>
                                             </div>
 
                                             {task.description && (
@@ -171,7 +180,26 @@ export function TaskList({
                                                         Urgent
                                                     </div>
                                                 )}
+                                                {task.duration_estimate && (
+                                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                                        <Clock className="h-3 w-3" />
+                                                        {task.duration_estimate} min
+                                                    </div>
+                                                )}
                                             </div>
+
+                                            {/* AI Subtasks Preview */}
+                                            {task.subtasks && task.subtasks.length > 0 && (
+                                                <div className="mt-2 pl-1 border-l-2 border-primary/20 space-y-1">
+                                                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">AI Breakdown</p>
+                                                    {task.subtasks.map((st: string, i: number) => (
+                                                        <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground/80">
+                                                            <div className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
+                                                            <span className="truncate">{st}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Delete Button (Visible on hover/group-focus or simply accessible) */}

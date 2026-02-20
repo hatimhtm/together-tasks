@@ -13,6 +13,10 @@ interface Task {
     assignee_id: string
     created_at: string
     completed_at: string | null
+    emergency_level?: "low" | "medium" | "high" | "critical"
+    importance_level?: "low" | "medium" | "high" | "critical"
+    duration_estimate?: number
+    subtasks?: string[]
 }
 
 export function useRealtimeTasks(userId: string, partnerId?: string | null) {

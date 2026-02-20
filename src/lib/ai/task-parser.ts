@@ -1,120 +1,62 @@
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+import { GoogleGenAI } from "@google/genai"
 
-interface Message {
-    role: 'system' | 'user' | 'assistant'
-    content: string
-}
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
 
-async function callGemini(
-    messages: Message[],
-    options?: {
-        temperature?: number
-        maxTokens?: number
-    }
-) {
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set")
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
 
-    const systemMessage = messages.find(m => m.role === 'system')?.content || ''
-    const userMessages = messages.filter(m => m.role !== 'system')
-
-    // Construct prompt for Gemini
-    const contents = userMessages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-    }))
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            systemInstruction: {
-                parts: [{ text: systemMessage }]
-            },
-            contents,
-            generationConfig: {
-                temperature: options?.temperature ?? 0.7,
-                maxOutputTokens: options?.maxTokens ?? 1000,
-            }
-        })
-    })
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error("Gemini API Error:", errorData)
-        throw new Error(`Gemini API error: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || ""
-}
-
-// Parse natural language task input
 export async function parseTaskInput(input: string) {
-    const systemPrompt = `You are a task parsing AI. Extract structured data from natural language provided within <user_input> tags.
-Return ONLY valid JSON with these fields:
+    const systemInstruction = `You are an expert productivity assistant for a couple's task manager app. 
+Analyze the user's natural language input and extract structured task details. 
+You must break down the task into smaller, actionable subtasks if it's complex, to reduce anxiety and make it doable.
+You must provide a reasonable duration_estimate (in minutes) for the whole task.
+You must classify the task's emergency_level and importance_level ('low', 'medium', 'high', 'critical').
+
+Return ONLY valid JSON matching this schema:
 {
-  "title": "clean task title",
-  "description": "brief details or likely description or null",
+  "title": "Clean, actionable task title",
+  "description": "Brief details",
   "dueDate": "YYYY-MM-DD or null",
   "dueTime": "HH:MM or null", 
-  "priority": "low/medium/high/urgent",
-  "category": "work/school/home/personal or null",
-  "estimatedMinutes": number or null
-}`
+  "priority": "low" | "medium" | "high" | "urgent" | null,
+  "category": "work" | "school" | "home" | "personal" | null,
+  "emergency_level": "low" | "medium" | "high" | "critical",
+  "importance_level": "low" | "medium" | "high" | "critical",
+  "duration_estimate": number (in minutes, e.g. 15, 30, 60),
+  "subtasks": ["subtask 1", "subtask 2"] (empty array if task is very simple)
+}
 
-    // Sanitize input to prevent breaking out of tags
-    const sanitizedInput = input.replace(/<\/user_input>/g, '')
-
-    const userPrompt = `Current date: ${new Date().toISOString().split('T')[0]}
-<user_input>
-${sanitizedInput}
-</user_input>
-
-Extract task details as JSON:`
+Today's date is: ${new Date().toISOString().split('T')[0]}`
 
     try {
-        const response = await callGemini([
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-        ])
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: input,
+            config: {
+                systemInstruction: systemInstruction,
+                responseMimeType: "application/json",
+                temperature: 0.1,
+            }
+        });
 
-        // Clean response and parse JSON
-        const cleaned = response.replace(/```json|```/g, '').trim()
-        return JSON.parse(cleaned)
+        const text = response.text || "{}"
+        return JSON.parse(text)
     } catch (error) {
-        console.error("AI Task Parsing Failed, falling back to manual parser:", error)
+        console.error("AI Task Parsing Failed:", error)
 
-        // FALLBACK: Manual Regex Parser
-        const now = new Date()
-        let dueDate = null
-        let estimatedMinutes = null
-
-        // Try to find time (e.g. 5pm, 17:00)
-        const timeMatch = input.match(/(\d{1,2})(:(\d{2}))?\s*(am|pm)?/i)
-        if (timeMatch) {
-            // Very basic date handling - assumes today/tomorrow if "tomorrow" is in text
-            const isTomorrow = input.toLowerCase().includes('tomorrow')
-            const date = new Date()
-            if (isTomorrow) date.setDate(date.getDate() + 1)
-
-            // We'd parse the time here properly in a real app, 
-            // for now just ISO string it to satisfy the return type or leave null if complex
-            dueDate = date.toISOString()
-        }
-
+        // Fallback for obvious errors
         return {
             title: input,
-            dueDate: dueDate,
+            dueDate: null,
             priority: 'medium',
             category: 'personal',
-            estimatedMinutes: 15
+            emergency_level: 'medium',
+            importance_level: 'medium',
+            duration_estimate: 15,
+            subtasks: []
         }
     }
 }
 
-// AI Chat for settings/assistance
 export async function chatWithAI(
     userMessage: string,
     context?: {
@@ -136,10 +78,14 @@ ${context?.locationContext === 'home' ? 'The user is at home. You can suggest pe
 Help with: task management, settings, motivation, schedule planning.
 Be concise but friendly.`
 
-    const response = await callGemini([
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-    ])
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: userMessage,
+        config: {
+            systemInstruction: systemPrompt,
+            temperature: 0.7,
+        }
+    });
 
-    return response
+    return response.text || "I'm sorry, I couldn't process that request right now."
 }

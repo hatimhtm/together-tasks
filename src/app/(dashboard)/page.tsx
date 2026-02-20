@@ -1,6 +1,6 @@
-
 import { GlassCard } from "@/components/ui/glass-card"
 import { TasksContainer } from "@/components/dashboard/tasks-container"
+import { AiNudge } from "@/components/dashboard/ai-nudge"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { startOfDay, endOfDay } from "date-fns"
@@ -42,13 +42,16 @@ export default async function Home() {
     <div className="space-y-8 pb-10">
       {/* Header / Greeting */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-white">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-sm">
           Hello, {profile?.username || "Love"} 👋
         </h1>
-        <p className="text-white/60">
+        <p className="text-muted-foreground">
           Ready to conquer the day together?
         </p>
       </div>
+
+      {/* AI Nudge & Notifications */}
+      <AiNudge />
 
       {/* Stats / Quick Glance */}
       <GlassCard className="p-6">

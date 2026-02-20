@@ -13,20 +13,27 @@ export async function POST(request: Request) {
 
         const { input, useAI = true } = await request.json()
 
+        let rawInput = input
+        let isForPartner = false
+        if (typeof rawInput === 'string' && rawInput.startsWith('@partner ')) {
+            isForPartner = true
+            rawInput = rawInput.replace('@partner ', '')
+        }
+
         let taskData: any = {}
 
-        if (useAI && input) {
+        if (useAI && rawInput) {
             // Parse with AI
-            taskData = await parseTaskInput(input)
+            taskData = await parseTaskInput(rawInput)
         } else {
             // Manual input
-            taskData = JSON.parse(input)
+            taskData = JSON.parse(rawInput)
         }
 
         // Ensure profile exists (Self-healing for legacy users)
         const { data: profile } = await supabase
             .from('profiles')
-            .select('id')
+            .select('*')
             .eq('id', user.id)
             .single()
 
@@ -53,18 +60,24 @@ export async function POST(request: Request) {
             }
         }
 
+        const assignee_id = isForPartner && profile?.partner_id ? profile.partner_id : user.id;
+
         // Create task in database
         const { data: task, error } = await supabase
             .from('tasks')
             .insert({
                 creator_id: user.id,
-                assignee_id: user.id,
+                assignee_id: assignee_id,
                 title: taskData.title,
                 description: taskData.description || '', // Ensure description is not undefined
                 due_date: taskData.dueDate ? new Date(taskData.dueDate).toISOString() : null,
                 priority: taskData.priority || 'medium',
                 category_id: null,
-                is_completed: false
+                is_completed: false,
+                emergency_level: taskData.emergency_level || 'medium',
+                importance_level: taskData.importance_level || 'medium',
+                duration_estimate: taskData.duration_estimate || 15,
+                subtasks: taskData.subtasks || []
             })
             .select()
             .single()
