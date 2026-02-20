@@ -4,7 +4,7 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Sparkles, Save, Heart } from "lucide-react"
 import { revalidatePath } from "next/cache"
-import { PartnerInvite } from "@/components/dashboard/partner-invite"
+import { PartnerPairingFlow } from "@/components/partner/pairing-flow"
 
 export default async function GoalsPage() {
     const supabase = await createClient()
@@ -12,7 +12,7 @@ export default async function GoalsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect("/login")
 
-    const { data: profile } = await supabase.from("profiles").select("partner_id, goals").eq("id", user.id).single()
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
     async function saveGoals(formData: FormData) {
         "use server"
@@ -39,7 +39,7 @@ export default async function GoalsPage() {
 
             {!profile?.partner_id ? (
                 <div className="mt-8">
-                    <PartnerInvite partnerId={null} />
+                    <PartnerPairingFlow profile={profile as any} />
                 </div>
             ) : (
                 <GlassCard className="p-6 mt-8 relative overflow-hidden group">
