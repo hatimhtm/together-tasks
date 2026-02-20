@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { sendWebPush } from '@/lib/web-push/sender'
 import { createClient } from '@/lib/supabase/server'
 import { parseTaskInput } from '@/lib/ai/task-parser'
 
@@ -84,6 +85,7 @@ export async function POST(request: Request) {
 
         if (error) throw error
 
+
         // AI Analysis for Partner Notification (Fire & Forget)
         if (task) {
             fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/partner/analyze-task`, {
@@ -91,6 +93,15 @@ export async function POST(request: Request) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ taskId: task.id })
             }).catch(err => console.error("Analysis trigger failed:", err))
+
+            // Trigger real-time web push to partner if it was assigned to them
+            if (isForPartner && profile?.partner_id) {
+                sendWebPush(
+                    profile.partner_id,
+                    "New Task! 💕",
+                    `Your partner assigned: ${task.title}`
+                ).catch(e => console.error("Push failed:", e))
+            }
         }
 
         return NextResponse.json({ task })

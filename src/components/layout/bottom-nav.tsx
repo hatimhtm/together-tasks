@@ -13,7 +13,7 @@ export function BottomNav() {
         { name: "Home", href: "/", icon: Home },
         { name: "Calendar", href: "/calendar", icon: Calendar },
         { name: "Add", href: "#add", icon: Plus, isAction: true },
-        { name: "Goals", href: "/goals", icon: Trophy },
+        { name: "Rewards", href: "/rewards", icon: Trophy },
         { name: "Me", href: "/profile", icon: User },
     ]
 
