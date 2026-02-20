@@ -26,6 +26,7 @@ export async function POST() {
         // Create partner link with pending status by updating the profile
         const { error } = await supabase
             .from('profiles')
+            // @ts-ignore - link_code was added in migration but types may not be fully synced yet
             .update({ link_code: code })
             .eq('id', user.id)
 
