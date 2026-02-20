@@ -149,41 +149,7 @@
   --sidebar-ring: rgba(59, 130, 246, 0.5);
 }
 
-.neo-brutalist {
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius: 0px;
 
-  --background: #dfdfd6;
-  /* Raw architectural gray/tan */
-  --foreground: #111111;
-  --card: #f4f4f0;
-  /* Solid colors for brutalism, no glass */
-  --card-foreground: #111111;
-  --popover: #f4f4f0;
-  --popover-foreground: #111111;
-  --primary: #ff4a00;
-  /* Industrial Orange */
-  --primary-foreground: #ffffff;
-  --secondary: #0000ff;
-  /* Pure Blue */
-  --secondary-foreground: #ffffff;
-  --muted: #cccccc;
-  --muted-foreground: #555555;
-  --accent: #00ff00;
-  /* Neon Green */
-  --accent-foreground: #111111;
-  --destructive: #ff0000;
-  --destructive-foreground: #ffffff;
-  --border: #111111;
-  /* Hard black borders */
-  --input: #ffffff;
-  --ring: #111111;
-  --glass-white: #f4f4f0;
-  --glass-border: #111111;
-}
 
 .floral {
   --background: #fff0f5;
@@ -283,23 +249,7 @@
     @apply border-border;
   }
 
-  .neo-brutalist * {
-    box-shadow: 4px 4px 0px 0px rgba(17, 17, 17, 1);
-    transition-property: transform, box-shadow;
-    transition-duration: 150ms;
-  }
 
-  .neo-brutalist *:active {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0px 0px rgba(17, 17, 17, 1);
-  }
-
-  /* Disable inner brutalist shadows for specific components */
-  .neo-brutalist nav *,
-  .neo-brutalist svg *,
-  .neo-brutalist .no-brutal {
-    box-shadow: none !important;
-  }
 
   body {
     @apply bg-background text-foreground antialiased;

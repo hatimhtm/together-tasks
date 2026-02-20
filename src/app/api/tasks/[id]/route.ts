@@ -37,7 +37,7 @@ export async function PATCH(
                 .single()
 
             if (profile) {
-                const newXp = (profile.xp || 0) + 10 // Base 10 XP per task! Can scale with priority later
+                const newXp = (profile.xp || 0) + 20 // 20 XP per task!
                 const newLevel = Math.floor(newXp / 100) + 1
 
                 await supabase

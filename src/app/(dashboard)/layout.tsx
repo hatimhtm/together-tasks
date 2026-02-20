@@ -1,7 +1,6 @@
 import { Header } from "@/components/layout/header"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { AIChatWidget } from "@/components/ai/chat-widget"
-import { LocationTracker } from "@/components/location/location-tracker"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -44,9 +43,6 @@ export default async function DashboardLayout({
                 userName={profile?.username || "User"}
                 userRole={profile?.role || undefined}
             />
-
-            {/* Background Location Tracker */}
-            <LocationTracker userId={user.id} />
         </div>
     )
 }

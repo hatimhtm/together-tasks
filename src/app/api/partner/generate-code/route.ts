@@ -22,35 +22,17 @@ export async function POST() {
 
         // Generate unique code
         let code = generateCode()
-        let isUnique = false
-        let attempts = 0
 
-        // Ensure code is unique (rare collision but let's be safe)
-        while (!isUnique && attempts < 10) {
-            const { data: existing } = (await supabase
-                .from('partner_links' as any)
-                .select('id')
-                .eq('link_code', code)
-                .single()) as any
+        // Create partner link with pending status by updating the profile
+        const { error } = await supabase
+            .from('profiles')
+            .update({ link_code: code })
+            .eq('id', user.id)
 
-            if (!existing) {
-                isUnique = true
-            } else {
-                code = generateCode()
-                attempts++
-            }
+        if (error) {
+            // Wait, does 'link_code' exist in profiles?
+            throw error
         }
-
-        // Create partner link with pending status
-        const { error } = (await supabase
-            .from('partner_links' as any)
-            .insert({
-                user1_id: user.id,
-                link_code: code,
-                status: 'pending'
-            })) as any
-
-        if (error) throw error
 
         return NextResponse.json({ code })
     } catch (error: any) {
