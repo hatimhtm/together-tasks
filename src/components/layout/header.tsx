@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
-import { Menu, Home, User, LogOut, Settings } from "lucide-react"
+import { Menu, Home, User, LogOut, Settings, Heart, Sparkles } from "lucide-react"
 import Link from "next/link"
 import {
     Sheet,
@@ -89,8 +89,10 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
 
                 <TasksTodayCounter userId={userId} partnerId={partnerId} />
 
-                {/* Empty slot for balance */}
-                <div className="w-10 h-10" />
+                {/* Safe Decorative Element */}
+                <div className="relative p-2 rounded-full cursor-default text-primary overflow-hidden items-center justify-center flex hover:bg-primary/10 transition-colors">
+                    <Heart className="w-6 h-6 fill-primary/20 text-primary" />
+                </div>
             </div>
         </header>
     )

@@ -60,7 +60,7 @@ export default async function RootLayout({
           </div>
 
           <Providers>
-            <div className="min-h-screen text-foreground overflow-x-hidden relative z-0">
+            <div className="min-h-screen text-foreground relative z-0">
               {children}
             </div>
           </Providers>

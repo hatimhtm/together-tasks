@@ -106,7 +106,7 @@ export function QuickAdd({
                             handleSubmit(e);
                         }
                     }}
-                    placeholder="What needs to be done? (e.g. 'Call mom tomorrow at 3pm')"
+                    placeholder="What needs to be done?"
                     className="flex-1 min-h-[40px] max-h-[160px] py-2 px-4 rounded-xl bg-background/50 border border-border focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary resize-none outline-none overflow-hidden w-full transition-all text-sm leading-relaxed"
                     disabled={loading}
                     rows={1}
