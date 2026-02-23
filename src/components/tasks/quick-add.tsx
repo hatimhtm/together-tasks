@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
@@ -72,7 +71,7 @@ export function QuickAdd({
 
     return (
         <GlassCard className="p-4">
-            <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+            <form onSubmit={handleSubmit} className="flex gap-2 items-end">
                 {hasPartner && (
                     <Button
                         type="button"
@@ -83,7 +82,7 @@ export function QuickAdd({
                             else setAssignMode("me")
                         }}
                         className={cn(
-                            "shrink-0 px-3 h-10 w-10 md:w-auto md:px-4 rounded-full transition-all duration-300 group",
+                            "shrink-0 px-3 h-10 w-10 md:w-auto md:px-4 rounded-xl transition-all duration-300 group",
                             assignMode === "shared" && "bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
                         )}
                         title={`Currently assigning to: ${assignMode}`}
@@ -96,15 +95,25 @@ export function QuickAdd({
                         </span>
                     </Button>
                 )}
-                <Input
+                <textarea
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                        setInput(e.target.value)
+                        e.target.style.height = 'auto'
+                        e.target.style.height = (e.target.scrollHeight) + 'px'
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSubmit(e);
+                        }
+                    }}
                     placeholder="What needs to be done? (e.g. 'Call mom tomorrow at 3pm')"
-                    className="flex-1 h-10 rounded-full bg-background/50 border-white/20 focus-visible:ring-primary/50"
+                    className="flex-1 min-h-[40px] max-h-[160px] py-2 px-4 rounded-xl bg-background/50 border border-border focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary resize-none outline-none overflow-y-auto w-full transition-all text-sm leading-relaxed"
                     disabled={loading}
-                    autoFocus
+                    rows={1}
                 />
-                <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-full p-0">
+                <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-xl p-0 shadow-sm">
                     {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (

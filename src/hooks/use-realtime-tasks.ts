@@ -17,7 +17,7 @@ interface Task {
     importance_level?: "low" | "medium" | "high" | "critical"
     duration_estimate?: number
     scope?: string | null
-    subtasks?: { id: string, title: string, is_completed: boolean }[] | null
+    subtasks?: ({ id: string, title: string, is_completed: boolean } | string)[] | null
     completed_by?: string[] | null
 }
 
@@ -149,6 +149,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         if (updates.is_completed) {
             window.dispatchEvent(new Event('profile-updated'))
         }
+        window.dispatchEvent(new Event('tasks-updated'))
 
         try {
             // 2. API Call
@@ -173,6 +174,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         // 1. Optimistic Update
         const previousTasks = [...tasks]
         setTasks(prev => prev.filter(t => t.id !== taskId))
+        window.dispatchEvent(new Event('tasks-updated'))
 
         try {
             // 2. API Call
@@ -205,6 +207,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         }
 
         setTasks(prev => [optimisticTask, ...prev])
+        window.dispatchEvent(new Event('tasks-updated'))
 
         try {
             // 2. API Call to existing endpoint (which does AI parsing)

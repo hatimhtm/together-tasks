@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { PartnerNotificationCenter } from "@/components/partner/notification-center"
-import { LegacyBadge } from "@/components/gamification/legacy-badge"
+import { TasksTodayCounter } from "@/components/dashboard/tasks-today-counter"
 
 interface HeaderProps {
     partnerId?: string | null
@@ -40,7 +40,6 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
     const menuItems = [
         { name: "Home", href: "/", icon: Home },
         { name: "Calendar", href: "/calendar", icon: Calendar },
-        { name: "Goals", href: "/goals", icon: Trophy },
         { name: "Profile", href: "/profile", icon: User },
         { name: "Settings", href: "/settings", icon: Settings },
     ]
@@ -95,7 +94,7 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
                     </SheetContent>
                 </Sheet>
 
-                <LegacyBadge userId={userId} />
+                <TasksTodayCounter userId={userId} partnerId={partnerId} />
 
                 <Popover>
                     <PopoverTrigger asChild>
