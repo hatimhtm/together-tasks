@@ -18,6 +18,10 @@
     }
   },
   "author": "Hatim El Hassak <hatimhtm2003@protonmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hatimhtm/together-tasks.git"
+  },
   "license": "ISC",
   "devDependencies": {
     "electron": "^40.6.0",
