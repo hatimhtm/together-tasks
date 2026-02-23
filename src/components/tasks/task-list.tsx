@@ -71,6 +71,7 @@ export function TaskList({
     const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<Partial<Task>>({})
+    const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
 
     const startEditing = (task: Task, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
@@ -444,41 +445,57 @@ export function TaskList({
                 )}
             </AnimatePresence>
 
-            {/* Completed Tasks (Collapsed) */}
+            {/* Completed Tasks (Collapsed Array) */}
             {completedTasks.length > 0 && (
                 <div className="space-y-2 pt-4 border-t border-border/20">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                        Completed ({completedTasks.length})
-                    </h3>
-                    <div className="space-y-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
-                        {completedTasks.map(task => (
+                    <button
+                        onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
+                        className="flex items-center gap-2 px-1 hover:opacity-80 transition-opacity"
+                    >
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            Completed ({completedTasks.length})
+                        </h3>
+                        {isCompletedExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {isCompletedExpanded && (
                             <motion.div
-                                layout
-                                key={task.id}
-                                className="group relative"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="space-y-2 opacity-60 hover:opacity-100 transition-opacity duration-300 overflow-hidden"
                             >
-                                <div className="p-3 rounded-xl bg-muted/10 border border-transparent flex items-center gap-3 hover:bg-muted/20 transition-colors">
-                                    <button
-                                        onClick={() => handleComplete(task.id, task.is_completed)}
-                                        className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0"
+                                {completedTasks.map(task => (
+                                    <motion.div
+                                        layout
+                                        key={task.id}
+                                        className="group relative"
                                     >
-                                        <Check className="h-3 w-3" strokeWidth={3} />
-                                    </button>
+                                        <div className="p-3 rounded-xl bg-muted/10 border border-transparent flex items-center gap-3 hover:bg-muted/20 transition-colors">
+                                            <button
+                                                onClick={() => handleComplete(task.id, task.is_completed)}
+                                                className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0"
+                                            >
+                                                <Check className="h-3 w-3" strokeWidth={3} />
+                                            </button>
 
-                                    <span className="flex-1 text-sm text-muted-foreground line-through decoration-muted-foreground/50">
-                                        {task.title}
-                                    </span>
+                                            <span className="flex-1 text-sm text-muted-foreground line-through decoration-muted-foreground/50">
+                                                {task.title}
+                                            </span>
 
-                                    <button
-                                        onClick={() => setTaskToDelete(task.id)}
-                                        className="opacity-0 group-hover:opacity-100 p-2 hover:text-destructive transition-opacity"
-                                    >
-                                        <Trash2 className="h-3 w-3" />
-                                    </button>
-                                </div>
+                                            <button
+                                                onClick={() => setTaskToDelete(task.id)}
+                                                className="opacity-0 group-hover:opacity-100 p-2 hover:text-destructive transition-opacity"
+                                            >
+                                                <Trash2 className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                ))}
                             </motion.div>
-                        ))}
-                    </div>
+                        )}
+                    </AnimatePresence>
                 </div>
             )}
         </div>
