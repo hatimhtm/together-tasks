@@ -89,10 +89,6 @@ export default async function Home() {
         </p>
       </div>
 
-      <div className="space-y-4">
-        <AiNudge />
-      </div>
-
       {/* Main Tasks Container (Handles QuickAdd and List) */}
       <div id="tasks">
         <TasksContainer
@@ -101,6 +97,7 @@ export default async function Home() {
           initialTasks={initialTasks || []}
           userTheme={profile?.theme || 'light'}
           partnerTheme={partnerTheme}
+          sidebarSlot={<AiNudge />}
         />
       </div>
     </div>
