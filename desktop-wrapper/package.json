@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder --mac"
+    "dist": "electron-builder --mac --x64"
   },
   "build": {
     "appId": "com.togethertasks.app",
