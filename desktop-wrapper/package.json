@@ -1,0 +1,26 @@
+{
+  "name": "together-tasks",
+  "version": "1.0.0",
+  "description": "Together Tasks Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.togethertasks.app",
+    "productName": "Together Tasks",
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.png",
+      "identity": null
+    }
+  },
+  "author": "Hatim El Hassak",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^40.6.0",
+    "electron-builder": "^26.8.1"
+  }
+}
