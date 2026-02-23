@@ -17,7 +17,7 @@
       "identity": null
     }
   },
-  "author": "Hatim El Hassak",
+  "author": "Hatim El Hassak <hatimhtm2003@protonmail.com>",
   "license": "ISC",
   "devDependencies": {
     "electron": "^40.6.0",
