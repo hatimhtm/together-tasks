@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
 export async function parseTaskInput(input: string) {
     const systemInstruction = `You are an expert productivity assistant for a couple's task manager app. 
 Analyze the user's natural language input and extract structured task details. 
-You must break down the task into smaller, actionable subtasks if it's complex, to reduce anxiety and make it doable.
+Keep the breakdown very concise. Provide AT MOST 2 or 3 short, actionable subtasks ONLY if the task is highly complex. For most tasks, return an empty array for subtasks to keep the UI clean and uncluttered. Avoid lengthy explanations.
 You must provide a reasonable duration_estimate (in minutes) for the whole task.
 You must classify the task's emergency_level and importance_level ('low', 'medium', 'high', 'critical').
 

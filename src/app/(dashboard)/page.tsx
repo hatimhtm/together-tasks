@@ -1,8 +1,6 @@
 import { GlassCard } from "@/components/ui/glass-card"
 import { TasksContainer } from "@/components/dashboard/tasks-container"
 import { AiNudge } from "@/components/dashboard/ai-nudge"
-
-import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-button"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
@@ -94,14 +92,6 @@ export default async function Home() {
       <div className="space-y-4">
         <AiNudge />
       </div>
-
-      {/* Stats / Quick Glance */}
-      <DashboardStats
-        userId={user.id}
-        partnerId={profile?.partner_id}
-        initialTasks={initialTasks || []}
-        initialStreak={profile?.streak || 0}
-      />
 
       {/* Main Tasks Container (Handles QuickAdd and List) */}
       <div id="tasks">
