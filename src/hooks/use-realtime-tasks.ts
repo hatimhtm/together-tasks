@@ -40,14 +40,9 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
             channel = setupRealtimeSubscription()
         }, 100)
 
-        const handleTasksUpdate = () => fetchTasks()
-        window.addEventListener('tasks-updated', handleTasksUpdate)
-
-        // Cleanup
         return () => {
             clearTimeout(timer)
             if (channel) channel.unsubscribe()
-            window.removeEventListener('tasks-updated', handleTasksUpdate)
         }
     }, [userId, partnerId])
 
@@ -120,7 +115,10 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         switch (eventType) {
             case "INSERT":
                 // New task added - add to list
-                setTasks(prev => [newRecord as Task, ...prev])
+                setTasks(prev => {
+                    if (prev.some(t => t.id === newRecord.id)) return prev;
+                    return [newRecord as Task, ...prev]
+                })
                 break
 
             case "UPDATE":
@@ -149,7 +147,6 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         if (updates.is_completed) {
             window.dispatchEvent(new Event('profile-updated'))
         }
-        window.dispatchEvent(new Event('tasks-updated'))
 
         try {
             // 2. API Call
@@ -174,7 +171,6 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         // 1. Optimistic Update
         const previousTasks = [...tasks]
         setTasks(prev => prev.filter(t => t.id !== taskId))
-        window.dispatchEvent(new Event('tasks-updated'))
 
         try {
             // 2. API Call
@@ -207,7 +203,6 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         }
 
         setTasks(prev => [optimisticTask, ...prev])
-        window.dispatchEvent(new Event('tasks-updated'))
 
         try {
             // 2. API Call to existing endpoint (which does AI parsing)
@@ -221,8 +216,13 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
 
             const { task: realTask } = await response.json()
 
-            // 3. Replace Optimistic Task with Real Task
-            setTasks(prev => prev.map(t => t.id === tempId ? realTask : t))
+            // 3. Replace Optimistic Task with Real Task securely to avoid overriding Realtime INSERT
+            setTasks(prev => {
+                if (prev.some(t => t.id === realTask.id)) {
+                    return prev.filter(t => t.id !== tempId)
+                }
+                return prev.map(t => t.id === tempId ? realTask : t)
+            })
 
             return realTask
         } catch (error) {
