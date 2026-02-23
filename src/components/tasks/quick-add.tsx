@@ -55,8 +55,6 @@ export function QuickAdd({
 
             setInput("")
             setAssignMode("me") // reset toggle
-            // Refresh the page/data
-            router.refresh()
 
             // Legacy callback
             if (onTaskCreated) onTaskCreated()

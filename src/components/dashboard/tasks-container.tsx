@@ -37,9 +37,9 @@ export function TasksContainer({
     })
 
     return (
-        <div className="w-full max-w-5xl mx-auto pb-10 pt-4 px-2 sm:px-0 flex flex-col lg:flex-row gap-8 items-start">
+        <div className="w-full max-w-5xl mx-auto pb-10 pt-4 px-2 sm:px-0 flex flex-col md:flex-row gap-8 items-start">
             {/* Left Sidebar */}
-            <div className="w-full lg:w-[350px] shrink-0 space-y-6 lg:sticky lg:top-8 z-10">
+            <div className="w-full md:w-[350px] shrink-0 space-y-6 md:sticky md:top-8 z-10 md:max-h-[calc(100vh-4rem)] md:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {sidebarSlot}
 
                 {/* Focus Tabs */}
