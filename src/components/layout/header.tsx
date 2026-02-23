@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
-import { Bell, Menu, Home, Calendar, Trophy, User, LogOut, Settings } from "lucide-react"
+import { Menu, Home, User, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
 import {
     Sheet,
@@ -11,15 +11,9 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { PartnerNotificationCenter } from "@/components/partner/notification-center"
 import { TasksTodayCounter } from "@/components/dashboard/tasks-today-counter"
 
 interface HeaderProps {
@@ -39,7 +33,6 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
 
     const menuItems = [
         { name: "Home", href: "/", icon: Home },
-        { name: "Calendar", href: "/calendar", icon: Calendar },
         { name: "Profile", href: "/profile", icon: User },
         { name: "Settings", href: "/settings", icon: Settings },
     ]
@@ -96,32 +89,8 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
 
                 <TasksTodayCounter userId={userId} partnerId={partnerId} />
 
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            className="p-2 rounded-full hover:bg-black/5 relative"
-                        >
-                            <Bell className="w-6 h-6 text-foreground/80" />
-                            {/* We could fetch unread count here later */}
-                            {/* <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full" /> */}
-                        </motion.button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0 overflow-hidden" align="end">
-                        <div className="p-4 bg-muted/40 border-b">
-                            <h4 className="font-medium">Notifications</h4>
-                        </div>
-                        <div className="max-h-[70vh] overflow-y-auto p-2">
-                            {partnerId ? (
-                                <PartnerNotificationCenter partnerId={partnerId} />
-                            ) : (
-                                <div className="p-8 text-center text-muted-foreground text-sm">
-                                    Link with your partner to see notifications here!
-                                </div>
-                            )}
-                        </div>
-                    </PopoverContent>
-                </Popover>
+                {/* Empty slot for balance */}
+                <div className="w-10 h-10" />
             </div>
         </header>
     )
