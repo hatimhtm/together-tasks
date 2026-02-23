@@ -335,15 +335,15 @@ export function TaskList({
                                                     </div>
                                                 </div>
 
-                                                {task.description && (
-                                                    <p className={cn("text-sm text-muted-foreground", !expandedTasks.has(task.id) && "line-clamp-2")}>
+                                                {task.description && expandedTasks.has(task.id) && (
+                                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                                                         {task.description}
                                                     </p>
                                                 )}
 
-                                                {/* Meta Info */}
+                                                {/* Meta Info & Actions */}
                                                 <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground/70">
-                                                    {task.due_date && (
+                                                    {expandedTasks.has(task.id) && task.due_date && (
                                                         <div className={cn(
                                                             "flex items-center gap-1",
                                                             new Date(task.due_date) < new Date() && "text-red-500 font-medium"
@@ -352,22 +352,24 @@ export function TaskList({
                                                             {format(new Date(task.due_date), "MMM d, h:mm a")}
                                                         </div>
                                                     )}
-                                                    {task.priority === 'urgent' && (
+                                                    {expandedTasks.has(task.id) && task.priority === 'urgent' && (
                                                         <div className="flex items-center gap-1 text-red-500 font-medium">
                                                             <AlertCircle className="h-3 w-3" />
                                                             Urgent
                                                         </div>
                                                     )}
-                                                    {task.duration_estimate && (
+                                                    {expandedTasks.has(task.id) && task.duration_estimate && (
                                                         <div className="flex items-center gap-1 text-muted-foreground">
                                                             <Clock className="h-3 w-3" />
                                                             {task.duration_estimate} min
                                                         </div>
                                                     )}
                                                     <div className="ml-auto flex items-center gap-1">
-                                                        <button onClick={(e) => startEditing(task, e)} className="text-muted-foreground hover:text-primary p-1.5 rounded-md transition-colors" title="Edit task">
-                                                            <Pencil className="h-3.5 w-3.5" />
-                                                        </button>
+                                                        {expandedTasks.has(task.id) && (
+                                                            <button onClick={(e) => startEditing(task, e)} className="text-muted-foreground hover:text-primary p-1.5 rounded-md transition-colors" title="Edit task">
+                                                                <Pencil className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        )}
                                                         <button onClick={() => toggleExpand(task.id)} className="text-muted-foreground hover:text-foreground p-1 transition-colors">
                                                             {expandedTasks.has(task.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                                         </button>

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Sparkles, Loader2 } from "lucide-react"
+import { Capacitor } from '@capacitor/core'
+import { LocalNotifications } from '@capacitor/local-notifications'
 
 export function AiNudge() {
     const [nudge, setNudge] = useState<string | null>(null)
@@ -25,6 +27,46 @@ export function AiNudge() {
                     // Pick a random notification from the array generated
                     const randomNudge = data.notifications[Math.floor(Math.random() * data.notifications.length)]
                     setNudge(randomNudge)
+
+                    // Fire Native Notification
+                    try {
+                        const lastNotified = localStorage.getItem('last_ai_nudge_time');
+                        const now = new Date().getTime();
+                        const fourHours = 4 * 60 * 60 * 1000;
+
+                        if (!lastNotified || now - parseInt(lastNotified) > fourHours) {
+                            if (Capacitor.isNativePlatform()) {
+                                const permStatus = await LocalNotifications.requestPermissions();
+                                if (permStatus.display === 'granted') {
+                                    await LocalNotifications.schedule({
+                                        notifications: [
+                                            {
+                                                title: "Together Tasks 💌",
+                                                body: randomNudge,
+                                                id: Math.floor(now / 1000),
+                                                schedule: { at: new Date(Date.now() + 1000 * 5) }, // 5 seconds
+                                            }
+                                        ]
+                                    });
+                                }
+                            } else {
+                                // Desktop Web / Electron Native
+                                if ('Notification' in window) {
+                                    if (Notification.permission === 'granted') {
+                                        new Notification("Together Tasks 💌", { body: randomNudge });
+                                    } else if (Notification.permission !== 'denied') {
+                                        const perm = await Notification.requestPermission();
+                                        if (perm === 'granted') {
+                                            new Notification("Together Tasks 💌", { body: randomNudge });
+                                        }
+                                    }
+                                }
+                            }
+                            localStorage.setItem('last_ai_nudge_time', now.toString());
+                        }
+                    } catch (e) {
+                        console.error("Native notification error:", e)
+                    }
                 }
             } catch (error) {
                 console.error("AI Nudge Error:", error)

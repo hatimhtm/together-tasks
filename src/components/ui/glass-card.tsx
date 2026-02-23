@@ -18,8 +18,8 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
                     "relative overflow-hidden rounded-[24px] border transition-all duration-500",
-                    // Default variant: Deep Frost Spatial Glass
-                    variant === "default" && "bg-white/40 dark:bg-black/40 backdrop-blur-[32px] border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] hover:shadow-[0_16px_48px_0_rgba(31,38,135,0.1)] hover:-translate-y-1",
+                    // Default variant: Deep Frost Spatial Glass (Liquid Glass Aesthetic)
+                    variant === "default" && "bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border-white/60 dark:border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.6),0_16px_48px_0_rgba(31,38,135,0.15)] hover:-translate-y-1",
                     // Clear variant: Super subtle overlay
                     variant === "clear" && "bg-white/10 dark:bg-black/10 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-none",
                     // Solid variant: Heavy frosted

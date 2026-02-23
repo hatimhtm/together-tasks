@@ -2,8 +2,8 @@
 
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
-import { Calendar, CheckSquare, Home, Plus, Trophy, User } from "lucide-react"
 import Link from "next/link"
+import { Bell, Home, Plus, Settings, User } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 
 export function BottomNav() {
@@ -12,9 +12,9 @@ export function BottomNav() {
 
     const tabs = [
         { name: "Home", href: "/", icon: Home },
-        { name: "Calendar", href: "/calendar", icon: Calendar },
+        { name: "Notifications", href: "#notifications", icon: Bell },
         { name: "Add", href: "#add", icon: Plus, isAction: true },
-        { name: "Rewards", href: "/rewards", icon: Trophy },
+        { name: "Settings", href: "/settings", icon: Settings },
         { name: "Me", href: "/profile", icon: User },
     ]
 
