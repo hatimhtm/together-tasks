@@ -19,7 +19,6 @@ export function LocationTracker({ userId }: { userId: string }) {
         requestLocationPermission()
 
         // Start watching location
-        // @ts-ignore
         const watchId = watchLocation((location, context) => {
             setCurrentContext(context.currentPlace)
 
