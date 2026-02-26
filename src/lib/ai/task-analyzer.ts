@@ -1,3 +1,5 @@
+import { Task } from "@/types/task"
+
 interface TaskAnalysis {
     shouldNotifyPartner: boolean
     notificationType: "reminder" | "support" | "urgent" | "celebrate" | null
@@ -40,7 +42,7 @@ async function callGemini(
 }
 
 export async function analyzeTaskForPartnerNotification(
-    task: any,
+    task: Task,
     taskOwner: {
         name?: string
         role: "king" | "queen"

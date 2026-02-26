@@ -6,6 +6,7 @@ import { TaskList } from "@/components/tasks/task-list"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
+import { Task } from "@/types/task"
 
 type Tab = "my" | "partner" | "shared"
 
@@ -19,7 +20,7 @@ export function TasksContainer({
 }: {
     userId: string,
     partnerId?: string | null,
-    initialTasks?: any[],
+    initialTasks?: Task[],
     userTheme?: string,
     partnerTheme?: string,
     sidebarSlot?: React.ReactNode
