@@ -5,6 +5,7 @@ import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-butt
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { startOfDay, endOfDay } from "date-fns"
+import { getDisplayName } from "@/lib/user"
 
 export default async function Home() {
   const supabase = await createClient()
@@ -72,7 +73,7 @@ export default async function Home() {
 
   const { data: initialTasks } = await tasksQuery.order("created_at", { ascending: false })
 
-  const displayName = profile?.role === 'king' ? 'King Hatim' : (profile?.role === 'queen' ? 'Queen Pookie' : (profile?.username?.includes('hatimhtm2003') || profile?.username?.includes('.official') ? 'Love' : (profile?.username || 'Love')));
+  const displayName = getDisplayName(profile)
 
   return (
     <div className="space-y-8 pb-10">
