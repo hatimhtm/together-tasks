@@ -48,7 +48,7 @@ export default function LoginPage() {
                 const cleanPhone = phone.replace(/\D/g, '')
                 const fullPhone = `+63${cleanPhone}`
 
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email: normalizedEmail,
                     password,
                     options: {
@@ -60,19 +60,25 @@ export default function LoginPage() {
 
                 if (error) throw error
 
-                // Explicitly sign in after sign up if email confirmation is disabled
-                const { error: signInError } = await supabase.auth.signInWithPassword({
-                    email: normalizedEmail,
-                    password,
-                })
-
-                if (signInError) {
-                    // If sign in fails (maybe email confirm IS on?), just show success
-                    toast.success("Account created! Please log in.")
-                } else {
+                if (data.session) {
                     toast.success("Welcome, Your Highness!")
                     router.refresh()
                     router.push("/onboarding")
+                } else {
+                    // Explicitly sign in after sign up if email confirmation is disabled
+                    const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email: normalizedEmail,
+                        password,
+                    })
+
+                    if (signInError) {
+                        // If sign in fails (maybe email confirm IS on?), just show success
+                        toast.success("Account created! Please log in.")
+                    } else {
+                        toast.success("Welcome, Your Highness!")
+                        router.refresh()
+                        router.push("/onboarding")
+                    }
                 }
 
             } else {
