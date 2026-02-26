@@ -1,10 +1,8 @@
-import { GlassCard } from "@/components/ui/glass-card"
 import { TasksContainer } from "@/components/dashboard/tasks-container"
 import { AiNudge } from "@/components/dashboard/ai-nudge"
 import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-button"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { startOfDay, endOfDay } from "date-fns"
 
 export default async function Home() {
   const supabase = await createClient()
