@@ -6,7 +6,6 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
 
 export function QuickAdd({
     onTaskCreated,
@@ -20,7 +19,6 @@ export function QuickAdd({
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
     const [assignMode, setAssignMode] = useState<"me" | "partner" | "shared">("me")
-    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
