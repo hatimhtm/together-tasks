@@ -85,6 +85,8 @@ Built aggressively to incur **$0 in running costs**.
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
     NEXT_PUBLIC_APP_URL=http://localhost:3000
     GEMINI_API_KEY=your_gemini_api_key
+    NEXT_PUBLIC_KING_EMAIL=king@example.com
+    NEXT_PUBLIC_QUEEN_EMAIL=queen@example.com
     ```
 
 4.  **Run the development server**

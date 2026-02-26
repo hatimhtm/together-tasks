@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { sendWebPush } from '@/lib/web-push/sender'
 import { createClient } from '@/lib/supabase/server'
 import { parseTaskInput } from '@/lib/ai/task-parser'
+import { KING_EMAIL, QUEEN_EMAIL } from "@/lib/constants"
 
 export async function POST(request: Request) {
     try {
@@ -48,8 +49,8 @@ export async function POST(request: Request) {
             console.log("Profile missing for user, auto-creating...")
             const email = user.email || ''
             let role = null
-            if (email === 'hatimhtm2003@gmail.com') role = 'king'
-            if (email === 'enarcylyn@gmail.com') role = 'queen'
+            if (email === KING_EMAIL) role = 'king'
+            if (email === QUEEN_EMAIL) role = 'queen'
 
             const { error: profileError } = await supabase
                 .from('profiles')
