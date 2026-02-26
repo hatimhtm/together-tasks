@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Bell, Phone, MessageCircle, CheckCircle, X, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { format } from "date-fns"
+import { createClient } from "@/lib/supabase/client"
 
 interface PartnerNotification {
     id: string
@@ -24,27 +25,111 @@ interface PartnerNotification {
 export function PartnerNotificationCenter({ partnerId }: { partnerId: string }) {
     const [notifications, setNotifications] = useState<PartnerNotification[]>([])
     const [loading, setLoading] = useState(true)
+    const supabase = createClient()
 
     useEffect(() => {
-        fetchNotifications()
+        let channel: any
+        let isMounted = true
 
-        // Poll for new notifications every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000)
+        const setupSubscription = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!isMounted) return
 
-        return () => clearInterval(interval)
+            if (!user) {
+                setLoading(false)
+                return
+            }
+
+            // Initial fetch
+            fetchNotifications(user.id)
+
+            // Subscribe to realtime changes
+            channel = supabase
+                .channel('partner-notifications')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'partner_notifications',
+                        filter: `partner_id=eq.${user.id}`
+                    },
+                    (payload) => {
+                        if (payload.eventType === 'INSERT') {
+                            // Fetch the complete notification with joined data
+                            fetchSingleNotification(payload.new.id)
+                        } else if (payload.eventType === 'UPDATE') {
+                            setNotifications(prev =>
+                                prev.map(n =>
+                                    n.id === payload.new.id
+                                        ? { ...n, ...payload.new }
+                                        : n
+                                )
+                            )
+                        } else if (payload.eventType === 'DELETE') {
+                            setNotifications(prev =>
+                                prev.filter(n => n.id !== payload.old.id)
+                            )
+                        }
+                    }
+                )
+                .subscribe()
+        }
+
+        setupSubscription()
+
+        return () => {
+            isMounted = false
+            if (channel) supabase.removeChannel(channel)
+        }
     }, [])
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (userId: string) => {
         try {
-            const response = await fetch("/api/partner/notifications")
-            if (!response.ok) return // Silently fail if endpoint doesn"t exist yet
+            const { data, error } = await supabase
+                .from('partner_notifications')
+                .select(`
+                    *,
+                    task:tasks (
+                        title,
+                        due_date
+                    )
+                `)
+                .eq('partner_id', userId)
+                .order('created_at', { ascending: false })
 
-            const { notifications: data } = await response.json()
-            setNotifications(data || [])
+            if (error) throw error
+
+            setNotifications((data as any) || [])
         } catch (error) {
             console.error("Fetch notifications error:", error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchSingleNotification = async (id: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('partner_notifications')
+                .select(`
+                    *,
+                    task:tasks (
+                        title,
+                        due_date
+                    )
+                `)
+                .eq('id', id)
+                .single()
+
+            if (error) throw error
+
+            if (data) {
+                setNotifications(prev => [data as any, ...prev])
+                toast.info("New partner update!")
+            }
+        } catch (error) {
+            console.error("Fetch single notification error:", error)
         }
     }
 
