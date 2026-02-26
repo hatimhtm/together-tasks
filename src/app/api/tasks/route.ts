@@ -116,7 +116,8 @@ export async function POST(request: Request) {
                 sendWebPush(
                     profile.partner_id,
                     isShared ? "New Shared Goal! 🤝" : "New Task! 💕",
-                    isShared ? `You both have a new task: ${task.title}` : `Your partner assigned: ${task.title}`
+                    isShared ? `You both have a new task: ${task.title}` : `Your partner assigned: ${task.title}`,
+                    createClient
                 ).catch(e => console.error("Push failed:", e))
             }
         }

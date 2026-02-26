@@ -23,7 +23,8 @@ export async function POST(request: Request) {
         await sendWebPush(
             partnerId,
             "Thinking of you! ❤️",
-            `${myName} is thinking about you right now!`
+            `${myName} is thinking about you right now!`,
+            createClient
         )
 
         return NextResponse.json({ success: true })
