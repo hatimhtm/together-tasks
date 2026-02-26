@@ -17,10 +17,21 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Task ID required' }, { status: 400 })
         }
 
-        // Get task details
+        // Get task details with owner and partner profiles
         const { data: task, error: taskError } = await supabase
             .from('tasks')
-            .select('*')
+            .select(`
+                *,
+                owner:profiles!creator_id (
+                    username,
+                    role,
+                    partner_id,
+                    partner:profiles!partner_id (
+                        username,
+                        role
+                    )
+                )
+            `)
             .eq('id', taskId as string)
             .single()
 
@@ -28,23 +39,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Task not found' }, { status: 404 })
         }
 
-        // Get task owner profile
-        const { data: taskOwner } = await supabase
-            .from('profiles')
-            .select('username, role, partner_id')
-            .eq('id', task.creator_id as string)
-            .single()
+        const taskOwner = (task as any).owner
 
         if (!taskOwner || !taskOwner.partner_id) {
             return NextResponse.json({ error: 'No partner linked' }, { status: 400 })
         }
 
-        // Get partner profile
-        const { data: partner } = await supabase
-            .from('profiles')
-            .select('username, role')
-            .eq('id', taskOwner.partner_id)
-            .single()
+        const partner = taskOwner.partner
 
         if (!partner) {
             return NextResponse.json({ error: 'Partner not found' }, { status: 404 })
