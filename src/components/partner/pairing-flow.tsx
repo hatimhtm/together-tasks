@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +17,7 @@ interface Profile {
 }
 
 export function PartnerPairingFlow({ profile }: { profile: Profile }) {
+    const router = useRouter()
     const [step, setStep] = useState<"initial" | "generate" | "enter" | "confirm">("initial")
     const [linkCode, setLinkCode] = useState("")
     const [partnerCode, setPartnerCode] = useState("")
@@ -116,7 +118,7 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
             })
 
             // Refresh the page to update UI
-            window.location.reload()
+            router.refresh()
         } catch (error: any) {
             toast.error(error.message || "Failed to link")
         } finally {
