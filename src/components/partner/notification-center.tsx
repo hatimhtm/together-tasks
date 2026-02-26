@@ -54,7 +54,7 @@ export function PartnerNotificationCenter() {
                         table: 'partner_notifications',
                         filter: `partner_id=eq.${user.id}`
                     },
-                    (payload) => {
+                    (payload: any) => {
                         if (payload.eventType === 'INSERT') {
                             // Fetch the complete notification with joined data
                             fetchSingleNotification(payload.new.id)
