@@ -103,22 +103,32 @@ export async function POST(request: Request) {
         if (error) throw error
 
 
-        // AI Analysis for Partner Notification (Fire & Forget)
+        // AI Analysis for Partner Notification
         if (task) {
-            fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/partner/analyze-task`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ taskId: task.id })
-            }).catch(err => console.error("Analysis trigger failed:", err))
+            const backgroundTasks: Promise<any>[] = []
+
+            backgroundTasks.push(
+                fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/partner/analyze-task`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ taskId: task.id })
+                }).catch(err => console.error("Analysis trigger failed:", err))
+            )
 
             // Trigger real-time web push to partner if it was assigned to them OR shared
             if ((isForPartner || isShared) && profile?.partner_id) {
-                sendWebPush(
-                    profile.partner_id,
-                    isShared ? "New Shared Goal! 🤝" : "New Task! 💕",
-                    isShared ? `You both have a new task: ${task.title}` : `Your partner assigned: ${task.title}`
-                ).catch(e => console.error("Push failed:", e))
+                backgroundTasks.push(
+                    sendWebPush(
+                        profile.partner_id,
+                        isShared ? "New Shared Goal! 🤝" : "New Task! 💕",
+                        isShared ? `You both have a new task: ${task.title}` : `Your partner assigned: ${task.title}`
+                    ).catch(e => console.error("Push failed:", e))
+                )
             }
+
+            // In serverless environments, we must await these to prevent execution freezing.
+            // Using Promise.allSettled to ensure parallel execution and that one failure doesn't block the other.
+            await Promise.allSettled(backgroundTasks)
         }
 
         return NextResponse.json({ task })
