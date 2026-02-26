@@ -57,6 +57,91 @@ Today's date is: ${new Date().toISOString().split('T')[0]}`
     }
 }
 
+export async function processFunctionCalls(
+    functionCalls: any[],
+    context: any,
+    supabase: any,
+    initialAiMemory: string
+): Promise<string> {
+    let actionMessages: string[] = []
+    let currentAiMemory = initialAiMemory;
+
+    for (const call of functionCalls) {
+        if (!call || typeof call !== 'object') continue;
+
+        // Strict: Validate args is an object
+        const args = (call.args && typeof call.args === 'object') ? call.args : {};
+
+        if (call.name === "create_task" && context?.userId) {
+            // Strict Validation
+            if (typeof args.title !== 'string' || !args.title.trim()) {
+                console.warn("Skipping create_task: Invalid title");
+                continue;
+            }
+
+            const title = args.title.trim().slice(0, 1000); // Max length 1000
+            const description = (typeof args.description === 'string')
+                ? args.description.trim().slice(0, 5000)
+                : '';
+
+            let assign_to = 'me';
+            if (typeof args.assign_to === 'string') {
+                if (['partner', 'shared', 'me'].includes(args.assign_to)) {
+                    assign_to = args.assign_to;
+                }
+            }
+
+            let assignee_id: string | null = context.userId;
+            let scope: string | null = null;
+
+            if (assign_to === 'partner' && context.partnerId) {
+                assignee_id = context.partnerId;
+            } else if (assign_to === 'shared') {
+                assignee_id = context.userId;
+                scope = 'shared';
+            }
+
+            try {
+                await supabase.from('tasks').insert({
+                    creator_id: context.userId,
+                    assignee_id: assignee_id,
+                    title: title,
+                    description: description,
+                    is_completed: false,
+                    scope: scope,
+                    priority: 'medium',
+                    emergency_level: 'medium',
+                    importance_level: 'medium',
+                    duration_estimate: 15
+                })
+
+                actionMessages.push(`I've created the task: "${title}" for ${assign_to}. ✨`);
+            } catch (error) {
+                console.error("Failed to create task:", error);
+                actionMessages.push(`I tried to create the task "${title}" but something went wrong.`);
+            }
+
+        } else if (call.name === "store_memory" && context?.userId) {
+            if (typeof args.fact !== 'string' || !args.fact.trim()) {
+                console.warn("Skipping store_memory: Invalid fact");
+                continue;
+            }
+
+            const newFact = args.fact.trim().slice(0, 1000);
+            const updatedMemory = currentAiMemory ? `${currentAiMemory}\n- ${newFact}` : `- ${newFact}`;
+
+            try {
+                await supabase.from('profiles').update({ ai_personality: updatedMemory }).eq('id', context.userId);
+                currentAiMemory = updatedMemory; // Update local memory for subsequent calls
+                actionMessages.push(`I have committed that to memory! 🧠✨`);
+            } catch (error) {
+                console.error("Failed to store memory:", error);
+            }
+        }
+    }
+    return actionMessages.join("\n");
+}
+
 export async function chatWithAI(
     userMessage: string,
     context?: {
@@ -135,46 +220,8 @@ Be conversational, extremely sweet, romantic, and encouraging.`
 
     // Check if the AI decided to call a function!
     if (response.functionCalls && response.functionCalls.length > 0) {
-        let actionMessages: string[] = []
-
-        for (const call of response.functionCalls) {
-            if (call.name === "create_task" && context?.userId) {
-                const args = call.args as any;
-                let assignee_id: string | null = context.userId;
-                let scope: string | null = null;
-
-                if (args.assign_to === 'partner' && context.partnerId) {
-                    assignee_id = context.partnerId;
-                } else if (args.assign_to === 'shared') {
-                    assignee_id = context.userId;
-                    scope = 'shared';
-                }
-
-                await supabase.from('tasks').insert({
-                    creator_id: context.userId,
-                    assignee_id: assignee_id,
-                    title: args.title,
-                    description: args.description || '',
-                    is_completed: false,
-                    scope: scope,
-                    priority: 'medium',
-                    emergency_level: 'medium',
-                    importance_level: 'medium',
-                    duration_estimate: 15
-                })
-
-                actionMessages.push(`I've created the task: "${args.title}" for ${args.assign_to}. ✨`);
-            } else if (call.name === "store_memory" && context?.userId) {
-                const args = call.args as any;
-                const newFact = args.fact;
-                const updatedMemory = aiMemory ? `${aiMemory}\n- ${newFact}` : `- ${newFact}`;
-
-                await supabase.from('profiles').update({ ai_personality: updatedMemory }).eq('id', context.userId);
-                actionMessages.push(`I have committed that to memory! 🧠✨`);
-            }
-        }
-
-        return actionMessages.join("\n") + (response.text ? "\n\n" + response.text : "");
+        const actionMessages = await processFunctionCalls(response.functionCalls, context, supabase, aiMemory);
+        return actionMessages + (response.text ? "\n\n" + response.text : "");
     }
 
     return response.text || "I'm sorry, I couldn't process that request right now."
