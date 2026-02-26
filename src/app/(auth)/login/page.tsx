@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
+import { KING_EMAIL, QUEEN_EMAIL } from "@/lib/constants"
 
 export default function LoginPage() {
     const [isSignUp, setIsSignUp] = useState(false)
@@ -25,7 +26,7 @@ export default function LoginPage() {
         e.preventDefault()
         setLoading(true)
 
-        const allowedEmails = ["hatimhtm2003@gmail.com", "queen@example.com"]
+        const allowedEmails = [KING_EMAIL, QUEEN_EMAIL]
         const normalizedEmail = email.toLowerCase().trim()
 
         if (isSignUp) {
