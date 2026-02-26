@@ -7,6 +7,7 @@ import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { Task } from "@/types/task"
 
 export function QuickAdd({
     onTaskCreated,
@@ -14,7 +15,7 @@ export function QuickAdd({
     hasPartner
 }: {
     onTaskCreated?: () => void
-    onAddTask?: (input: string) => Promise<any>
+    onAddTask?: (input: string) => Promise<Task>
     hasPartner?: boolean
 }) {
     const [input, setInput] = useState("")
