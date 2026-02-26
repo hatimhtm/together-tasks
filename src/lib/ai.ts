@@ -58,9 +58,9 @@ export async function generateRoyalWelcome(params: GenerateWelcomeParams) {
         console.error("AI Generation Failed, using fallback:", error)
 
         // Fallback "Royal Decree" so the user is never blocked
-        return `Hear ye! The Stars align for ${params.usersName} and ${params.partnerName}. 
-        Though the Royal Sage is in deep meditation, your shared goal of "${params.goals}" 
-        shall be achieved through your habits of "${params.habits}". 
+        return `Hear ye! The Stars align for ${params.usersName} and ${params.partnerName}.
+        Though the Royal Sage is in deep meditation, your shared goal of "${params.goals}"
+        shall be achieved through your habits of "${params.habits}".
         Rule your ${params.theme} Kingdom with love and glory!`
     }
 }
