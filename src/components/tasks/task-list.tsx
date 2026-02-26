@@ -1,6 +1,5 @@
 "use client"
 
-import { GlassCard } from "@/components/ui/glass-card"
 import { Check, Trash2, Calendar, Clock, AlertCircle, Pencil } from "lucide-react"
 import { toast } from "sonner"
 import confetti from "canvas-confetti"
