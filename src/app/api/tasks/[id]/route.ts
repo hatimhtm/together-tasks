@@ -29,21 +29,13 @@ export async function PATCH(
 
         // If task was completed, update XP
         if (updates.is_completed) {
-            // Fetch current profile stats
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('xp, level')
-                .eq('id', user.id)
-                .single()
+            const { error: rpcError } = await supabase.rpc('add_xp', {
+                amount: 20
+            })
 
-            if (profile) {
-                const newXp = (profile.xp || 0) + 20 // 20 XP per task!
-                const newLevel = Math.floor(newXp / 100) + 1
-
-                await supabase
-                    .from('profiles')
-                    .update({ xp: newXp, level: newLevel })
-                    .eq('id', user.id)
+            if (rpcError) {
+                console.error('Error adding XP:', rpcError)
+                // Continue execution, as task update was successful
             }
         }
 
