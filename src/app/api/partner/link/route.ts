@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
         const { code } = await request.json()
 
-        if (!code) {
+        if (!code || typeof code !== 'string') {
             return NextResponse.json({ error: 'Partner code is required' }, { status: 400 })
         }
 
