@@ -1,13 +1,20 @@
 import webpush from 'web-push'
-import { createClient } from '@/lib/supabase/server'
+import { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '../../types/database.types'
 
-export async function sendWebPush(userId: string, title: string, body: string) {
+export async function sendWebPush(
+    userId: string,
+    title: string,
+    body: string,
+    createClient: () => Promise<SupabaseClient<Database>>,
+    webPushLib: typeof webpush = webpush
+) {
     if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
         console.warn("VAPID keys not configured, skipping push.")
         return
     }
 
-    webpush.setVapidDetails(
+    webPushLib.setVapidDetails(
         'mailto:hatimelhassak.official@gmail.com',
         process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
         process.env.VAPID_PRIVATE_KEY
@@ -30,7 +37,7 @@ export async function sendWebPush(userId: string, title: string, body: string) {
 
     const promises = subs.map(async (sub) => {
         try {
-            await webpush.sendNotification({
+            await webPushLib.sendNotification({
                 endpoint: sub.endpoint,
                 keys: {
                     p256dh: sub.p256dh,
