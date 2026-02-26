@@ -22,7 +22,7 @@ interface PartnerNotification {
     }
 }
 
-export function PartnerNotificationCenter({ partnerId }: { partnerId: string }) {
+export function PartnerNotificationCenter() {
     const [notifications, setNotifications] = useState<PartnerNotification[]>([])
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
