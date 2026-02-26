@@ -41,7 +41,8 @@ export async function POST(request: Request) {
         await sendWebPush(
             partnerProfile.id,
             "You are now linked! 💕",
-            `${myName} just linked their account with yours. You can now share tasks!`
+            `${myName} just linked their account with yours. You can now share tasks!`,
+            createClient
         ).catch(console.error)
 
         return NextResponse.json({ success: true })
