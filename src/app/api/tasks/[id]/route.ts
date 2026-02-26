@@ -29,7 +29,7 @@ export async function PATCH(
 
         // If task was completed, update XP
         if (updates.is_completed) {
-            const { error: rpcError } = await supabase.rpc('add_xp', {
+            const { error: rpcError } = await (supabase as any).rpc('add_xp', {
                 amount: 20
             })
 

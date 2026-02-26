@@ -65,7 +65,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     table: "tasks",
                     filter: `creator_id=eq.${userId}` // Your tasks
                 },
-                (payload) => {
+                (payload: any) => {
                     handleRealtimeEvent(payload)
                 }
             )
@@ -80,7 +80,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     table: "tasks",
                     filter: `creator_id=eq.${partnerId}` // Partner's tasks
                 },
-                (payload) => {
+                (payload: any) => {
                     handleRealtimeEvent(payload)
                 }
             )

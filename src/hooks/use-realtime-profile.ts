@@ -37,7 +37,7 @@ export function useRealtimeProfile(userId: string | undefined) {
                     table: "profiles",
                     filter: `id=eq.${userId}`
                 },
-                (payload) => {
+                (payload: any) => {
                     setProfile(payload.new as Profile)
                 }
             )
