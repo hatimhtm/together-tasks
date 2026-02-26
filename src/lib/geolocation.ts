@@ -12,21 +12,19 @@ export interface LocationContext {
     currentPlace: "work" | "home" | "unknown"
 }
 
-// Known locations (you"ll customize these)
-const KNOWN_LOCATIONS = {
-    // Your wife"s work location (get from Google Maps)
+// Known locations (configurable via environment variables)
+const getKnownLocations = () => ({
     work: {
-        lat: 14.072503804285322,
-        lng: 121.31170192424233,
-        radius: 200 // meters
+        lat: Number(process.env.NEXT_PUBLIC_WORK_LAT) || 0,
+        lng: Number(process.env.NEXT_PUBLIC_WORK_LNG) || 0,
+        radius: Number(process.env.NEXT_PUBLIC_WORK_RADIUS) || 200 // meters
     },
-    // Your home location
     home: {
-        lat: 0, // REPLACE
-        lng: 0, // REPLACE
-        radius: 100 // meters
+        lat: Number(process.env.NEXT_PUBLIC_HOME_LAT) || 0,
+        lng: Number(process.env.NEXT_PUBLIC_HOME_LNG) || 0,
+        radius: Number(process.env.NEXT_PUBLIC_HOME_RADIUS) || 100 // meters
     }
-}
+})
 
 // Calculate distance between two points (Haversine formula)
 function calculateDistance(
@@ -53,23 +51,24 @@ function calculateDistance(
 // Check if user is at a known location
 export function detectLocationContext(location: Location): LocationContext {
     const { latitude, longitude } = location
+    const knownLocations = getKnownLocations()
 
     const distanceToWork = calculateDistance(
         latitude,
         longitude,
-        KNOWN_LOCATIONS.work.lat,
-        KNOWN_LOCATIONS.work.lng
+        knownLocations.work.lat,
+        knownLocations.work.lng
     )
 
     const distanceToHome = calculateDistance(
         latitude,
         longitude,
-        KNOWN_LOCATIONS.home.lat,
-        KNOWN_LOCATIONS.home.lng
+        knownLocations.home.lat,
+        knownLocations.home.lng
     )
 
-    const isAtWork = distanceToWork <= KNOWN_LOCATIONS.work.radius
-    const isAtHome = distanceToHome <= KNOWN_LOCATIONS.home.radius
+    const isAtWork = distanceToWork <= knownLocations.work.radius
+    const isAtHome = distanceToHome <= knownLocations.home.radius
     const isCommuting = !isAtWork && !isAtHome
 
     let currentPlace: "work" | "home" | "unknown" = "unknown"
