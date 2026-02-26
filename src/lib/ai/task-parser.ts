@@ -38,7 +38,8 @@ Today's date is: ${new Date().toISOString().split('T')[0]}`
             }
         });
 
-        const text = response.text || "{}"
+        const rawText = typeof response.text === 'function' ? response.text() : response.text
+        const text = rawText || "{}"
         return JSON.parse(text)
     } catch (error) {
         console.error("AI Task Parsing Failed:", error)
