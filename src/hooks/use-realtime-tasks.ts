@@ -1,25 +1,7 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { RealtimeChannel } from "@supabase/supabase-js"
-
-interface Task {
-    id: string
-    title: string
-    description: string | null
-    due_date: string | null
-    priority: "low" | "medium" | "high" | "urgent"
-    is_completed: boolean
-    creator_id: string
-    assignee_id: string
-    created_at: string
-    completed_at: string | null
-    emergency_level?: "low" | "medium" | "high" | "critical"
-    importance_level?: "low" | "medium" | "high" | "critical"
-    duration_estimate?: number
-    scope?: string | null
-    subtasks?: ({ id: string, title: string, is_completed: boolean } | string)[] | null
-    completed_by?: string[] | null
-}
+import { Task } from "@/types/task"
 
 export function useRealtimeTasks(userId: string, partnerId?: string | null, initialTasks?: Task[]) {
     const [tasks, setTasks] = useState<Task[]>(initialTasks || [])

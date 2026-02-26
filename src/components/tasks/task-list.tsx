@@ -21,26 +21,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { ChevronDown, ChevronUp } from "lucide-react"
-
-// Define TypeScript interface for type safety
-interface Task {
-    id: string
-    title: string
-    description: string | null
-    due_date: string | null
-    is_completed: boolean
-    priority: "low" | "medium" | "high" | "urgent"
-    creator_id: string
-    assignee_id: string
-    created_at: string
-    completed_at: string | null
-    emergency_level?: "low" | "medium" | "high" | "critical"
-    importance_level?: "low" | "medium" | "high" | "critical"
-    duration_estimate?: number
-    scope?: string | null
-    subtasks?: ({ id: string, title: string, is_completed: boolean } | string)[] | null
-    completed_by?: string[] | null
-}
+import { Task, Subtask } from "@/types/task"
 
 export function TaskList({
     userId,
@@ -170,7 +151,7 @@ export function TaskList({
         const task = tasks.find(t => t.id === taskId)
         if (!task || !task.subtasks) return
 
-        const updatedSubtasks = task.subtasks.map((st: any) => {
+        const updatedSubtasks = task.subtasks.map((st: Subtask) => {
             if (typeof st !== 'string' && st.id === subtaskId) {
                 return { ...st, is_completed: !st.is_completed }
             }
@@ -276,7 +257,7 @@ export function TaskList({
                                                     {editForm.subtasks && editForm.subtasks.length > 0 && (
                                                         <div className="space-y-2 mt-2 pl-1 border-l-2 border-primary/20">
                                                             <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">Edit Subtasks</p>
-                                                            {editForm.subtasks.map((st: any, i: number) => (
+                                                            {editForm.subtasks.map((st: Subtask, i: number) => (
                                                                 <div key={typeof st === 'string' ? i : st.id} className="flex items-center gap-2">
                                                                     <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
                                                                     <input
@@ -378,7 +359,7 @@ export function TaskList({
                                                     {expandedTasks.has(task.id) && task.subtasks && task.subtasks.length > 0 && (
                                                         <div className="mt-2 pl-1 border-l-2 border-primary/20 space-y-1">
                                                             <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">AI Breakdown</p>
-                                                            {task.subtasks.map((st: any, i: number) => {
+                                                            {task.subtasks.map((st: Subtask, i: number) => {
                                                                 if (typeof st === 'string') {
                                                                     return (
                                                                         <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground/80">
