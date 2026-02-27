@@ -63,7 +63,19 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     event: "*", // Listen to INSERT, UPDATE, DELETE
                     schema: "public",
                     table: "tasks",
-                    filter: `creator_id=eq.${userId}` // Your tasks
+                    filter: `creator_id=eq.${userId}` // Your created tasks
+                },
+                (payload: any) => {
+                    handleRealtimeEvent(payload)
+                }
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "tasks",
+                    filter: `assignee_id=eq.${userId}` // Tasks assigned to you
                 },
                 (payload: any) => {
                     handleRealtimeEvent(payload)
@@ -78,7 +90,18 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     event: "*",
                     schema: "public",
                     table: "tasks",
-                    filter: `creator_id=eq.${partnerId}` // Partner's tasks
+                    filter: `creator_id=eq.${partnerId}` // Partner's created tasks
+                },
+                (payload: any) => {
+                    handleRealtimeEvent(payload)
+                }
+            ).on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "tasks",
+                    filter: `assignee_id=eq.${partnerId}` // Tasks assigned to partner
                 },
                 (payload: any) => {
                     handleRealtimeEvent(payload)
@@ -131,17 +154,18 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         }
 
         try {
-            // 2. API Call
-            const response = await fetch(`/api/tasks/${taskId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updates)
-            })
+            // 2. Direct Supabase Call (Replacing API route for static export)
+            const { error: updateError } = await supabase
+                .from('tasks')
+                .update(updates)
+                .eq('id', taskId)
 
-            if (!response.ok) throw new Error("Failed to update")
+            if (updateError) throw updateError
 
-            // No need to update state again if successful, as realtime will confirm it 
-            // or the optimistic update is already there. 
+            // Replicate XP logic from the old API route if completed
+            if (updates.is_completed) {
+                await (supabase as any).rpc('add_xp', { amount: 20 })
+            }
         } catch (error) {
             console.error("Update failed, rolling back", error)
             // 3. Rollback (re-fetch or undo)
@@ -155,12 +179,13 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         setTasks(prev => prev.filter(t => t.id !== taskId))
 
         try {
-            // 2. API Call
-            const response = await fetch(`/api/tasks/${taskId}`, {
-                method: "DELETE"
-            })
+            // 2. Direct Supabase Call
+            const { error } = await supabase
+                .from('tasks')
+                .delete()
+                .eq('id', taskId)
 
-            if (!response.ok) throw new Error("Failed to delete")
+            if (error) throw error
         } catch (error) {
             console.error("Delete failed, rolling back", error)
             // 3. Rollback
@@ -187,16 +212,34 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         setTasks(prev => [optimisticTask, ...prev])
 
         try {
-            // 2. API Call to existing endpoint (which does AI parsing)
-            const response = await fetch("/api/tasks", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ input, useAI: true })
-            })
+            // 2. Client-side Parsing & Supabase Call
+            let finalAssigneeId = userId;
+            let finalTitle = input;
 
-            if (!response.ok) throw new Error("Failed to create task")
+            if (input.toLowerCase().includes("@partner") && partnerId) {
+                finalAssigneeId = partnerId;
+                finalTitle = input.replace(/@partner/gi, "").trim();
+            } else if (input.toLowerCase().includes("@shared") && partnerId) {
+                // Shared logic: Assign to partner but created by you means both see it
+                finalAssigneeId = partnerId;
+                finalTitle = input.replace(/@shared/gi, "").trim();
+            }
 
-            const { task: realTask } = await response.json()
+            const newTaskData = {
+                title: finalTitle,
+                creator_id: userId,
+                assignee_id: finalAssigneeId,
+                priority: "medium",
+                is_completed: false
+            };
+
+            const { data: realTask, error } = await supabase
+                .from('tasks')
+                .insert(newTaskData)
+                .select()
+                .single();
+
+            if (error) throw error;
 
             // 3. Replace Optimistic Task with Real Task securely to avoid overriding Realtime INSERT
             setTasks(prev => {

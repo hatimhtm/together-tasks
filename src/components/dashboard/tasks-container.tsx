@@ -73,7 +73,7 @@ export function TasksContainer({
 
                 {/* Quick Add Task */}
                 <div className="space-y-2 relative z-10 w-full">
-                    <QuickAdd onAddTask={addTask} hasPartner={!!partnerId} />
+                    <QuickAdd onAddTask={addTask} hasPartner={!!partnerId} userId={userId} partnerId={partnerId} />
                 </div>
             </div>
 

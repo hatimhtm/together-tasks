@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { createClient } from "@/lib/supabase/client"
 import { Heart, Copy, Check, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import confetti from "canvas-confetti"
@@ -46,22 +47,32 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
     const handleGenerateCode = async () => {
         setLoading(true)
         try {
-            const response = await fetch("/api/partner/generate-code", {
-                method: "POST"
-            })
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error("Not logged in")
 
-            if (!response.ok) throw new Error("Failed to generate code")
+            // Generate 6-char code
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+            let code = ''
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length))
+            }
 
-            const { code } = await response.json()
+            const { error } = await supabase
+                .from('profiles')
+                .update({ link_code: code } as any)
+                .eq('id', user.id)
+
+            if (error) throw error
+
             setLinkCode(code)
             setStep("generate")
 
             toast.success("Code generated!", {
                 description: "Share this with your partner"
             })
-        } catch (error) {
-            toast.error("Failed to generate code")
-            console.error(error)
+        } catch (error: any) {
+            toast.error(error.message || "Failed to generate code")
         } finally {
             setLoading(false)
         }
@@ -76,13 +87,17 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
 
         setLoading(true)
         try {
-            const checkRes = await fetch(`/api/partner/check-code?code=${partnerCode}`)
-            if (!checkRes.ok) {
-                const errData = await checkRes.json()
-                throw new Error(errData.error || "Invalid or expired code")
+            const supabase = createClient()
+            const { data: partner, error } = await supabase
+                .from('profiles')
+                .select('id, username')
+                .eq('link_code', partnerCode.toUpperCase())
+                .single()
+
+            if (error || !partner) {
+                throw new Error("Invalid or expired code")
             }
 
-            const { partner } = await checkRes.json()
             setPartnerName(partner.username || "Your Partner")
             setStep("confirm")
         } catch (error: any) {
@@ -95,16 +110,21 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
     const handleConfirmLink = async () => {
         setLoading(true)
         try {
-            const response = await fetch("/api/partner/link", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code: partnerCode })
-            })
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error("Not logged in")
 
-            if (!response.ok) {
-                const { error } = await response.json()
-                throw new Error(error || "Failed to link")
-            }
+            const { data: partnerProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('link_code', partnerCode.toUpperCase())
+                .single()
+
+            if (!partnerProfile) throw new Error("Partner vanished")
+
+            // Perform Mutual Link
+            await supabase.from('profiles').update({ partner_id: partnerProfile.id }).eq('id', user.id)
+            await supabase.from('profiles').update({ partner_id: user.id }).eq('id', partnerProfile.id)
 
             // SUCCESS! 🎉
             confetti({

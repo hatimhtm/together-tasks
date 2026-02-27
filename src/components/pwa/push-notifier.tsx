@@ -72,12 +72,20 @@ export function PushNotifier() {
                 applicationServerKey: base64ToUint8Array(pubKey)
             })
 
-            // Send subscription to our backend
-            await fetch('/api/web-push/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(subscription)
-            })
+            // Send subscription to our backend directly
+            const { createClient } = await import("@/lib/supabase/client")
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (user && subscription) {
+                const subJSON = subscription.toJSON()
+                await supabase.from('push_subscriptions').upsert({
+                    user_id: user.id,
+                    endpoint: subscription.endpoint,
+                    p256dh: subJSON.keys?.p256dh || "",
+                    auth: subJSON.keys?.auth || ""
+                }, { onConflict: 'endpoint' })
+            }
 
             setIsSubscribed(true)
         } catch (error: any) {

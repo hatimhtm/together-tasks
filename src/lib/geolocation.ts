@@ -161,15 +161,8 @@ export async function saveLocationUpdate(
     context: LocationContext
 ) {
     try {
-        await fetch("/api/location/update", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                userId,
-                location,
-                context
-            })
-        })
+        console.log("Local static build: location update tracked locally.", { userId, location, context })
+        // Implement native capacitor background tracking later via plugin
     } catch (error) {
         console.error("Failed to save location:", error)
     }

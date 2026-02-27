@@ -1,30 +1,50 @@
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+"use client"
+
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bell, User, Shield, LogOut, ChevronRight, Palette } from "lucide-react"
 import { ThemeSelector } from "@/components/settings/theme-selector"
+import { useEffect, useState } from "react"
+import { Profile } from "@/types/task"
 
-export default async function SettingsPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+export default function SettingsPage() {
+    const supabase = createClient()
+    const router = useRouter()
+    const [profile, setProfile] = useState<Profile | null>(null)
+    const [user, setUser] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
 
-    if (!user) {
-        redirect("/login")
-    }
+    useEffect(() => {
+        async function loadProfile() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.push("/login")
+                return
+            }
+            setUser(user)
 
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single()
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", user.id)
+                .single()
+
+            setProfile(profile)
+            setLoading(false)
+        }
+        loadProfile()
+    }, [router, supabase])
 
     async function handleSignOut() {
-        "use server"
-        const sb = await createClient()
-        await sb.auth.signOut()
-        redirect("/login")
+        await supabase.auth.signOut()
+        router.push("/login")
+    }
+
+    if (loading || !user) {
+        return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading settings...</div>
     }
 
     const fallBackInitial = profile?.username ? profile.username.charAt(0).toUpperCase() : "U"
@@ -95,12 +115,12 @@ export default async function SettingsPage() {
                 </GlassCard>
             </div>
 
-            <form action={handleSignOut} className="pt-4">
-                <Button type="submit" variant="destructive" className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 h-12 text-lg font-medium transition-all hover:scale-[1.02]">
+            <div className="pt-4">
+                <Button onClick={handleSignOut} variant="destructive" className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 h-12 text-lg font-medium transition-all hover:scale-[1.02]">
                     <LogOut className="mr-2 h-5 w-5" />
                     Sign Out
                 </Button>
-            </form>
+            </div>
         </div>
     )
 }

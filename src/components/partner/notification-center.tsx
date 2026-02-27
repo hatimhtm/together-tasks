@@ -135,9 +135,10 @@ export function PartnerNotificationCenter() {
 
     const markAsRead = async (notificationId: string) => {
         try {
-            await fetch(`/api/partner/notifications/${notificationId}/read`, {
-                method: "POST"
-            })
+            await supabase
+                .from('partner_notifications')
+                .update({ read_at: new Date().toISOString() })
+                .eq('id', notificationId)
 
             setNotifications(prev =>
                 prev.map(n =>
@@ -154,16 +155,19 @@ export function PartnerNotificationCenter() {
         action: "called" | "messaged" | "dismissed"
     ) => {
         try {
-            await fetch(`/api/partner/notifications/${notificationId}/action`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action })
-            })
+            await supabase
+                .from('partner_notifications')
+                .update({ read_at: new Date().toISOString() })
+                .eq('id', notificationId)
 
-            markAsRead(notificationId)
+            setNotifications(prev =>
+                prev.map(n =>
+                    n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
+                )
+            )
 
             if (action === "called") {
-                toast.success("Great! She\"ll appreciate the call 📞")
+                toast.success("Great! She'll appreciate the call 📞")
             } else if (action === "messaged") {
                 toast.success("Message sent! 💬")
             }

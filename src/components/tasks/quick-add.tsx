@@ -1,24 +1,85 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function QuickAdd({
     onTaskCreated,
     onAddTask,
-    hasPartner
+    hasPartner,
+    userId,
+    partnerId
 }: {
     onTaskCreated?: () => void
     onAddTask?: (input: string) => Promise<any>
     hasPartner?: boolean
+    userId?: string
+    partnerId?: string | null
 }) {
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
     const [assignMode, setAssignMode] = useState<"me" | "partner" | "shared">("me")
+    const [isPartnerTyping, setIsPartnerTyping] = useState(false)
+
+    // Typing indicator refs
+    const channelRef = useRef<any>(null)
+    const typingTimeoutRef = useRef<NodeJS.Timeout>()
+
+    useEffect(() => {
+        if (!userId || !partnerId) return;
+
+        const supabase = createClient()
+        // Unique room for this couple
+        const roomId = [userId, partnerId].sort().join('-')
+
+        const channel = supabase.channel(`typing-${roomId}`, {
+            config: { presence: { key: userId } }
+        })
+
+        channel.on('presence', { event: 'sync' }, () => {
+            const newState = channel.presenceState()
+            const partnerState = newState[partnerId] as any[]
+            if (partnerState && partnerState.length > 0) {
+                setIsPartnerTyping(partnerState[0].isTyping)
+            } else {
+                setIsPartnerTyping(false)
+            }
+        }).subscribe(async (status: string) => {
+            if (status === 'SUBSCRIBED') {
+                await channel.track({ isTyping: false })
+            }
+        })
+
+        channelRef.current = channel
+
+        return () => {
+            channel.unsubscribe()
+        }
+    }, [userId, partnerId])
+
+    const handleInput = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const val = e.target.value
+        setInput(val)
+        e.target.style.height = 'auto'
+        e.target.style.height = (e.target.scrollHeight) + 'px'
+
+        // Broadcast typing status
+        if (channelRef.current) {
+            await channelRef.current.track({ isTyping: val.length > 0 })
+
+            // Auto-untrack after 2s of no typing to prevent getting stuck
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+            typingTimeoutRef.current = setTimeout(async () => {
+                if (channelRef.current) await channelRef.current.track({ isTyping: false })
+            }, 2000)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -36,23 +97,39 @@ export function QuickAdd({
                 await onAddTask(finalInput)
                 toast.success(`Task created for ${toastTarget}`)
             } else {
-                // Local creation (Legacy/Standalone)
-                const response = await fetch("/api/tasks", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ input: finalInput, useAI: true })
+                // Local creation (Fallback)
+                const supabase = createClient()
+                let assigneeId = userId || ""
+                let title = finalInput
+
+                if (finalInput.toLowerCase().includes("@partner") && partnerId) {
+                    assigneeId = partnerId
+                    title = finalInput.replace(/@partner/gi, "").trim()
+                } else if (finalInput.toLowerCase().includes("@shared") && partnerId) {
+                    assigneeId = partnerId
+                    title = finalInput.replace(/@shared/gi, "").trim()
+                }
+
+                const { error } = await supabase.from('tasks').insert({
+                    title: title,
+                    creator_id: userId,
+                    assignee_id: assigneeId,
+                    priority: "medium",
+                    is_completed: false
                 })
 
-                if (!response.ok) throw new Error("Failed to create task")
+                if (error) throw error
 
-                const { task } = await response.json()
-                toast.success(`Task created for ${toastTarget}`, {
-                    description: task.title
-                })
+                toast.success(`Task created for ${toastTarget}`)
             }
 
             setInput("")
             setAssignMode("me") // reset toggle
+
+            // Reset typing status immediately
+            if (channelRef.current) {
+                await channelRef.current.track({ isTyping: false })
+            }
 
             // Legacy callback
             if (onTaskCreated) onTaskCreated()
@@ -66,7 +143,25 @@ export function QuickAdd({
     }
 
     return (
-        <GlassCard className="p-4">
+        <GlassCard className="p-4 relative mt-6">
+            <AnimatePresence>
+                {isPartnerTyping && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                        className="absolute -top-8 left-4 flex items-center gap-2 text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 backdrop-blur-md shadow-sm z-20"
+                    >
+                        <span className="flex gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
+                        </span>
+                        <span>Partner is typing...</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <form onSubmit={handleSubmit} className="flex gap-2 items-end">
                 {hasPartner && (
                     <Button
@@ -93,11 +188,7 @@ export function QuickAdd({
                 )}
                 <textarea
                     value={input}
-                    onChange={(e) => {
-                        setInput(e.target.value)
-                        e.target.style.height = 'auto'
-                        e.target.style.height = (e.target.scrollHeight) + 'px'
-                    }}
+                    onChange={handleInput}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();

@@ -11,17 +11,23 @@ export function useAiNudge() {
 
         const initializeDashboard = async () => {
             try {
-                // 1. Trigger recurring tasks spawn (fire & forget)
-                fetch('/api/tasks/recurring', { method: 'POST' }).catch(console.error)
+                // 1. Handle Recurring Tasks locally (if implemented)
+                // This would be replaced by local Supabase logic or Edge Functions
 
-                // 2. Fetch AI Notifications
-                const res = await fetch('/api/ai/notifications')
-                if (!res.ok) throw new Error("Failed to fetch notification")
+                // 2. Local AI Notifications (Static Array to avoid server ping)
+                const nudges = [
+                    "Just a reminder that you're amazing! 💕",
+                    "Take a deep breath, you're doing great! 😊",
+                    "You and your partner make a great team! 🤝",
+                    "Don't forget to stay hydrated! 💧",
+                    "Thinking of you! Keep up the great work today. ✨",
+                    "A small step forward is still a step forward! 🚶‍♂️",
+                    "You've got this! 🌟"
+                ];
 
-                const data = await res.json()
-                if (isMounted && data.notifications && data.notifications.length > 0) {
-                    // Pick a random notification from the array generated
-                    const randomNudge = data.notifications[Math.floor(Math.random() * data.notifications.length)]
+                if (isMounted) {
+                    // Pick a random notification
+                    const randomNudge = nudges[Math.floor(Math.random() * nudges.length)]
                     setNudge(randomNudge)
 
                     // Fire Native Notification

@@ -21,13 +21,18 @@ export function ThinkingOfYouButton({ partnerId }: { partnerId: string }) {
                 colors: ['#FF1493', '#FF69B4', '#FFB6C1']
             })
 
-            const res = await fetch("/api/partner/nudge", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ partnerId })
-            })
+            const { createClient } = await import("@/lib/supabase/client")
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
 
-            if (!res.ok) throw new Error("Failed to send nudge")
+            if (user) {
+                await supabase.from('partner_notifications').insert({
+                    partner_id: partnerId,
+                    message: "Thinking of you! ❤️",
+                    notification_type: "nudge",
+                    ai_reasoning: "Your partner manually sent you some love.",
+                })
+            }
 
             toast.success("Sent some love! ❤️")
         } catch (error: any) {

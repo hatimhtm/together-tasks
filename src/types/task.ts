@@ -18,3 +18,18 @@ export interface Task {
     subtasks?: Subtask[] | null
     completed_by?: string[] | null
 }
+
+export interface Profile {
+    id: string
+    email: string
+    role: "king" | "queen" | null
+    username: string
+    partner_id?: string | null
+    pairing_code?: string | null
+    has_completed_onboarding: boolean
+    theme?: string
+    avatar_url?: string | null
+    goals?: string | null
+    points?: number
+    level?: number
+}

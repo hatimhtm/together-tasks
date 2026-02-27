@@ -2,7 +2,7 @@ import type { Database } from "../types/database.types"
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
-export function getDisplayName(profile: Profile | null | undefined): string {
+export function getDisplayName(profile: any): string {
   if (!profile) return 'Love'
 
   if (profile.role === 'king') {

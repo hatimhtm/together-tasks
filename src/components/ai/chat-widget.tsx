@@ -59,16 +59,32 @@ export function AIChatWidget({
         setLoading(true)
 
         try {
-            // Call AI API
-            const response = await fetch("/api/ai/chat", {
+            // Call AI API directly
+            const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+            if (!apiKey) {
+                throw new Error("API Key missing");
+            }
+
+            const prompt = `
+            You are a helpful AI assistant for a couple using a shared task app called "Together Tasks".
+            The user talking to you is ${userName} (${userRole}).
+            Keep your response short, sweet, and helpful. 
+            User says: "${input}"
+            `;
+
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: input })
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
             })
 
-            if (!response.ok) throw new Error("AI request failed")
+            if (!res.ok) throw new Error("AI request failed")
 
-            const { response: aiResponse } = await response.json()
+            const data = await res.json()
+            const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I didn't quite catch that."
 
             // Add AI response
             const assistantMessage: Message = {
@@ -80,19 +96,15 @@ export function AIChatWidget({
             setMessages(prev => [...prev, assistantMessage])
 
             // If the AI actually took action (create task, etc.), refresh the page data
-            if (aiResponse.includes("I've created the task") || aiResponse.includes("to memory")) {
-                setTimeout(() => {
-                    window.dispatchEvent(new Event('tasks-updated'))
-                    router.refresh()
-                }, 1000)
-            }
+            // (Note: To keep this purely client-side without full LangChain tool execution, 
+            // you'd parse intents here, but for now we'll just handle responses)
         } catch (error) {
             console.error("AI chat error:", error)
 
             // Fallback response if AI fails
             const errorMessage: Message = {
                 role: "assistant",
-                content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
+                content: "I apologize, but I'm having trouble connecting to the royal servers right now. Please try again in a moment.",
                 timestamp: new Date()
             }
             setMessages(prev => [...prev, errorMessage])

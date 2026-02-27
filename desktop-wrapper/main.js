@@ -9,12 +9,13 @@ function createWindow() {
         icon: path.join(__dirname, 'icon.png'),
         webPreferences: {
             nodeIntegration: false,
-            contextIsolation: true
+            contextIsolation: true,
+            webSecurity: false // Required for some local file protocols in simple wrappers
         }
     })
 
-    // Load the live Verel URL
-    win.loadURL('https://together-tasks-six.vercel.app/')
+    // Load the local static build instead of live Vercel URL
+    win.loadFile(path.join(__dirname, '../out/index.html'))
 }
 
 app.whenReady().then(() => {
