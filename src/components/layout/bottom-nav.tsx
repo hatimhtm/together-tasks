@@ -3,8 +3,10 @@
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Bell, Home, Plus, Settings, User } from "lucide-react"
+import { Home, Plus, Settings, User, Trophy } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
+import { triggerHaptic } from "@/lib/haptics"
+import { ImpactStyle } from "@capacitor/haptics"
 
 export function BottomNav() {
     const pathname = usePathname()
@@ -12,15 +14,15 @@ export function BottomNav() {
 
     const tabs = [
         { name: "Home", href: "/", icon: Home },
-        { name: "Notifications", href: "#notifications", icon: Bell },
+        { name: "Milestones", href: "/milestones", icon: Trophy },
         { name: "Add", href: "#add", icon: Plus, isAction: true },
         { name: "Settings", href: "/settings", icon: Settings },
         { name: "Me", href: "/profile", icon: User },
     ]
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/40 pb-safe">
-            <div className="flex items-center justify-around h-[60px] max-w-md mx-auto px-2">
+        <nav className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none pb-safe">
+            <div className="flex items-center justify-around h-[64px] min-w-[320px] max-w-[380px] w-[90%] bg-glass-white/90 dark:bg-black/60 backdrop-blur-2xl rounded-3xl border border-glass-border shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] pointer-events-auto px-4">
                 {tabs.map((tab) => {
                     const isActive = pathname === tab.href
 
@@ -28,19 +30,22 @@ export function BottomNav() {
                         return (
                             <motion.button
                                 key={tab.name}
-                                whileTap={{ scale: 0.9 }}
-                                className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 -mt-6 border-4 border-background"
+                                whileHover={{ y: -2 }}
+                                whileTap={{ scale: 0.85 }}
+                                className="relative flex flex-col items-center justify-center w-[52px] h-[52px] rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 -mt-8 border-[3px] border-background"
                                 onClick={() => {
+                                    triggerHaptic(ImpactStyle.Medium)
                                     if (pathname !== "/") {
                                         router.push("/")
                                     } else {
                                         window.scrollTo({ top: 0, behavior: 'smooth' })
-                                        const input = document.querySelector('input[placeholder*="What needs to be done"]') as HTMLInputElement
+                                        const input = document.querySelector('textarea[placeholder*="What needs to be done"]') as HTMLTextAreaElement
                                         if (input) input.focus()
                                     }
                                 }}
                             >
-                                <Plus className="w-6 h-6" strokeWidth={3} />
+                                <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping opacity-50" />
+                                <Plus className="w-7 h-7 relative z-10" strokeWidth={3} />
                             </motion.button>
                         )
                     }
@@ -49,18 +54,38 @@ export function BottomNav() {
                         <Link
                             key={tab.name}
                             href={tab.href}
-                            className={cn(
-                                "flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors duration-200",
-                                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground/80"
-                            )}
+                            onClick={() => triggerHaptic(ImpactStyle.Light)}
+                            className="relative flex flex-col items-center justify-center w-14 h-full gap-1 group"
                         >
-                            <tab.icon
-                                className="w-6 h-6"
-                                strokeWidth={isActive ? 2.5 : 2}
-                            />
-                            <span className="text-[10px] font-medium tracking-wide">
-                                {tab.name}
-                            </span>
+                            <motion.div
+                                whileHover={{ y: -2 }}
+                                whileTap={{ scale: 0.85 }}
+                                className={cn(
+                                    "flex flex-col items-center gap-1.5 transition-colors duration-300",
+                                    isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                                )}
+                            >
+                                <tab.icon
+                                    className="w-[22px] h-[22px]"
+                                    strokeWidth={isActive ? 2.5 : 2}
+                                />
+                                <span className={cn(
+                                    "text-[9px] font-bold tracking-wider uppercase transition-opacity",
+                                    isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                                )}>
+                                    {tab.name}
+                                </span>
+                            </motion.div>
+
+                            {/* Active Dot Indicator */}
+                            {isActive && (
+                                <motion.div
+                                    layoutId="bottom-nav-active-dot"
+                                    className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary"
+                                    style={{ boxShadow: "0 0 8px 1px var(--primary)" }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                />
+                            )}
                         </Link>
                     )
                 })}

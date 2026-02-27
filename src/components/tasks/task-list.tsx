@@ -140,9 +140,21 @@ export function TaskList({
 
     if (loading) {
         return (
-            <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                    <div key={i} className="h-16 rounded-2xl bg-muted/20 animate-pulse" />
+            <div className="space-y-4 pt-2">
+                {[1, 2, 3].map((i, index) => (
+                    <div
+                        key={i}
+                        className="h-20 rounded-[20px] bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 dark:border-white/10 relative overflow-hidden shadow-sm"
+                        style={{ opacity: 1 - (index * 0.25) }}
+                    >
+                        <div className="flex items-center gap-4 h-full px-5">
+                            <div className="w-5 h-5 rounded-md bg-muted/40 animate-pulse" />
+                            <div className="flex-1 space-y-3">
+                                <div className="h-3.5 w-1/2 bg-muted/40 rounded-full animate-pulse" />
+                                <div className="h-2.5 w-1/4 bg-muted/30 rounded-full animate-pulse" />
+                            </div>
+                        </div>
+                    </div>
                 ))}
             </div>
         )
@@ -205,16 +217,20 @@ export function TaskList({
                 ) : (
                     tasks.length === 0 && (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex flex-col items-center justify-center py-12 text-center"
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="flex flex-col items-center justify-center py-16 text-center bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] rounded-[24px] relative overflow-hidden"
                         >
-                            <div className="h-20 w-20 bg-muted/20 rounded-full flex items-center justify-center mb-4">
-                                <Check className="h-8 w-8 text-muted-foreground/50" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+                            <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6 shadow-inner relative">
+                                <div className="absolute inset-0 rounded-full bg-white/40 dark:bg-white/5 backdrop-blur-md" />
+                                <Check className="h-10 w-10 text-primary drop-shadow-sm relative z-10" strokeWidth={2.5} />
                             </div>
-                            <h3 className="text-lg font-medium text-foreground">All Tasks Completed!</h3>
-                            <p className="text-muted-foreground text-sm max-w-xs mt-2">
-                                You're all caught up. Take a break or add a new task to keep the momentum going.
+                            <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">All Clear!</h3>
+                            <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed relative z-10">
+                                {partnerId ? "You and your partner are all caught up. Take a break or add a new goal! ✨" : "You're all caught up. Add a task to keep the momentum going! ✨"}
                             </p>
                         </motion.div>
                     )

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { TasksTodayCounter } from "@/components/dashboard/tasks-today-counter"
+import { PartnerNotificationCenter } from "@/components/partner/notification-center"
 
 interface HeaderProps {
     partnerId?: string | null
@@ -89,10 +90,21 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
 
                 <TasksTodayCounter userId={userId} partnerId={partnerId} />
 
-                {/* Safe Decorative Element */}
-                <div className="relative p-2 rounded-full cursor-default text-primary overflow-hidden items-center justify-center flex hover:bg-primary/10 transition-colors">
-                    <Heart className="w-6 h-6 fill-primary/20 text-primary" />
-                </div>
+                {/* Notifications Element */}
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            className="relative p-2 rounded-full text-primary hover:bg-primary/10 transition-colors pointer-events-auto"
+                        >
+                            <Heart className="w-6 h-6 fill-primary/20 text-primary" />
+                        </motion.button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[300px] sm:w-[400px] border-l border-border bg-glass-white/95 backdrop-blur-xl">
+                        <SheetTitle className="sr-only">Notifications</SheetTitle>
+                        <PartnerNotificationCenter />
+                    </SheetContent>
+                </Sheet>
             </div>
         </header>
     )

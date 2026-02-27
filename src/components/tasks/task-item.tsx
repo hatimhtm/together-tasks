@@ -1,11 +1,13 @@
 "use client"
 
 import { Task } from "@/types/task"
-import { motion } from "framer-motion"
+import { motion, useMotionValue, useTransform } from "framer-motion"
 import { Check, Trash2, Calendar, Clock, AlertCircle, Pencil, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { useState, useEffect, forwardRef } from "react"
+import { useState, useEffect, forwardRef, useRef } from "react"
+import { triggerHaptic, triggerHapticSuccess } from "@/lib/haptics"
+import { ImpactStyle } from "@capacitor/haptics"
 
 interface TaskItemProps {
     task: Task
@@ -33,6 +35,11 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
     onUpdate
 }, ref) => {
     const [editForm, setEditForm] = useState<Partial<Task>>({})
+
+    // Swipe to complete / delete values
+    const x = useMotionValue(0)
+    const completeOpacity = useTransform(x, [0, 60], [0, 1])
+    const deleteOpacity = useTransform(x, [0, -60], [0, 1])
 
     useEffect(() => {
         if (isEditing) {
@@ -75,13 +82,47 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="group relative"
+            className="group relative border-b border-border/20 last:border-0 overflow-hidden"
         >
-            <div className="p-3 sm:px-4 transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5">
+            {/* Background Action Underlay */}
+            <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none">
+                <motion.div style={{ opacity: completeOpacity }} className="flex items-center gap-2 text-primary font-bold tracking-wide">
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Check className="w-5 h-5" strokeWidth={3} />
+                    </div>
+                </motion.div>
+                <motion.div style={{ opacity: deleteOpacity }} className="flex items-center gap-2 text-destructive font-bold tracking-wide">
+                    <div className="h-8 w-8 rounded-full bg-destructive/20 flex items-center justify-center">
+                        <Trash2 className="w-5 h-5" strokeWidth={3} />
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Draggable Task Surface */}
+            <motion.div
+                style={{ x }}
+                drag="x"
+                dragDirectionLock
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.5}
+                onDragEnd={(e, info) => {
+                    if (info.offset.x > 80 || info.velocity.x > 500) {
+                        triggerHapticSuccess()
+                        onComplete(task.is_completed)
+                    } else if (info.offset.x < -80 || info.velocity.x < -500) {
+                        triggerHaptic(ImpactStyle.Heavy)
+                        onDelete()
+                    }
+                }}
+                className="relative bg-white/60 dark:bg-black/40 backdrop-blur-xl p-3 sm:px-4 transition-colors duration-200 hover:bg-white/80 dark:hover:bg-black/60 z-10"
+            >
                 <div className="flex items-start gap-4">
                     {/* Checkbox Button */}
                     <button
-                        onClick={() => onComplete(task.is_completed)}
+                        onClick={() => {
+                            triggerHaptic(ImpactStyle.Medium)
+                            onComplete(task.is_completed)
+                        }}
                         className={cn(
                             "mt-1 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary flex items-center justify-center transition-all shrink-0 active:scale-90",
                             task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "border-primary/50 bg-primary/20",
@@ -256,7 +297,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                         <Trash2 className="h-4 w-4" />
                     </button>
                 </div>
-            </div>
+            </motion.div>
         </motion.div>
     )
 })

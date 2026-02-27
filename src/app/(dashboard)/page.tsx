@@ -1,77 +1,107 @@
+"use client"
+
 import { TasksContainer } from "@/components/dashboard/tasks-container"
 import { AiNudge } from "@/components/dashboard/ai-nudge"
 import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-button"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { getDisplayName } from "@/lib/user"
+import { useEffect, useState } from "react"
+import { Profile, Task } from "@/types/task"
 
-export default async function Home() {
-  const supabase = await createClient()
+export default function Home() {
+  const supabase = createClient()
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [partnerTheme, setPartnerTheme] = useState("light")
+  const [initialTasks, setInitialTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  useEffect(() => {
+    async function loadDashboard() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push("/login")
+        return
+      }
+      setUser(user)
 
-  if (!user) {
-    redirect("/login")
-  }
+      let { data: currentProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single()
 
-  // Fetch profile to get role
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single()
+      if (currentProfile && !currentProfile.has_completed_onboarding) {
+        router.push("/onboarding")
+        return
+      }
 
-  if (profile && !profile.has_completed_onboarding) {
-    redirect("/onboarding")
-  }
+      // Self-Healing Hardlink Logic (For King and Queen Pairing)
+      if (currentProfile && !currentProfile.partner_id) {
+        const oppositeRole = currentProfile.role === 'king' ? 'queen' : 'king'
+        const { data: partnerProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', oppositeRole)
+          .single()
 
-  // Self-Healing Hardlink Logic (For King and Queen Pairing)
-  if (profile && !profile.partner_id) {
-    // If they don't have a partner, look up the opposite role
-    const oppositeRole = profile.role === 'king' ? 'queen' : 'king'
-    const { data: partnerProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('role', oppositeRole)
-      .single()
+        if (partnerProfile) {
+          await supabase
+            .from('profiles')
+            .update({ partner_id: partnerProfile.id })
+            .eq('id', user.id)
+          currentProfile.partner_id = partnerProfile.id
+        }
+      }
+      setProfile(currentProfile)
 
-    if (partnerProfile) {
-      // Because RLS allows users to update their OWN profile, this works perfectly.
-      await supabase
-        .from('profiles')
-        .update({ partner_id: partnerProfile.id })
-        .eq('id', user.id)
+      let pTheme = "light"
+      if (currentProfile?.partner_id) {
+        const { data: partnerProfile } = await supabase
+          .from("profiles")
+          .select("theme")
+          .eq("id", currentProfile.partner_id)
+          .single()
+        if (partnerProfile?.theme) pTheme = partnerProfile.theme
+      }
+      setPartnerTheme(pTheme)
 
-      profile.partner_id = partnerProfile.id
+      // Fetch Tasks
+      let tasksQuery = supabase
+        .from("tasks")
+        .select("*")
+
+      if (currentProfile?.partner_id) {
+        tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${currentProfile.partner_id},assignee_id.eq.${currentProfile.partner_id}`)
+      } else {
+        tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
+      }
+      const { data: fetchTasks } = await tasksQuery.order("created_at", { ascending: false })
+      if (fetchTasks) setInitialTasks(fetchTasks)
+
+      setLoading(false)
     }
+
+    loadDashboard()
+  }, [router, supabase])
+
+  if (loading || !user) {
+    return <div className="min-h-[50vh] flex items-center justify-center text-muted-foreground animate-pulse">Loading items...</div>
   }
-
-  let partnerTheme = "light"
-  if (profile?.partner_id) {
-    const { data: partnerProfile } = await supabase
-      .from("profiles")
-      .select("theme")
-      .eq("id", profile.partner_id)
-      .single()
-    if (partnerProfile?.theme) partnerTheme = partnerProfile.theme
-  }
-
-  // Server-side fetch for immediate display (Optimistic UI enhancement)
-  let tasksQuery = supabase
-    .from("tasks")
-    .select("*")
-
-  if (profile?.partner_id) {
-    tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`)
-  } else {
-    tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
-  }
-
-  const { data: initialTasks } = await tasksQuery.order("created_at", { ascending: false })
 
   const displayName = getDisplayName(profile)
+  const hour = new Date().getHours()
+  let greeting = "Good evening"
+  let icon = "🌙"
+  if (hour < 12) {
+    greeting = "Good morning"
+    icon = "☀️"
+  } else if (hour < 18) {
+    greeting = "Good afternoon"
+    icon = "🌤️"
+  }
 
   return (
     <div className="space-y-8 pb-10">
@@ -79,7 +109,7 @@ export default async function Home() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-sm">
-            Hello, {displayName} 👋
+            {greeting}, {displayName} {icon}
           </h1>
           {profile?.partner_id && <ThinkingOfYouButton partnerId={profile.partner_id} />}
         </div>
@@ -93,7 +123,7 @@ export default async function Home() {
         <TasksContainer
           userId={user.id}
           partnerId={profile?.partner_id}
-          initialTasks={initialTasks || []}
+          initialTasks={initialTasks}
           userTheme={profile?.theme || 'light'}
           partnerTheme={partnerTheme}
           sidebarSlot={<AiNudge />}

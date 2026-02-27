@@ -1,28 +1,64 @@
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+"use client"
+
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
-import { Sparkles, Save, Heart } from "lucide-react"
-import { revalidatePath } from "next/cache"
+import { Sparkles, Save, Heart, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { Profile } from "@/types/task"
 
 
-export default async function GoalsPage() {
-    const supabase = await createClient()
+export default function GoalsPage() {
+    const supabase = createClient()
+    const router = useRouter()
+    const [profile, setProfile] = useState<Profile | null>(null)
+    const [user, setUser] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
+    const [goals, setGoals] = useState("")
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect("/login")
+    useEffect(() => {
+        async function loadProfile() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.push("/login")
+                return
+            }
+            setUser(user)
 
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", user.id)
+                .single()
 
-    async function saveGoals(formData: FormData) {
-        "use server"
-        const newGoals = formData.get("goals") as string
-        const sb = await createClient()
-        const { data: { user } } = await sb.auth.getUser()
-        if (user) {
-            await sb.from("profiles").update({ goals: newGoals }).eq("id", user.id)
-            revalidatePath("/goals")
+            setProfile(profile)
+            if (profile?.goals) setGoals(profile.goals)
+            setLoading(false)
         }
+        loadProfile()
+    }, [router, supabase])
+
+    async function handleSaveGoals(e: React.FormEvent) {
+        e.preventDefault()
+        if (!user) return
+
+        setSaving(true)
+        const { error } = await supabase.from("profiles").update({ goals: goals }).eq("id", user.id)
+
+        setSaving(false)
+        if (error) {
+            toast.error("Failed to save vision board")
+            console.error(error)
+        } else {
+            toast.success("Vision board updated! ✨")
+        }
+    }
+
+    if (loading) {
+        return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading vision board...</div>
     }
 
     return (
@@ -43,22 +79,23 @@ export default async function GoalsPage() {
                     <Sparkles className="w-32 h-32" />
                 </div>
 
-                <form action={saveGoals} className="relative z-10 flex flex-col gap-6">
+                <form onSubmit={handleSaveGoals} className="relative z-10 flex flex-col gap-6">
                     <div className="space-y-2">
                         <label htmlFor="goals" className="text-sm font-semibold text-primary uppercase tracking-wider">Our Distant Future</label>
                         <textarea
                             name="goals"
                             id="goals"
-                            defaultValue={profile?.goals || "We want to travel the world, buy a cute house, and adopt a dog named Pookie!"}
+                            value={goals}
+                            onChange={(e) => setGoals(e.target.value)}
                             className="w-full min-h-[300px] p-6 rounded-2xl bg-white/5 dark:bg-black/20 border border-white/20 dark:border-white/10 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y text-lg text-foreground placeholder:text-muted-foreground/50 transition-all font-medium leading-relaxed"
                             placeholder="Describe your dream life, your core values, and what you're working towards together..."
                         />
                     </div>
 
                     <div className="flex justify-end">
-                        <Button type="submit" size="lg" className="rounded-full shadow-lg hover:shadow-primary/25 hover:scale-105 transition-all duration-300 gap-2 font-semibold">
-                            <Save className="h-5 w-5" />
-                            Save Vision
+                        <Button type="submit" disabled={saving} size="lg" className="rounded-full shadow-lg hover:shadow-primary/25 hover:scale-105 transition-all duration-300 gap-2 font-semibold">
+                            {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                            {saving ? "Saving..." : "Save Vision"}
                         </Button>
                     </div>
                 </form>

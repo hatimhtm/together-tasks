@@ -1,30 +1,49 @@
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+"use client"
+
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
 import { format, isSameDay } from "date-fns"
 import { Calendar as CalendarIcon, Clock, CheckCircle2, Circle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Task } from "@/types/task"
 
-export default async function CalendarPage() {
-    const supabase = await createClient()
+export default function CalendarPage() {
+    const supabase = createClient()
+    const router = useRouter()
+    const [tasks, setTasks] = useState<Task[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        redirect("/login")
+    useEffect(() => {
+        async function loadCalendar() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.push("/login")
+                return
+            }
+
+            // Fetch profile
+            const { data: profile } = await supabase.from("profiles").select("partner_id").eq("id", user.id).single()
+
+            // Fetch all tasks with due dates
+            let query = supabase.from("tasks").select("*").not("due_date", "is", null).order("due_date", { ascending: true })
+
+            if (profile?.partner_id) {
+                query = query.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`)
+            } else {
+                query = query.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
+            }
+
+            const { data: fetchTasks } = await query
+            if (fetchTasks) setTasks(fetchTasks)
+            setLoading(false)
+        }
+        loadCalendar()
+    }, [router, supabase])
+
+    if (loading) {
+        return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading journey...</div>
     }
-
-    // Fetch profile
-    const { data: profile } = await supabase.from("profiles").select("partner_id").eq("id", user.id).single()
-
-    // Fetch all tasks with due dates
-    let query = supabase.from("tasks").select("*").not("due_date", "is", null).order("due_date", { ascending: true })
-
-    if (profile?.partner_id) {
-        query = query.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`)
-    } else {
-        query = query.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
-    }
-
-    const { data: tasks } = await query
 
     return (
         <div className="space-y-8 pb-20">
@@ -39,7 +58,7 @@ export default async function CalendarPage() {
             </div>
 
             <div className="relative border-l-2 border-primary/20 ml-4 space-y-8 pb-8">
-                {tasks?.length ? (
+                {tasks.length > 0 ? (
                     tasks.map((task) => {
                         const date = new Date(task.due_date!)
                         const isToday = isSameDay(date, new Date())

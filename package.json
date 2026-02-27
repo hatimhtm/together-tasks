@@ -7,12 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test src/**/*.test.ts"
+    "test": "node --import tsx --test src/**/*.test.ts",
+    "capacitor:build": "CAPACITOR_BUILD=true next build && npx cap sync"
   },
   "dependencies": {
     "@capacitor/android": "^8.1.0",
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
+    "@capacitor/haptics": "^8.0.1",
     "@capacitor/local-notifications": "^8.0.1",
     "@google/genai": "^1.42.0",
     "@supabase/ssr": "^0.8.0",

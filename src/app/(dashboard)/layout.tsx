@@ -1,40 +1,62 @@
+"use client"
+
 import { Header } from "@/components/layout/header"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { AIChatWidget } from "@/components/ai/chat-widget"
-import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { PageTransition } from "@/components/ui/page-transition"
+import { useEffect, useState } from "react"
+import { Profile } from "@/types/task"
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
-    const supabase = await createClient()
+    const supabase = createClient()
+    const router = useRouter()
+    const [user, setUser] = useState<any>(null)
+    const [profile, setProfile] = useState<Profile | null>(null)
+    const [loading, setLoading] = useState(true)
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
+    useEffect(() => {
+        async function loadLayoutData() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.push("/login")
+                return
+            }
+            setUser(user)
 
-    if (!user) {
-        redirect("/login")
-    }
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("username, role, has_completed_onboarding, partner_id")
+                .eq("id", user.id)
+                .single()
 
-    // Get user profile for AI personalization
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, role, has_completed_onboarding, partner_id")
-        .eq("id", user.id)
-        .single()
+            if (profile && !profile.has_completed_onboarding) {
+                router.push("/onboarding")
+                return
+            }
 
-    if (profile && !profile.has_completed_onboarding) {
-        redirect("/onboarding")
+            setProfile(profile)
+            setLoading(false)
+        }
+        loadLayoutData()
+    }, [router, supabase])
+
+    if (loading || !user) {
+        return <div className="min-h-screen bg-transparent pb-32 pt-24 animate-pulse p-8 text-center text-muted-foreground">Loading dashboard...</div>
     }
 
     return (
         <div className="min-h-screen bg-transparent pb-32 pt-24">
             <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} />
             <main className="container mx-auto px-4">
-                {children}
+                <PageTransition>
+                    {children}
+                </PageTransition>
             </main>
             <BottomNav />
 
