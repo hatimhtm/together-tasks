@@ -56,7 +56,10 @@ export default async function RootLayout({
             <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/20 blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
             <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] rounded-full bg-blue-500/20 blur-[150px] mix-blend-screen animate-blob animation-delay-4000" />
             {/* Subtle noise texture overlay */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
+            <div
+              className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+              style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}
+            />
           </div>
 
           <Providers>
