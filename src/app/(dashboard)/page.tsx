@@ -71,17 +71,30 @@ export default function Home() {
       }
       setPartnerTheme(pTheme)
 
-      // Schedule morning briefing and weekly review if enabled
+      // Fetch Tasks
+      let tasksQuery = supabase
+        .from("tasks")
+        .select("*")
+
+      if (currentProfile?.partner_id) {
+        tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${currentProfile.partner_id},assignee_id.eq.${currentProfile.partner_id}`)
+      } else {
+        tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
+      }
+      const { data: fetchTasks } = await tasksQuery.order("created_at", { ascending: false })
+      if (fetchTasks) setInitialTasks(fetchTasks)
+
+      // Schedule morning briefing and weekly review if enabled (uses fetched tasks)
       if (currentProfile?.briefing_enabled && currentProfile?.briefing_time) {
+        const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
         const todayTasks = (fetchTasks || []).filter((t: Task) => {
           if (t.assignee_id !== user.id) return false
           if (t.is_completed) return false
-          const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
           return !t.due_date || new Date(t.due_date) <= todayEnd
         })
 
         const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1); yesterday.setHours(0,0,0,0)
-        const yesterdayEnd = new Date(); yesterdayEnd.setDate(yesterdayEnd.getDate() - 1); yesterdayEnd.setHours(23,59,59,999)
+        const yesterdayEnd = new Date(yesterday); yesterdayEnd.setHours(23,59,59,999)
         const partnerCompletedYesterday = currentProfile.partner_id
           ? (fetchTasks || []).filter((t: Task) =>
               t.assignee_id === currentProfile.partner_id &&
@@ -104,19 +117,6 @@ export default function Home() {
           scheduleWeeklyReview(currentProfile.username || "there", currentProfile.briefing_time)
         }
       }
-
-      // Fetch Tasks
-      let tasksQuery = supabase
-        .from("tasks")
-        .select("*")
-
-      if (currentProfile?.partner_id) {
-        tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${currentProfile.partner_id},assignee_id.eq.${currentProfile.partner_id}`)
-      } else {
-        tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
-      }
-      const { data: fetchTasks } = await tasksQuery.order("created_at", { ascending: false })
-      if (fetchTasks) setInitialTasks(fetchTasks)
 
       setLoading(false)
     }
