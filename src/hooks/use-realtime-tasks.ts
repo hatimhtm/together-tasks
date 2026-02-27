@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/client"
 import { RealtimeChannel } from "@supabase/supabase-js"
 import { Task } from "@/types/task"
 import { sendPartnerCompletionNotification } from "@/lib/notifications/partner-notify"
+import { parseTaskInput } from "@/lib/ai/task-parser"
 
 export function useRealtimeTasks(userId: string, partnerId?: string | null, initialTasks?: Task[], partnerName?: string) {
     const [tasks, setTasks] = useState<Task[]>(initialTasks || [])
@@ -226,12 +227,28 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                 finalTitle = input.replace(/@shared/gi, "").trim();
             }
 
+            // AI-enrich the task (parse due date, priority, etc.)
+            const parsed = await parseTaskInput(finalTitle).catch(() => null)
+
+            // Build due_date: combine date + time if both present
+            let due_date: string | null = null
+            if (parsed?.dueDate) {
+                due_date = parsed.dueTime
+                    ? `${parsed.dueDate}T${parsed.dueTime}:00`
+                    : parsed.dueDate
+            }
+
             const newTaskData = {
-                title: finalTitle,
+                title: parsed?.title || finalTitle,
+                description: parsed?.description || null,
+                due_date,
+                priority: parsed?.priority || "medium",
                 creator_id: userId,
                 assignee_id: finalAssigneeId,
-                priority: "medium",
-                is_completed: false
+                is_completed: false,
+                emergency_level: parsed?.emergency_level || 'medium',
+                importance_level: parsed?.importance_level || 'medium',
+                duration_estimate: parsed?.duration_estimate || 15,
             };
 
             const { data: realTask, error } = await supabase
