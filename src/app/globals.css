@@ -4,7 +4,7 @@
 
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark mode handled by Next-themes class strategy */
 
 @theme inline {
   --color-background: var(--background);
@@ -247,14 +247,16 @@
 @layer base {
   * {
     @apply border-border;
-    touch-action: manipulation; /* Removes 300ms tap delay on mobile */
+    touch-action: manipulation;
+    /* Removes 300ms tap delay on mobile */
   }
 
 
 
   body {
     @apply bg-background text-foreground antialiased;
-    -webkit-overflow-scrolling: touch; /* Momentum scroll on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Momentum scroll on iOS */
   }
 
   /* Custom Blob Animations for Layout Orbs */
