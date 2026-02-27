@@ -1,88 +1,248 @@
-name: Build & Release Native Wrappers
+name: Build & Release v2.0
 
 on:
   push:
     tags:
       - 'v*'
 
+# Both builds must succeed — the release job only runs if both pass (atomic release)
 jobs:
-  build-mac:
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install Dependencies
-        run: |
-          cd desktop-wrapper
-          npm install
-      - name: Build macOS App
-        run: |
-          cd desktop-wrapper
-          npm run dist
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-app
-          path: desktop-wrapper/dist/*.dmg
 
+  # ─────────────────────────────────────────
+  # 1. BUILD ANDROID APKs (32-bit + 64-bit)
+  # ─────────────────────────────────────────
   build-android:
+    name: Android (arm64 + armeabi)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node
+
+      - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - name: Setup Java
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Install Dependencies
-        run: npm install
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build Next.js static export
+        run: npm run build
+        env:
+          CAPACITOR_BUILD: 'true'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
+          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+
       - name: Sync Capacitor
         run: |
           mkdir -p android/app/src/main/assets/public
           npx cap sync android
-      - name: Build Android APK
+
+      - name: Make Gradle executable
+        run: chmod +x android/gradlew
+
+      - name: Build Android APKs (debug, 32+64 bit)
         run: |
           cd android
-          ./gradlew assembleDebug
-      - name: Upload Android Artifact
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APKs with architecture labels
+        run: |
+          mkdir -p artifacts/android
+          # arm64-v8a (64-bit)
+          cp android/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk \
+             artifacts/android/TogetherTasks-v${{ github.ref_name }}-arm64.apk || true
+          # armeabi-v7a (32-bit)
+          cp android/app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk \
+             artifacts/android/TogetherTasks-v${{ github.ref_name }}-armeabi.apk || true
+          # Universal APK (all architectures)
+          cp android/app/build/outputs/apk/debug/app-universal-debug.apk \
+             artifacts/android/TogetherTasks-v${{ github.ref_name }}-universal.apk || true
+          ls artifacts/android/
+
+      - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: android-apks
+          path: artifacts/android/*.apk
+          retention-days: 1
 
+  # ─────────────────────────────────────────
+  # 2. BUILD MAC APP (Tauri, Intel + Apple Silicon universal)
+  # ─────────────────────────────────────────
+  build-mac:
+    name: macOS Universal (Tauri)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build Next.js static export
+        run: npm run build
+        env:
+          CAPACITOR_BUILD: 'true'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
+          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+
+      - name: Generate Tauri icons from source
+        run: npx @tauri-apps/cli icon public/icon.png
+
+      - name: Build Tauri app (universal binary — Intel + Apple Silicon)
+        run: npx @tauri-apps/cli build --target universal-apple-darwin
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - name: Locate and rename macOS artifacts
+        run: |
+          mkdir -p artifacts/mac
+          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -exec cp {} artifacts/mac/TogetherTasks-v${{ github.ref_name }}-universal.dmg \;
+          ls artifacts/mac/
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: artifacts/mac/*.dmg
+          retention-days: 1
+
+  # ─────────────────────────────────────────
+  # 3. BUILD WEB BUNDLE (for OTA updates)
+  # ─────────────────────────────────────────
+  build-bundle:
+    name: Web Bundle (OTA)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build web bundle
+        run: npm run build
+        env:
+          CAPACITOR_BUILD: 'true'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
+          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+
+      - name: Create bundle.zip for OTA distribution
+        run: |
+          cd out
+          zip -r ../bundle.zip .
+          cd ..
+          ls -lh bundle.zip
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-bundle
+          path: bundle.zip
+          retention-days: 1
+
+  # ─────────────────────────────────────────
+  # 4. RELEASE — only if ALL builds pass
+  # ─────────────────────────────────────────
   release:
-    needs: [build-mac, build-android]
+    name: Create GitHub Release
+    needs: [build-android, build-mac, build-bundle]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download macOS Artifact
+      - uses: actions/checkout@v4
+
+      - name: Download Android APKs
         uses: actions/download-artifact@v4
         with:
-          name: macos-app
-          path: artifacts/mac
-      - name: Download Android Artifact
+          name: android-apks
+          path: release-artifacts/android
+
+      - name: Download macOS DMG
         uses: actions/download-artifact@v4
         with:
-          name: android-apk
-          path: artifacts/android
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+          name: macos-dmg
+          path: release-artifacts/mac
+
+      - name: Download web bundle
+        uses: actions/download-artifact@v4
         with:
+          name: web-bundle
+          path: release-artifacts/bundle
+
+      - name: List release artifacts
+        run: find release-artifacts -type f
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Together Tasks ${{ github.ref_name }}"
+          body: |
+            ## Together Tasks ${{ github.ref_name }}
+
+            ### Downloads
+            | Platform | File | Notes |
+            |---|---|---|
+            | 🍎 macOS | `TogetherTasks-*-universal.dmg` | Universal binary (Intel + Apple Silicon) |
+            | 🤖 Android 64-bit | `TogetherTasks-*-arm64.apk` | For modern Android phones |
+            | 🤖 Android 32-bit | `TogetherTasks-*-armeabi.apk` | For older Android phones |
+            | 🤖 Android Universal | `TogetherTasks-*-universal.apk` | All architectures |
+
+            ### What's New in v2.0
+            - Native Mac app powered by Tauri (replaces Electron)
+            - Offline-first task display with proper date filtering
+            - AI-aware time parsing (evening = 7pm, not 8am)
+            - Partner task completion notifications (AI-written)
+            - Morning briefing & weekly review notifications
+            - Analytics dashboard with 7-day productivity charts
+            - Weekly review screen with celebration
+            - Smart settings onboarding prompt
+            - Removed laggy XP system
+            - Skeleton loading screens throughout
+            - Haptic design system standardized
+          draft: false
+          prerelease: false
           files: |
-            artifacts/mac/*.dmg
-            artifacts/mac/*.zip
-            artifacts/android/*.apk
+            release-artifacts/android/*.apk
+            release-artifacts/mac/*.dmg
+            release-artifacts/bundle/bundle.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

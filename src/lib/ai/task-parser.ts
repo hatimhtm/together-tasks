@@ -25,7 +25,20 @@ Return ONLY valid JSON matching this schema:
   "subtasks": ["subtask 1", "subtask 2"] (empty array if task is very simple)
 }
 
-Today's date is: ${new Date().toISOString().split('T')[0]}`
+Today's date is: ${new Date().toLocaleDateString('en-CA')} (YYYY-MM-DD format)
+Current time is: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+Current day of week: ${new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+
+Time-of-day mapping (use these EXACT times when user uses vague time expressions):
+- "morning" / "this morning" → 09:00
+- "afternoon" / "this afternoon" → 14:00
+- "evening" / "this evening" → 19:00
+- "tonight" / "tonight" → 21:00
+- "night" / "late" → 22:00
+- "noon" / "lunchtime" / "lunch" → 12:00
+- "end of day" / "EOD" / "end of the day" → 17:00
+- "early" / "first thing" → 07:00
+CRITICAL: NEVER default to 08:00 unless the user explicitly said "8am" or "8:00". If no time is specified at all, set dueTime to null.`
 
     try {
         const response = await ai.models.generateContent({
