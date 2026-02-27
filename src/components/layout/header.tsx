@@ -38,13 +38,22 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
         { name: "Settings", href: "/settings", icon: Settings },
     ]
 
+    // On macOS Tauri, the traffic lights overlay the top-left, so we add padding to avoid collision
+    const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 h-[80px] px-6 flex items-center justify-between pointer-events-none">
+        <header
+            className="fixed top-0 left-0 right-0 z-50 h-[80px] px-6 flex items-center justify-between pointer-events-none"
+            {...(isTauri ? { 'data-tauri-drag-region': 'true' } : {})}
+        >
             {/* Background Blur */}
             <div className="absolute inset-0 bg-glass-white/80 backdrop-blur-xl border-b border-glass-border pointer-events-auto" />
 
-            {/* Content */}
-            <div className="relative z-10 w-full flex items-center justify-between pointer-events-auto">
+            {/* Content - extra left padding on macOS Tauri to clear traffic lights */}
+            <div
+                className="relative z-10 w-full flex items-center justify-between pointer-events-auto"
+                style={isTauri ? { paddingLeft: '80px' } : undefined}
+            >
                 <Sheet>
                     <SheetTrigger asChild>
                         <motion.button

@@ -7,9 +7,28 @@ import { motion } from "framer-motion"
 export function TasksTodayCounter({ userId, partnerId }: { userId: string, partnerId?: string | null }) {
     const { tasks } = useRealtimeTasks(userId, partnerId)
 
-    const relevantTasks = tasks.filter(t => t.assignee_id === userId || t.scope === 'shared');
-    const totalTasks = relevantTasks.length || 0;
-    const completedTasks = relevantTasks.filter(t => t.is_completed).length || 0;
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+    const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
+
+    const myTasks = tasks.filter(t => t.assignee_id === userId || t.scope === 'shared')
+
+    // Today's tasks: due today, overdue (past due), or created today with no due date
+    const relevantTasks = myTasks.filter(t => {
+        if (t.due_date) {
+            const due = new Date(t.due_date)
+            return due <= todayEnd // today or overdue
+        }
+        // No due date: show if created today
+        return new Date(t.created_at) >= todayStart
+    })
+
+    const totalTasks = relevantTasks.length || 0
+    // Count completed_at today (not just is_completed — avoids counting old completed tasks)
+    const completedTasks = relevantTasks.filter(t => {
+        if (!t.is_completed) return false
+        if (t.completed_at) return new Date(t.completed_at) >= todayStart
+        return true // fallback: is_completed but no completed_at timestamp
+    }).length || 0
     const pendingTasks = totalTasks - completedTasks;
 
     if (totalTasks === 0 || pendingTasks === 0) {

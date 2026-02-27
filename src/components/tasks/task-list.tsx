@@ -118,13 +118,6 @@ export function TaskList({
                 description: "Keep up the great work!",
                 className: "bg-background/80 backdrop-blur-md border-border/50",
             })
-
-            // Trigger client gamification badges to refetch their XP if necessary
-            setTimeout(() => {
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new Event('profile-updated'))
-                }
-            }, 1000)
         }
     }
 

@@ -30,6 +30,4 @@ export interface Profile {
     theme?: string
     avatar_url?: string | null
     goals?: string | null
-    points?: number
-    level?: number
 }

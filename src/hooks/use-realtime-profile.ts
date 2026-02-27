@@ -6,8 +6,6 @@ export interface Profile {
     id: string
     username: string
     role: "king" | "queen"
-    xp: number
-    level: number
     avatar_url: string | null
     theme: string
     streak: number
@@ -43,12 +41,8 @@ export function useRealtimeProfile(userId: string | undefined) {
             )
             .subscribe()
 
-        const handleRefresh = () => fetchProfile()
-        window.addEventListener('profile-updated', handleRefresh)
-
         return () => {
             channel.unsubscribe()
-            window.removeEventListener('profile-updated', handleRefresh)
         }
     }, [userId])
 

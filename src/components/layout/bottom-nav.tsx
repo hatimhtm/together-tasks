@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Home, Plus, Settings, User, Trophy } from "lucide-react"
+import { Home, Plus, Settings, User, BarChart2 } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { triggerHaptic } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
@@ -14,7 +14,7 @@ export function BottomNav() {
 
     const tabs = [
         { name: "Home", href: "/", icon: Home },
-        { name: "Milestones", href: "/milestones", icon: Trophy },
+        { name: "Stats", href: "/analytics", icon: BarChart2 },
         { name: "Add", href: "#add", icon: Plus, isAction: true },
         { name: "Settings", href: "/settings", icon: Settings },
         { name: "Me", href: "/profile", icon: User },

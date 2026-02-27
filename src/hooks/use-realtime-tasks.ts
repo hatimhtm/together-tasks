@@ -2,8 +2,9 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { RealtimeChannel } from "@supabase/supabase-js"
 import { Task } from "@/types/task"
+import { sendPartnerCompletionNotification } from "@/lib/notifications/partner-notify"
 
-export function useRealtimeTasks(userId: string, partnerId?: string | null, initialTasks?: Task[]) {
+export function useRealtimeTasks(userId: string, partnerId?: string | null, initialTasks?: Task[], partnerName?: string) {
     const [tasks, setTasks] = useState<Task[]>(initialTasks || [])
     const [loading, setLoading] = useState(!initialTasks)
     const supabase = createClient()
@@ -133,6 +134,16 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                         task.id === newRecord.id ? (newRecord as Task) : task
                     )
                 )
+                // If partner completed a task I created for them, notify me
+                if (
+                    newRecord.is_completed &&
+                    !oldRecord?.is_completed &&
+                    newRecord.creator_id === userId &&
+                    newRecord.assignee_id === partnerId &&
+                    partnerName
+                ) {
+                    sendPartnerCompletionNotification(newRecord.title, partnerName)
+                }
                 break
 
             case "DELETE":
@@ -148,11 +159,6 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
             t.id === taskId ? { ...t, ...updates } : t
         ))
 
-        // If they marked it complete, bounce the XP badge!
-        if (updates.is_completed) {
-            window.dispatchEvent(new Event('profile-updated'))
-        }
-
         try {
             // 2. Direct Supabase Call (Replacing API route for static export)
             const { error: updateError } = await supabase
@@ -161,11 +167,6 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                 .eq('id', taskId)
 
             if (updateError) throw updateError
-
-            // Replicate XP logic from the old API route if completed
-            if (updates.is_completed) {
-                await (supabase as any).rpc('add_xp', { amount: 20 })
-            }
         } catch (error) {
             console.error("Update failed, rolling back", error)
             // 3. Rollback (re-fetch or undo)
