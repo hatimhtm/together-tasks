@@ -16,24 +16,23 @@ function getDateBuckets(tasks: any[], userId: string, partnerId: string | null |
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
     const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
 
-    // Tab filter first
+    // Tab filter first — shared tasks only in Shared tab, not in Mine/Partner
     const tabFiltered = tasks.filter(task => {
         if (activeTab === "shared") return task.scope === 'shared'
-        if (activeTab === "my") return task.assignee_id === userId || task.scope === 'shared'
-        if (activeTab === "partner") return task.assignee_id === partnerId || task.scope === 'shared'
+        if (activeTab === "my") return task.assignee_id === userId && task.scope !== 'shared'
+        if (activeTab === "partner") return task.assignee_id === partnerId && task.scope !== 'shared'
         return true
     })
 
-    // Today/overdue: tasks with due_date <= end of today, OR no due_date (always relevant)
+    // Today/overdue bucket: due today, overdue, OR undated (always relevant until completed)
     const todayTasks = tabFiltered.filter(t => {
         if (t.is_completed) {
-            // Show completed tasks only if completed today
+            // Only show completions from today
             if (t.completed_at) return new Date(t.completed_at) >= todayStart
             return false
         }
         if (t.due_date) return new Date(t.due_date) <= todayEnd
-        // No due date: show if created today
-        return new Date(t.created_at) >= todayStart
+        return true // No due date = always show until done
     })
 
     // Upcoming: due in the future, not completed
