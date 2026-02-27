@@ -7,6 +7,11 @@
 # Production
 /build
 /dist
+/out
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/swe-worker-*.js
 .DS_Store
 
 # Logs
