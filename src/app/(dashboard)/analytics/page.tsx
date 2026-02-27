@@ -119,32 +119,34 @@ export default function AnalyticsPage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) { router.push("/login"); return }
 
-            const [{ data: profile }, { data: tasks }] = await Promise.all([
-                supabase.from('profiles').select('username, partner_id, streak').eq('id', user.id).single(),
-                supabase.from('tasks').select('*').or(
-                    profile?.partner_id
-                        ? `creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`
-                        : `creator_id.eq.${user.id},assignee_id.eq.${user.id}`
-                )
-            ])
+            // Fetch profile first so we can use partner_id in the tasks query
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('username, partner_id, streak')
+                .eq('id', user.id)
+                .single()
 
-            // Re-fetch with profile data
-            const { data: myProfile } = await supabase.from('profiles').select('username, partner_id, streak').eq('id', user.id).single()
-            const partnerRes = myProfile?.partner_id
-                ? await supabase.from('profiles').select('username').eq('id', myProfile.partner_id).single()
-                : null
+            const orFilter = profile?.partner_id
+                ? `creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`
+                : `creator_id.eq.${user.id},assignee_id.eq.${user.id}`
+
+            const [{ data: tasks }, partnerRes] = await Promise.all([
+                supabase.from('tasks').select('*').or(orFilter),
+                profile?.partner_id
+                    ? supabase.from('profiles').select('username').eq('id', profile.partner_id).single()
+                    : Promise.resolve({ data: null }),
+            ])
 
             const allTasks = tasks || []
             const weekAgo = subDays(new Date(), 7)
 
             const myTasks = allTasks.filter((t: any) => t.assignee_id === user.id)
-            const partnerTasks = allTasks.filter((t: any) => myProfile?.partner_id && t.assignee_id === myProfile.partner_id)
+            const partnerTasks = allTasks.filter((t: any) => profile?.partner_id && t.assignee_id === profile.partner_id)
 
             const myCompleted = myTasks.filter((t: any) => t.is_completed)
             const myCompletedThisWeek = myCompleted.filter((t: any) => t.completed_at && new Date(t.completed_at) >= weekAgo)
             const partnerCompletedThisWeek = partnerTasks.filter((t: any) => t.is_completed && t.completed_at && new Date(t.completed_at) >= weekAgo).length
 
-            // Best hour: most completions
             const hourCounts: Record<number, number> = {}
             myCompleted.forEach((t: any) => {
                 if (t.completed_at) {
@@ -157,7 +159,10 @@ export default function AnalyticsPage() {
                 : null
 
             const weekData = buildWeekData(allTasks, user.id)
-            const bestDay = weekData.reduce((best, d) => (!best || d.completed > best.count) ? { label: d.label, count: d.completed } : best, null as { label: string; count: number } | null)
+            const bestDay = weekData.reduce(
+                (best, d) => (!best || d.completed > best.count) ? { label: d.label, count: d.completed } : best,
+                null as { label: string; count: number } | null
+            )
 
             const totalAll = myTasks.length
             const rate = totalAll > 0 ? Math.round((myCompleted.length / totalAll) * 100) : 0
@@ -167,11 +172,11 @@ export default function AnalyticsPage() {
                 completedThisWeek: myCompletedThisWeek.length,
                 partnerCompletedThisWeek,
                 completionRate: rate,
-                streak: myProfile?.streak || 0,
+                streak: profile?.streak || 0,
                 bestDay: bestDay?.count ? bestDay : null,
                 weekData,
                 bestHour,
-                myName: myProfile?.username || "You",
+                myName: profile?.username || "You",
                 partnerName: partnerRes?.data?.username || "Partner",
             })
             setLoading(false)
