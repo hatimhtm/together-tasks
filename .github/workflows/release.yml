@@ -38,9 +38,8 @@ jobs:
           CAPACITOR_BUILD: 'true'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
-          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+          NEXT_PUBLIC_GEMINI_API_KEY: ${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Sync Capacitor
         run: |
@@ -110,9 +109,8 @@ jobs:
           CAPACITOR_BUILD: 'true'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
-          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+          NEXT_PUBLIC_GEMINI_API_KEY: ${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Generate Tauri icons from source
         run: npx @tauri-apps/cli icon public/icon.png
@@ -160,9 +158,8 @@ jobs:
           CAPACITOR_BUILD: 'true'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
-          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+          NEXT_PUBLIC_GEMINI_API_KEY: ${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Create bundle.zip for OTA distribution
         run: |
