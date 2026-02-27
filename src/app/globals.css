@@ -2,8 +2,6 @@
 @import "tw-animate-css";
 /* @import "shadcn/tailwind.css"; -- Removing this as it causes build errors in v4 */
 
-@plugin "tailwindcss-animate";
-
 /* Dark mode handled by Next-themes class strategy */
 
 @theme inline {
