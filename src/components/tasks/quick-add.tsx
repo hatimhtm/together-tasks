@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
@@ -25,6 +25,7 @@ export function QuickAdd({
     const [loading, setLoading] = useState(false)
     const [assignMode, setAssignMode] = useState<"me" | "partner" | "shared">("me")
     const [isPartnerTyping, setIsPartnerTyping] = useState(false)
+    const [focused, setFocused] = useState(false)
 
     // Typing indicator refs
     const channelRef = useRef<any>(null)
@@ -142,7 +143,12 @@ export function QuickAdd({
     }
 
     return (
-        <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl px-4 py-3 relative mt-6">
+        <div className={cn(
+            "bg-card/60 backdrop-blur-xl border rounded-2xl px-4 py-3 relative mt-6 transition-all duration-200",
+            focused
+                ? "border-primary/40 shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]"
+                : "border-border/60"
+        )}>
             <AnimatePresence>
                 {isPartnerTyping && (
                     <motion.div
@@ -195,9 +201,11 @@ export function QuickAdd({
                         }
                     }}
                     placeholder="What needs to be done? ✨"
-                    className="flex-1 min-h-[40px] max-h-[160px] py-2 px-3 rounded-xl bg-transparent border-0 focus-visible:ring-0 resize-none outline-none overflow-hidden w-full text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50"
+                    className="flex-1 min-h-[40px] max-h-[160px] py-2 px-3 rounded-xl bg-transparent border-0 focus-visible:ring-0 resize-none outline-none overflow-hidden w-full text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/40"
                     disabled={loading}
                     rows={1}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
                 />
                 <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-xl p-0 shadow-sm bg-primary text-primary-foreground">
                     {loading ? (

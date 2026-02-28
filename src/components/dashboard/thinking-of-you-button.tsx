@@ -3,22 +3,23 @@
 import { useState } from "react"
 import { Heart } from "lucide-react"
 import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
 
 export function ThinkingOfYouButton({ partnerId }: { partnerId: string }) {
     const [loading, setLoading] = useState(false)
+    const [sent, setSent] = useState(false)
 
     const handleNudge = async () => {
-        if (loading) return
+        if (loading || sent) return
         setLoading(true)
 
         try {
-            // Optimistic Celebration
             confetti({
-                particleCount: 20,
-                spread: 50,
-                origin: { y: 0.2, x: 0.8 },
-                colors: ['#FF1493', '#FF69B4', '#FFB6C1']
+                particleCount: 24,
+                spread: 55,
+                origin: { y: 0.15, x: 0.85 },
+                colors: ['#FF1493', '#FF69B4', '#FFB6C1', '#ff80ab'],
             })
 
             const { createClient } = await import("@/lib/supabase/client")
@@ -34,22 +35,44 @@ export function ThinkingOfYouButton({ partnerId }: { partnerId: string }) {
                 })
             }
 
+            setSent(true)
             toast.success("Sent some love! ❤️")
-        } catch (error: any) {
-            toast.error("Couldn't send love right now. Try again!")
+            setTimeout(() => setSent(false), 4000)
+        } catch {
+            toast.error("Couldn't send love right now.")
         } finally {
-            setTimeout(() => setLoading(false), 2000) // Cooldown to prevent spam
+            setTimeout(() => setLoading(false), 2000)
         }
     }
 
     return (
-        <button
+        <motion.button
             onClick={handleNudge}
-            disabled={loading}
-            title="Thinking of You Nudge"
-            className="flex items-center justify-center p-2 rounded-full bg-pink-500/10 hover:bg-pink-500/20 text-pink-500 transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed group"
+            disabled={loading || sent}
+            whileTap={{ scale: 0.88 }}
+            title="Send some love"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-500/10 hover:bg-pink-500/18 border border-pink-500/20 text-pink-500 transition-all duration-200 disabled:cursor-not-allowed"
         >
-            <Heart className={`h-5 w-5 ${loading ? 'opacity-50' : 'group-hover:fill-pink-500'}`} />
-        </button>
+            <AnimatePresence mode="wait">
+                {sent ? (
+                    <motion.span
+                        key="sent"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        className="text-sm"
+                    >
+                        ❤️
+                    </motion.span>
+                ) : (
+                    <motion.div key="icon" initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
+                        <Heart className={`h-4 w-4 transition-all ${loading ? 'opacity-50' : 'hover:fill-pink-500'}`} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <span className="text-xs font-semibold hidden sm:block">
+                {sent ? "Sent!" : "Thinking of you"}
+            </span>
+        </motion.button>
     )
 }

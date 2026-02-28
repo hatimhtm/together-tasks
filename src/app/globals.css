@@ -348,7 +348,7 @@
   }
 
   .animate-blob {
-    animation: blob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+    animation: blob 12s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .animation-delay-2000 {
@@ -361,6 +361,25 @@
 
   .text-shadow-md {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Skeleton shimmer — works on any bg-card surface */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.04) 40%,
+      rgba(255,255,255,0.08) 50%,
+      rgba(255,255,255,0.04) 60%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
   }
 }
 

@@ -182,10 +182,11 @@ export function TaskList({
                         </div>
 
                         <div className="space-y-3">
-                            {activeTasks.map(task => (
+                            {activeTasks.map((task, i) => (
                                 <TaskItem
                                     key={task.id}
                                     task={task}
+                                    index={i}
                                     userId={userId}
                                     isExpanded={expandedTasks.has(task.id)}
                                     isEditing={editingTaskId === task.id}
