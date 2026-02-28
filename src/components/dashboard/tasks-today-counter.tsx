@@ -10,25 +10,31 @@ export function TasksTodayCounter({ userId, partnerId }: { userId: string, partn
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
     const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
 
-    // Only my personal tasks (not shared, not partner's)
-    const myTasks = tasks.filter(t => t.assignee_id === userId && t.scope !== 'shared')
+    // All tasks assigned to me (personal + shared that involve me)
+    const myTasks = tasks.filter(t => t.assignee_id === userId)
 
-    // Mirror the same logic as the main view: due/overdue + all undated incomplete
-    const relevantTasks = myTasks.filter(t => {
-        if (t.is_completed) {
-            // Count as completed only if done today
-            return t.completed_at ? new Date(t.completed_at) >= todayStart : false
+    // Determine if I've personally completed a task (handles both shared and personal)
+    const iDoneIt = (t: any): boolean => {
+        if (t.scope === 'shared') {
+            return Array.isArray(t.completed_by) && t.completed_by.includes(userId)
         }
+        return t.is_completed
+    }
+
+    // Today's relevant set: incomplete tasks + tasks I completed today
+    const relevantTasks = myTasks.filter(t => {
+        if (iDoneIt(t)) {
+            // For shared: no date available, just count it; for personal: check date
+            if (t.scope === 'shared') return true
+            return t.completed_at ? new Date(t.completed_at) >= todayStart : true
+        }
+        if (t.is_completed) return false // completed by someone else
         if (t.due_date) return new Date(t.due_date) <= todayEnd
         return true // Undated = always pending
     })
 
-    const completedTasks = relevantTasks.filter(t => t.is_completed).length || 0
-    const totalTasks = (myTasks.filter(t => {
-        if (t.is_completed) return t.completed_at ? new Date(t.completed_at) >= todayStart : false
-        if (t.due_date) return new Date(t.due_date) <= todayEnd
-        return true
-    })).length || 0
+    const completedTasks = relevantTasks.filter(t => iDoneIt(t)).length || 0
+    const totalTasks = relevantTasks.length || 0
     const pendingTasks = totalTasks - completedTasks;
 
     if (totalTasks === 0 || pendingTasks === 0) {
