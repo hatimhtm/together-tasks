@@ -70,9 +70,9 @@ export function TasksContainer({
     const { todayTasks, upcomingTasks } = getDateBuckets(tasks, userId, partnerId, activeTab)
 
     return (
-        <div className="w-full max-w-5xl mx-auto pb-10 pt-4 px-2 sm:px-0 flex flex-col md:flex-row gap-8 items-start">
+        <div className="w-full max-w-5xl mx-auto pb-10 pt-2 px-2 sm:px-0 flex flex-col md:flex-row gap-6 items-start">
             {/* Left Sidebar */}
-            <div className="w-full md:w-[350px] shrink-0 space-y-6 md:sticky md:top-28 z-10 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="w-full md:w-[320px] shrink-0 space-y-4 md:sticky md:top-28 z-10 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {sidebarSlot}
 
                 {/* Focus Tabs */}

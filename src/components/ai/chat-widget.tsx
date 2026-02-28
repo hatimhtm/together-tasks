@@ -11,7 +11,7 @@ interface Message {
     timestamp: Date
 }
 
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyBcqeiR7anDxGfB8tz8tcjHpGCWrawFbUc"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
 
 export function AIChatWidget({
     userName,
