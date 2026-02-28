@@ -12,7 +12,7 @@ import { Profile } from "@/types/task"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 
-const APP_VERSION = "2.0.8"
+const APP_VERSION = "2.2.1"
 
 const BRIEFING_TIME_OPTIONS = [
     { label: "7:00 AM", value: "07:00" },
@@ -283,7 +283,7 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode, title: string }
 
 function SettingRow({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
-        <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/10 dark:hover:bg-black/10 transition-colors group">
+        <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted/40 transition-colors group">
             <div className="flex items-center gap-4">
                 <div className="text-muted-foreground group-hover:text-primary transition-colors">{icon}</div>
                 <div className="text-left">
