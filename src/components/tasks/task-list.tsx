@@ -154,7 +154,7 @@ export function TaskList({
     const completedTasks = tasks.filter(t => t.is_completed)
 
     return (
-        <div className="space-y-8 pb-24">
+        <div className="space-y-6 pb-16">
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
@@ -174,15 +174,8 @@ export function TaskList({
             {/* Active Tasks */}
             <AnimatePresence mode="popLayout">
                 {activeTasks.length > 0 ? (
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between px-1">
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                                Active ({activeTasks.length})
-                            </h3>
-                        </div>
-
-                        <div className="space-y-3">
-                            {activeTasks.map((task, i) => (
+                    <div className="space-y-2">
+                        {activeTasks.map((task, i) => (
                                 <TaskItem
                                     key={task.id}
                                     task={task}
@@ -202,8 +195,7 @@ export function TaskList({
                                         }
                                     }}
                                 />
-                            ))}
-                        </div>
+                        ))}
                     </div>
                 ) : (
                     tasks.length === 0 && (
@@ -229,15 +221,18 @@ export function TaskList({
 
             {/* Completed Tasks (Collapsible) */}
             {completedTasks.length > 0 && (
-                <div className="space-y-2 pt-4 border-t border-border/20">
+                <div className="pt-2 border-t border-border/15">
                     <button
                         onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
-                        className="flex items-center gap-2 px-1 hover:opacity-80 transition-opacity"
+                        className="flex items-center gap-1.5 px-1 py-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full"
                     >
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                            Completed ({completedTasks.length})
-                        </h3>
-                        {isCompletedExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                        {isCompletedExpanded
+                            ? <ChevronUp className="h-3.5 w-3.5" />
+                            : <ChevronDown className="h-3.5 w-3.5" />
+                        }
+                        <span className="text-xs font-medium">
+                            {completedTasks.length} completed
+                        </span>
                     </button>
 
                     <AnimatePresence>
@@ -246,33 +241,25 @@ export function TaskList({
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="space-y-2 opacity-60 hover:opacity-100 transition-opacity duration-300 overflow-hidden"
+                                className="overflow-hidden space-y-1 mt-1"
                             >
                                 {completedTasks.map(task => (
-                                    <motion.div
-                                        layout
-                                        key={task.id}
-                                        className="group relative"
-                                    >
-                                        <div className="p-3 rounded-xl bg-muted/10 border border-transparent flex items-center gap-3 hover:bg-muted/20 transition-colors">
-                                            <button
-                                                onClick={() => handleComplete(task.id, task.is_completed)}
-                                                className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0"
-                                            >
-                                                <Check className="h-3 w-3" strokeWidth={3} />
-                                            </button>
-
-                                            <span className="flex-1 text-sm text-muted-foreground line-through decoration-muted-foreground/50">
-                                                {task.title}
-                                            </span>
-
-                                            <button
-                                                onClick={() => setTaskToDelete(task.id)}
-                                                className="opacity-0 group-hover:opacity-100 p-2 hover:text-destructive transition-opacity"
-                                            >
-                                                <Trash2 className="h-3 w-3" />
-                                            </button>
-                                        </div>
+                                    <motion.div layout key={task.id} className="group flex items-center gap-3 px-1 py-2 rounded-xl hover:bg-muted/20 transition-colors">
+                                        <button
+                                            onClick={() => handleComplete(task.id, task.is_completed)}
+                                            className="h-[22px] w-[22px] rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center shrink-0 transition-all hover:bg-primary/30"
+                                        >
+                                            <Check className="h-2.5 w-2.5 text-primary" strokeWidth={3} />
+                                        </button>
+                                        <span className="flex-1 text-sm text-muted-foreground/50 line-through">
+                                            {task.title}
+                                        </span>
+                                        <button
+                                            onClick={() => setTaskToDelete(task.id)}
+                                            className="opacity-0 group-hover:opacity-100 p-1.5 hover:text-destructive transition-all"
+                                        >
+                                            <Trash2 className="h-3 w-3" />
+                                        </button>
                                     </motion.div>
                                 ))}
                             </motion.div>
