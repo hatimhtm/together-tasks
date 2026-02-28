@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { TasksTodayCounter } from "@/components/dashboard/tasks-today-counter"
+
 import { PartnerNotificationCenter } from "@/components/partner/notification-center"
 
 interface HeaderProps {
@@ -96,8 +96,6 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
                         </div>
                     </SheetContent>
                 </Sheet>
-
-                <TasksTodayCounter userId={userId} partnerId={partnerId} />
 
                 {/* Notifications Element */}
                 <Sheet>
