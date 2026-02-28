@@ -130,7 +130,14 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                 }}
                 className="relative z-10"
             >
-                <div className="bg-card border border-border/40 rounded-2xl p-4 hover:border-primary/30 transition-colors">
+                <div className={cn(
+                    "bg-card rounded-2xl p-4 border transition-colors",
+                    task.priority === 'urgent'
+                        ? "border-red-500/35 hover:border-red-500/55"
+                        : task.priority === 'high'
+                            ? "border-orange-500/30 hover:border-orange-500/50"
+                            : "border-border/40 hover:border-primary/30"
+                )}>
                     <div className="flex items-start gap-3">
                         {/* Left Accent Bar */}
                         <div className={cn(

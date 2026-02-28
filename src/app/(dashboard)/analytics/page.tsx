@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -66,12 +67,14 @@ function BarChart({ data }: { data: DayStats[] }) {
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: `${height}%`, opacity: 1 }}
                                 transition={{ delay: i * 0.06, type: "spring", stiffness: 200, damping: 20 }}
-                                className={`w-full rounded-t-lg ${isToday
-                                    ? 'bg-gradient-to-t from-primary to-primary/60 shadow-[0_0_12px_rgba(0,122,255,0.4)]'
-                                    : day.completed > 0
-                                        ? 'bg-gradient-to-t from-primary/60 to-primary/30'
-                                        : 'bg-muted/30'
-                                    }`}
+                                className={cn(
+                                    "w-full rounded-t-lg",
+                                    isToday
+                                        ? "bg-gradient-to-t from-primary to-primary/60 shadow-[0_0_14px_color-mix(in_srgb,var(--primary)_45%,transparent)]"
+                                        : day.completed > 0
+                                            ? "bg-gradient-to-t from-primary/60 to-primary/30"
+                                            : "bg-muted/30"
+                                )}
                                 style={{ minHeight: day.completed > 0 ? 6 : 0 }}
                             />
                         </div>
