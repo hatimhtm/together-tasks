@@ -14,6 +14,7 @@ interface TaskItemProps {
     userId: string
     isExpanded: boolean
     isEditing: boolean
+    index?: number
     onToggleExpand: () => void
     onStartEditing: (e?: React.MouseEvent) => void
     onCancelEditing: () => void
@@ -45,6 +46,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
     userId,
     isExpanded,
     isEditing,
+    index = 0,
     onToggleExpand,
     onStartEditing,
     onCancelEditing,
@@ -90,11 +92,11 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
         <motion.div
             ref={ref}
             layout
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="group relative overflow-hidden"
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            transition={{ duration: 0.22, delay: Math.min(index * 0.05, 0.3), ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="group relative"
         >
             {/* Background Action Underlay */}
             <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none rounded-2xl">

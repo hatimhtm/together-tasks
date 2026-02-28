@@ -92,17 +92,17 @@ function StatCard({ icon, label, value, sub, delay = 0 }: {
         <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, type: "spring", stiffness: 240, damping: 24 }}
+            transition={{ delay, type: "spring", stiffness: 260, damping: 26 }}
         >
-            <GlassCard className="p-5 space-y-3">
-                <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    {icon}
+            <GlassCard className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                    <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
+                    <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        {icon}
+                    </div>
                 </div>
-                <div>
-                    <p className="text-2xl font-bold text-foreground">{value}</p>
-                    <p className="text-sm font-medium text-foreground/80">{label}</p>
-                    {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
-                </div>
+                <p className="text-sm font-semibold text-foreground/80 leading-none">{label}</p>
+                {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
             </GlassCard>
         </motion.div>
     )
@@ -192,9 +192,9 @@ export default function AnalyticsPage() {
                     <div className="h-4 w-64 bg-muted/30 rounded-lg animate-pulse" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                    {[1,2,3,4].map(i => <div key={i} className="h-28 rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 animate-pulse" />)}
+                    {[1,2,3,4].map(i => <div key={i} className="h-28 rounded-2xl bg-card border border-border/40 animate-pulse" />)}
                 </div>
-                <div className="h-48 rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 animate-pulse" />
+                <div className="h-48 rounded-2xl bg-card border border-border/40 animate-pulse" />
             </div>
         )
     }
