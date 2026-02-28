@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { RealtimeChannel } from "@supabase/supabase-js"
 import { Task } from "@/types/task"
@@ -9,6 +9,9 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
     const [tasks, setTasks] = useState<Task[]>(initialTasks || [])
     const [loading, setLoading] = useState(!initialTasks)
     const supabase = createClient()
+    // Each hook instance needs its own channel name to avoid subscription collisions
+    // (e.g. TasksContainer and TasksTodayCounter both call this hook)
+    const channelName = useRef(`tasks-${userId}-${Math.random().toString(36).slice(2)}`).current
 
     useEffect(() => {
         // Initial fetch only if we don't have initial tasks
@@ -58,7 +61,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
 
     const setupRealtimeSubscription = (): RealtimeChannel => {
         const channel = supabase
-            .channel("tasks-changes")
+            .channel(channelName)
             .on(
                 "postgres_changes",
                 {

@@ -16,11 +16,11 @@ function getDateBuckets(tasks: any[], userId: string, partnerId: string | null |
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
     const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
 
-    // Tab filter first — shared tasks only in Shared tab, not in Mine/Partner
+    // Tab filter — Mine and Partner also show shared tasks so nothing disappears
     const tabFiltered = tasks.filter(task => {
         if (activeTab === "shared") return task.scope === 'shared'
-        if (activeTab === "my") return task.assignee_id === userId && task.scope !== 'shared'
-        if (activeTab === "partner") return task.assignee_id === partnerId && task.scope !== 'shared'
+        if (activeTab === "my") return task.assignee_id === userId || task.scope === 'shared'
+        if (activeTab === "partner") return task.assignee_id === partnerId || task.scope === 'shared'
         return true
     })
 
