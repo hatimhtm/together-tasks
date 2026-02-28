@@ -186,8 +186,8 @@ export function QuickAdd({
                         <span className="md:hidden">
                             {assignMode === 'partner' ? '💕' : assignMode === 'shared' ? '🤝' : '👤'}
                         </span>
-                        <span className="hidden md:inline">
-                            {assignMode === 'partner' ? 'For Partner 💕' : assignMode === 'shared' ? 'For Both 🤝' : 'For Me 👤'}
+                        <span className="hidden md:inline text-xs font-semibold">
+                            {assignMode === 'partner' ? 'Partner 💕' : assignMode === 'shared' ? 'Shared 🤝' : 'Mine 👤'}
                         </span>
                     </Button>
                 )}

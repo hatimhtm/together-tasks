@@ -1,19 +1,17 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { X, Send, Loader2, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useRouter } from "next/navigation"
 
-// Message type definition
 interface Message {
     role: "user" | "assistant"
     content: string
     timestamp: Date
 }
+
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyBcqeiR7anDxGfB8tz8tcjHpGCWrawFbUc"
 
 export function AIChatWidget({
     userName,
@@ -26,88 +24,67 @@ export function AIChatWidget({
     const [messages, setMessages] = useState<Message[]>([
         {
             role: "assistant",
-            content: `Hello, ${userRole === "queen" ? "my Queen" : userRole === "king" ? "my King" : "there"}! How may I assist you today? 👑`,
+            content: userRole === "queen"
+                ? `Hey my Queen! 👑 I'm your AI assistant. Ask me anything — create tasks, check your list, or just chat.`
+                : `Hey King Hatim! 👑 I'm your AI assistant. I can help you create tasks, check your list, or just keep you company. What do you need?`,
             timestamp: new Date()
         }
     ])
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
-    const router = useRouter()
-
-    // Auto-scroll to bottom when new messages arrive
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    }
 
     useEffect(() => {
-        scrollToBottom()
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }, [messages])
 
     const handleSend = async () => {
         if (!input.trim() || loading) return
 
-        const userMessage: Message = {
-            role: "user",
-            content: input,
-            timestamp: new Date()
-        }
-
-        // Add user message immediately (optimistic UI)
+        const userMessage: Message = { role: "user", content: input, timestamp: new Date() }
         setMessages(prev => [...prev, userMessage])
+        const currentInput = input
         setInput("")
         setLoading(true)
 
         try {
-            // Call AI API directly
-            const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            const systemPrompt = `You are a warm, helpful AI assistant embedded in "Together Tasks" — a personal task app built for a couple: Hatim (the King) and Enarcylyn (the Queen).
 
-            if (!apiKey) {
-                throw new Error("API Key missing");
-            }
+The person talking to you right now is ${userName || (userRole === "queen" ? "Enarcylyn" : "Hatim")} (${userRole === "queen" ? "the Queen" : "the King"}).
 
-            const prompt = `
-            You are a helpful AI assistant for a couple using a shared task app called "Together Tasks".
-            The user talking to you is ${userName} (${userRole}).
-            Keep your response short, sweet, and helpful. 
-            User says: "${input}"
-            `;
+Your personality:
+- Warm, supportive, and encouraging — like a trusted friend
+- Aware that this is a personal couple app, not a corporate tool
+- Keep responses concise and friendly
+- Use a light royal theme occasionally (King/Queen references) but don't overdo it
+- Help with task management, productivity tips, encouragement, and general questions
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
-            })
+The user says: "${currentInput}"`
 
-            if (!res.ok) throw new Error("AI request failed")
+            const res = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemPrompt }] }]
+                    })
+                }
+            )
+
+            if (!res.ok) throw new Error(`API error ${res.status}`)
 
             const data = await res.json()
-            const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I didn't quite catch that."
+            const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I didn't quite catch that — could you rephrase?"
 
-            // Add AI response
-            const assistantMessage: Message = {
-                role: "assistant",
-                content: aiResponse,
-                timestamp: new Date()
-            }
-
-            setMessages(prev => [...prev, assistantMessage])
-
-            // If the AI actually took action (create task, etc.), refresh the page data
-            // (Note: To keep this purely client-side without full LangChain tool execution, 
-            // you'd parse intents here, but for now we'll just handle responses)
+            setMessages(prev => [...prev, { role: "assistant", content: aiText, timestamp: new Date() }])
         } catch (error) {
             console.error("AI chat error:", error)
-
-            // Fallback response if AI fails
-            const errorMessage: Message = {
+            setMessages(prev => [...prev, {
                 role: "assistant",
-                content: "I apologize, but I'm having trouble connecting to the royal servers right now. Please try again in a moment.",
+                content: "Sorry, I'm having a little trouble right now. Give it another try in a moment! 💙",
                 timestamp: new Date()
-            }
-            setMessages(prev => [...prev, errorMessage])
+            }])
         } finally {
             setLoading(false)
         }
@@ -118,28 +95,18 @@ export function AIChatWidget({
             {/* Floating Chat Button */}
             <motion.button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-20 right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg flex items-center justify-center"
-                whileHover={{ scale: 1.1 }}
+                className="fixed bottom-24 right-5 z-50 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center"
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.9 }}
             >
                 <AnimatePresence mode="wait">
                     {isOpen ? (
-                        <motion.div
-                            key="close"
-                            initial={{ rotate: -90, opacity: 0 }}
-                            animate={{ rotate: 0, opacity: 1 }}
-                            exit={{ rotate: 90, opacity: 0 }}
-                        >
-                            <X className="h-6 w-6 text-white" />
+                        <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                            <X className="h-5 w-5" />
                         </motion.div>
                     ) : (
-                        <motion.div
-                            key="open"
-                            initial={{ rotate: 90, opacity: 0 }}
-                            animate={{ rotate: 0, opacity: 1 }}
-                            exit={{ rotate: -90, opacity: 0 }}
-                        >
-                            <Sparkles className="h-6 w-6 text-white" />
+                        <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+                            <Sparkles className="h-5 w-5" />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -149,52 +116,51 @@ export function AIChatWidget({
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        initial={{ opacity: 0, y: 16, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-36 right-6 z-50 w-96 max-w-[calc(100vw-3rem)]"
+                        exit={{ opacity: 0, y: 16, scale: 0.97 }}
+                        transition={{ type: "spring", stiffness: 320, damping: 30 }}
+                        className="fixed bottom-40 right-4 z-50 w-[340px] max-w-[calc(100vw-2rem)]"
                     >
-                        <GlassCard className="flex flex-col h-[500px]">
+                        <div className="flex flex-col h-[480px] bg-card border border-border/50 rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.24)] overflow-hidden">
                             {/* Header */}
-                            <div className="p-4 border-b border-white/10">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                                        <Sparkles className="h-5 w-5 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-white">Your AI Butler</h3>
-                                        <p className="text-xs text-white/60">Always here to help</p>
-                                    </div>
+                            <div className="px-4 py-3 border-b border-border/40 flex items-center gap-3 bg-card">
+                                <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                                    <Sparkles className="h-4 w-4 text-primary" />
                                 </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm text-foreground leading-none">AI Assistant</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">Always here for you</p>
+                                </div>
+                                <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground p-1 transition-colors">
+                                    <X className="h-4 w-4" />
+                                </button>
                             </div>
 
                             {/* Messages */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
                                 {messages.map((msg, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                                    >
-                                        <div
-                                            className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === "user"
-                                                ? "bg-primary text-primary-foreground shadow-sm"
-                                                : "bg-zinc-800 text-white shadow-sm border border-zinc-700"
-                                                }`}
-                                        >
-                                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                            <p className="text-xs opacity-50 mt-1">
-                                                {msg.timestamp.toLocaleTimeString([], {
-                                                    hour: "2-digit",
-                                                    minute: "2-digit"
-                                                })}
+                                    <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                                        <div className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 ${
+                                            msg.role === "user"
+                                                ? "bg-primary text-primary-foreground rounded-br-sm"
+                                                : "bg-muted/60 text-foreground rounded-bl-sm border border-border/40"
+                                        }`}>
+                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                            <p className="text-[10px] opacity-50 mt-1 text-right">
+                                                {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                             </p>
                                         </div>
                                     </div>
                                 ))}
                                 {loading && (
                                     <div className="flex justify-start">
-                                        <div className="bg-white/10 rounded-2xl px-4 py-2">
-                                            <Loader2 className="h-4 w-4 animate-spin text-white" />
+                                        <div className="bg-muted/60 border border-border/40 rounded-2xl rounded-bl-sm px-4 py-3">
+                                            <div className="flex gap-1 items-center">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.3s]" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.15s]" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce" />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -202,34 +168,43 @@ export function AIChatWidget({
                             </div>
 
                             {/* Input */}
-                            <div className="p-4 border-t border-white/10">
+                            <div className="p-3 border-t border-border/40 bg-card">
                                 <form
-                                    onSubmit={(e) => {
-                                        e.preventDefault()
-                                        handleSend()
-                                    }}
-                                    className="flex gap-2"
+                                    onSubmit={(e) => { e.preventDefault(); handleSend() }}
+                                    className="flex gap-2 items-end"
                                 >
-                                    <Input
+                                    <textarea
                                         value={input}
-                                        onChange={(e) => setInput(e.target.value)}
+                                        onChange={(e) => {
+                                            setInput(e.target.value)
+                                            e.target.style.height = 'auto'
+                                            e.target.style.height = e.target.scrollHeight + 'px'
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault()
+                                                handleSend()
+                                            }
+                                        }}
                                         placeholder="Ask me anything..."
                                         disabled={loading}
-                                        className="flex-1"
+                                        rows={1}
+                                        className="flex-1 min-h-[38px] max-h-[120px] resize-none bg-muted/40 border border-border/50 rounded-xl px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/40 transition-colors overflow-hidden"
                                     />
                                     <Button
                                         type="submit"
                                         size="icon"
                                         disabled={!input.trim() || loading}
+                                        className="h-[38px] w-[38px] rounded-xl shrink-0 bg-primary text-primary-foreground"
                                     >
-                                        <Send className="h-4 w-4" />
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                     </Button>
                                 </form>
                             </div>
-                        </GlassCard>
+                        </div>
                     </motion.div>
                 )}
-            </AnimatePresence >
+            </AnimatePresence>
         </>
     )
 }
