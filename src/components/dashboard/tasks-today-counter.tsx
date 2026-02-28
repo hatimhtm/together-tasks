@@ -14,10 +14,9 @@ export function TasksTodayCounter({ userId, partnerId }: { userId: string, partn
     const myTasks = tasks.filter(t => t.assignee_id === userId)
 
     // Determine if I've personally completed a task (handles both shared and personal)
+    // Check completed_by first (shared path), then fall back to is_completed (personal + old tasks)
     const iDoneIt = (t: any): boolean => {
-        if (t.scope === 'shared') {
-            return Array.isArray(t.completed_by) && t.completed_by.includes(userId)
-        }
+        if (Array.isArray(t.completed_by) && t.completed_by.includes(userId)) return true
         return t.is_completed
     }
 

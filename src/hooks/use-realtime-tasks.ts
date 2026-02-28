@@ -243,7 +243,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     : parsed.dueDate
             }
 
-            const newTaskData = {
+            const newTaskData: Record<string, any> = {
                 title: parsed?.title || finalTitle,
                 description: parsed?.description || null,
                 due_date,
@@ -252,10 +252,12 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                 assignee_id: finalAssigneeId,
                 scope,  // explicit null beats DB default 'shared'
                 is_completed: false,
-                emergency_level: parsed?.emergency_level || 'medium',
-                importance_level: parsed?.importance_level || 'medium',
-                duration_estimate: parsed?.duration_estimate || 15,
             };
+
+            // Only include AI-enriched fields if they exist (requires migration 20260220000001)
+            if (parsed?.emergency_level) newTaskData.emergency_level = parsed.emergency_level;
+            if (parsed?.importance_level) newTaskData.importance_level = parsed.importance_level;
+            if (parsed?.duration_estimate) newTaskData.duration_estimate = parsed.duration_estimate;
 
             const { data: realTask, error } = await supabase
                 .from('tasks')
