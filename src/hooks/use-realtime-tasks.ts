@@ -220,14 +220,16 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
             // 2. Client-side Parsing & Supabase Call
             let finalAssigneeId = userId;
             let finalTitle = input;
+            // CRITICAL: explicitly override the DB default of 'shared' — null = personal task
+            let scope: string | null = null;
 
             if (input.toLowerCase().includes("@partner") && partnerId) {
                 finalAssigneeId = partnerId;
                 finalTitle = input.replace(/@partner/gi, "").trim();
+                scope = null; // personal task for partner
             } else if (input.toLowerCase().includes("@shared") && partnerId) {
-                // Shared logic: Assign to partner but created by you means both see it
-                finalAssigneeId = partnerId;
                 finalTitle = input.replace(/@shared/gi, "").trim();
+                scope = 'shared'; // only truly shared tasks get this
             }
 
             // AI-enrich the task (parse due date, priority, etc.)
@@ -248,6 +250,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                 priority: parsed?.priority || "medium",
                 creator_id: userId,
                 assignee_id: finalAssigneeId,
+                scope,  // explicit null beats DB default 'shared'
                 is_completed: false,
                 emergency_level: parsed?.emergency_level || 'medium',
                 importance_level: parsed?.importance_level || 'medium',
