@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyBcqeiR7anDxGfB8tz8tcjHpGCWrawFbUc"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
 
 const systemInstruction = `You are an expert productivity assistant for a couple's task manager app.
 Analyze the user's natural language input and extract structured task details.
