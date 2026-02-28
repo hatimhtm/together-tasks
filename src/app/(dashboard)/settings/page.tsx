@@ -12,7 +12,7 @@ import { Profile } from "@/types/task"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 
-const APP_VERSION = "2.0.0"
+const APP_VERSION = "2.0.8"
 
 const BRIEFING_TIME_OPTIONS = [
     { label: "7:00 AM", value: "07:00" },
@@ -86,8 +86,12 @@ export default function SettingsPage() {
 
             if (latestTag !== APP_VERSION) {
                 toast.success(`Update available: v${latestTag}`, {
-                    description: "Open the GitHub release to download.",
-                    duration: 6000,
+                    description: "Tap to open GitHub Releases and download.",
+                    duration: 8000,
+                    action: {
+                        label: "Download",
+                        onClick: () => window.open('https://github.com/hatimhtm/together-tasks/releases/latest', '_blank'),
+                    },
                 })
             } else {
                 toast.success("You're on the latest version!", {
@@ -105,7 +109,7 @@ export default function SettingsPage() {
         return (
             <div className="space-y-6 pb-20">
                 {[1,2,3,4].map(i => (
-                    <div key={i} className="h-32 rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 animate-pulse" />
+                    <div key={i} className="h-32 rounded-2xl bg-card border border-border/40 animate-pulse" />
                 ))}
             </div>
         )
@@ -241,7 +245,7 @@ export default function SettingsPage() {
                         </button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        Updates install automatically in the background. Major version upgrades require a manual download.
+                        Check for the latest version on GitHub Releases. New versions can be downloaded manually.
                     </p>
                 </GlassCard>
             </section>

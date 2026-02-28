@@ -1,14 +1,11 @@
 "use client"
 
-import { Check, Trash2, Calendar, Clock, AlertCircle, Pencil } from "lucide-react"
+import { Check, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import confetti from "canvas-confetti"
-import { format } from "date-fns"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
-import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,7 +17,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { Task, Subtask } from "@/types/task"
+import { Task } from "@/types/task"
 import { TaskItem } from "./task-item"
 
 export function TaskList({
@@ -38,7 +35,6 @@ export function TaskList({
     propUpdateTask?: (taskId: string, updates: Partial<Task>) => Promise<void>
     propDeleteTask?: (taskId: string) => Promise<void>
 }) {
-    const router = useRouter()
     // If props are provided, use them (Controlled mode)
     // Otherwise, use the hook locally (Uncontrolled mode)
     const hookData = useRealtimeTasks(userId, partnerId)
@@ -106,13 +102,13 @@ export function TaskList({
         // Optimistic Update call
         updateTask(taskId, updates)
 
-        // CELEBRATION! 🎉
+        // CELEBRATION!
         if (newStatus) {
             confetti({
                 particleCount: 40,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#FFD700', '#FF69B4', '#00BFFF'] // Gold, Pink, Blue
+                colors: ['#FFD700', '#FF69B4', '#00BFFF']
             })
 
             toast.success("Task completed!", {
@@ -131,14 +127,13 @@ export function TaskList({
         setTaskToDelete(null)
     }
 
-
     if (loading) {
         return (
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3 pt-2">
                 {[1, 2, 3].map((i, index) => (
                     <div
                         key={i}
-                        className="h-20 rounded-[20px] bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 dark:border-white/10 relative overflow-hidden shadow-sm"
+                        className="h-20 rounded-2xl bg-card border border-border/40 relative overflow-hidden"
                         style={{ opacity: 1 - (index * 0.25) }}
                     >
                         <div className="flex items-center gap-4 h-full px-5">
@@ -160,7 +155,7 @@ export function TaskList({
 
     return (
         <div className="space-y-8 pb-24">
-            {/* Active Tasks */}
+            {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -176,6 +171,7 @@ export function TaskList({
                 </AlertDialogContent>
             </AlertDialog>
 
+            {/* Active Tasks */}
             <AnimatePresence mode="popLayout">
                 {activeTasks.length > 0 ? (
                     <div className="space-y-3">
@@ -185,7 +181,7 @@ export function TaskList({
                             </h3>
                         </div>
 
-                        <div className="bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] rounded-[20px] overflow-hidden divide-y divide-border/20">
+                        <div className="space-y-3">
                             {activeTasks.map(task => (
                                 <TaskItem
                                     key={task.id}
@@ -215,23 +211,22 @@ export function TaskList({
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="flex flex-col items-center justify-center py-16 text-center bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] rounded-[24px] relative overflow-hidden"
+                            className="flex flex-col items-center justify-center py-16 text-center bg-card border border-border/40 rounded-2xl relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
                             <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6 shadow-inner relative">
-                                <div className="absolute inset-0 rounded-full bg-white/40 dark:bg-white/5 backdrop-blur-md" />
                                 <Check className="h-10 w-10 text-primary drop-shadow-sm relative z-10" strokeWidth={2.5} />
                             </div>
                             <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">All Clear!</h3>
                             <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed relative z-10">
-                                {partnerId ? "You and your partner are all caught up. Take a break or add a new goal! ✨" : "You're all caught up. Add a task to keep the momentum going! ✨"}
+                                {partnerId ? "You and your partner are all caught up. Take a break or add a new goal!" : "You're all caught up. Add a task to keep the momentum going!"}
                             </p>
                         </motion.div>
                     )
                 )}
             </AnimatePresence>
 
-            {/* Completed Tasks (Collapsed Array) */}
+            {/* Completed Tasks (Collapsible) */}
             {completedTasks.length > 0 && (
                 <div className="space-y-2 pt-4 border-t border-border/20">
                     <button

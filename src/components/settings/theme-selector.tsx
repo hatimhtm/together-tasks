@@ -8,11 +8,13 @@ import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 
 const themes = [
-    { id: 'light', name: 'Glass (Light)', color: '#f8fafc', icon: '✨' },
-    { id: 'dark', name: 'Midnight', color: '#09090b', icon: '🌙' },
-    { id: 'floral', name: 'Floral Blush', color: '#fff0f5', icon: '🌸' },
-    { id: 'creamy', name: 'Vintage Cream', color: '#fdfbf7', icon: '☕' },
-    { id: 'burgundy', name: 'Royal Burgundy', color: '#2b0b14', icon: '👑' },
+    { id: 'daylight', name: 'Daylight', color: '#f8fafc', icon: '☀️' },
+    { id: 'midnight', name: 'Midnight', color: '#080c14', icon: '🌙' },
+    { id: 'burgundy', name: 'Burgundy', color: '#150008', icon: '👑' },
+    { id: 'aurora', name: 'Aurora', color: '#07080f', icon: '🌌' },
+    { id: 'obsidian', name: 'Obsidian', color: '#0a0a0a', icon: '🔥' },
+    { id: 'ocean', name: 'Ocean', color: '#040d1a', icon: '🌊' },
+    { id: 'rose', name: 'Rose', color: '#0f0a0d', icon: '🌹' },
 ]
 
 export function ThemeSelector({ userId, currentDbTheme }: { userId: string, currentDbTheme: string }) {

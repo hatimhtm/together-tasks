@@ -2,10 +2,10 @@
 
 import { Task } from "@/types/task"
 import { motion, useMotionValue, useTransform } from "framer-motion"
-import { Check, Trash2, Calendar, Clock, AlertCircle, Pencil, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, Trash2, Calendar, Clock, Pencil, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { useState, useEffect, forwardRef, useRef } from "react"
+import { useState, useEffect, forwardRef } from "react"
 import { triggerHaptic, triggerHapticSuccess } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
 
@@ -20,6 +20,24 @@ interface TaskItemProps {
     onComplete: (isCompleted: boolean) => void
     onDelete: () => void
     onUpdate: (updates: Partial<Task>) => void
+}
+
+const getAccentColor = (priority: string) => {
+    switch (priority) {
+        case "urgent": return "bg-red-500"
+        case "high": return "bg-orange-500"
+        case "medium": return "bg-primary"
+        default: return "bg-green-500"
+    }
+}
+
+const getDotColor = (priority: string) => {
+    switch (priority) {
+        case "urgent": return "bg-red-500"
+        case "high": return "bg-orange-500"
+        case "medium": return "bg-primary"
+        default: return "bg-green-500"
+    }
 }
 
 export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
@@ -64,15 +82,9 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
         onUpdate({ subtasks: updatedSubtasks })
     }
 
-    // Get priority color for visual distinction
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case "urgent": return "bg-red-500"
-            case "high": return "bg-orange-500"
-            case "medium": return "bg-yellow-500"
-            default: return "bg-green-500" // Low
-        }
-    }
+    const isOverdue = task.due_date && new Date(task.due_date) < new Date()
+    const showEmergencyChip = task.emergency_level === "high" || task.emergency_level === "critical"
+    const showImportanceChip = task.importance_level === "high" || task.importance_level === "critical"
 
     return (
         <motion.div
@@ -82,10 +94,10 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="group relative border-b border-border/20 last:border-0 overflow-hidden"
+            className="group relative overflow-hidden"
         >
             {/* Background Action Underlay */}
-            <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none rounded-2xl">
                 <motion.div style={{ opacity: completeOpacity }} className="flex items-center gap-2 text-primary font-bold tracking-wide">
                     <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                         <Check className="w-5 h-5" strokeWidth={3} />
@@ -114,188 +126,225 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                         onDelete()
                     }
                 }}
-                className="relative bg-white/60 dark:bg-black/40 backdrop-blur-xl p-3 sm:px-4 transition-colors duration-200 hover:bg-white/80 dark:hover:bg-black/60 z-10"
+                className="relative z-10"
             >
-                <div className="flex items-start gap-4">
-                    {/* Checkbox Button */}
-                    <button
-                        onClick={() => {
-                            triggerHaptic(ImpactStyle.Medium)
-                            onComplete(task.is_completed)
-                        }}
-                        className={cn(
-                            "mt-1 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary flex items-center justify-center transition-all shrink-0 active:scale-90",
-                            task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "border-primary/50 bg-primary/20",
-                            task.scope === 'shared' && task.completed_by && task.completed_by.length === 1 && !task.completed_by.includes(userId) && "border-primary/50 bg-transparent ring-2 ring-primary/20 ring-offset-1"
-                        )}
-                        title={task.scope === 'shared' ? (task.completed_by?.includes(userId) ? "Waiting for partner..." : task.completed_by && task.completed_by.length === 1 ? "Partner finished! Your turn." : "Mark complete") : "Complete task"}
-                    >
-                        {task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && (
-                            <div className="h-2.5 w-2.5 rounded-full bg-primary/70 animate-pulse" />
-                        )}
-                    </button>
+                <div className="bg-card border border-border/40 rounded-2xl p-4 hover:border-primary/30 transition-colors">
+                    <div className="flex items-start gap-3">
+                        {/* Left Accent Bar */}
+                        <div className={cn(
+                            "w-[3px] rounded-full self-stretch mr-0 shrink-0",
+                            getAccentColor(task.priority)
+                        )} />
 
-                    {/* Task Content */}
-                    {isEditing ? (
-                        <div className="flex-1 min-w-0 space-y-3">
-                            <input
-                                className="w-full bg-background/60 border border-border rounded-lg px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm"
-                                value={editForm.title || ''}
-                                onChange={e => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                            />
-                            <textarea
-                                className="w-full bg-background/60 border border-border rounded-lg px-3 py-2 text-sm text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none resize-none min-h-[60px] shadow-sm leading-relaxed"
-                                value={editForm.description || ''}
-                                onChange={e => setEditForm(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Description..."
-                            />
-                            {editForm.subtasks && editForm.subtasks.length > 0 && (
-                                <div className="space-y-2 mt-2 pl-1 border-l-2 border-primary/20">
-                                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">Edit Subtasks</p>
-                                    {editForm.subtasks.map((st: any, i: number) => (
-                                        <div key={typeof st === 'string' ? i : st.id} className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
-                                            <input
-                                                className="flex-1 bg-background/60 border border-border/50 rounded-md px-2 py-1 text-xs text-foreground focus:ring-1 focus:ring-primary outline-none transition-all"
-                                                value={typeof st === 'string' ? st : st.title}
-                                                onChange={e => {
-                                                    const newSubtasks = [...(editForm.subtasks || [])];
-                                                    if (typeof st === 'string') newSubtasks[i] = e.target.value;
-                                                    else newSubtasks[i] = { ...st, title: e.target.value };
-                                                    setEditForm(prev => ({ ...prev, subtasks: newSubtasks }));
-                                                }}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
+                        {/* Checkbox Button */}
+                        <button
+                            onClick={() => {
+                                triggerHaptic(ImpactStyle.Medium)
+                                onComplete(task.is_completed)
+                            }}
+                            className={cn(
+                                "mt-0.5 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary flex items-center justify-center transition-all shrink-0 active:scale-90",
+                                task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "border-primary/50 bg-primary/20",
+                                task.scope === 'shared' && task.completed_by && task.completed_by.length === 1 && !task.completed_by.includes(userId) && "border-primary/50 bg-transparent ring-2 ring-primary/20 ring-offset-1"
                             )}
-                            <div className="flex gap-2 justify-end pt-1">
-                                <button onClick={onCancelEditing} className="text-xs px-3 py-1.5 hover:bg-muted font-medium rounded-md text-muted-foreground transition-colors">Cancel</button>
-                                <button onClick={saveEdit} className="text-xs px-4 py-1.5 bg-primary text-primary-foreground font-medium rounded-md shadow-sm hover:opacity-90 transition-opacity">Save</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex-1 min-w-0 space-y-1">
-                            <div className="flex items-start justify-between gap-2 cursor-pointer" onClick={onToggleExpand}>
-                                <h4 className="font-medium text-foreground text-base leading-tight">
-                                    {task.title}
-                                </h4>
+                            title={task.scope === 'shared' ? (task.completed_by?.includes(userId) ? "Waiting for partner..." : task.completed_by && task.completed_by.length === 1 ? "Partner finished! Your turn." : "Mark complete") : "Complete task"}
+                        >
+                            {task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && (
+                                <div className="h-2.5 w-2.5 rounded-full bg-primary/70 animate-pulse" />
+                            )}
+                        </button>
 
-                                {/* Priority/Emergency Indicator */}
-                                <div className="flex items-center gap-1 shrink-0 mt-1.5" onClick={e => e.stopPropagation()}>
+                        {/* Task Content */}
+                        {isEditing ? (
+                            <div className="flex-1 min-w-0 space-y-3">
+                                <input
+                                    className="w-full bg-background/60 border border-border rounded-lg px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm"
+                                    value={editForm.title || ''}
+                                    onChange={e => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                                />
+                                <textarea
+                                    className="w-full bg-background/60 border border-border rounded-lg px-3 py-2 text-sm text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none resize-none min-h-[60px] shadow-sm leading-relaxed"
+                                    value={editForm.description || ''}
+                                    onChange={e => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                                    placeholder="Description..."
+                                />
+                                {editForm.subtasks && editForm.subtasks.length > 0 && (
+                                    <div className="space-y-2 mt-2 pl-1 border-l-2 border-primary/20">
+                                        <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">Edit Subtasks</p>
+                                        {editForm.subtasks.map((st: any, i: number) => (
+                                            <div key={typeof st === 'string' ? i : st.id} className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
+                                                <input
+                                                    className="flex-1 bg-background/60 border border-border/50 rounded-md px-2 py-1 text-xs text-foreground focus:ring-1 focus:ring-primary outline-none transition-all"
+                                                    value={typeof st === 'string' ? st : st.title}
+                                                    onChange={e => {
+                                                        const newSubtasks = [...(editForm.subtasks || [])];
+                                                        if (typeof st === 'string') newSubtasks[i] = e.target.value;
+                                                        else newSubtasks[i] = { ...st, title: e.target.value };
+                                                        setEditForm(prev => ({ ...prev, subtasks: newSubtasks }));
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <div className="flex gap-2 justify-end pt-1">
+                                    <button onClick={onCancelEditing} className="text-xs px-3 py-1.5 hover:bg-muted font-medium rounded-md text-muted-foreground transition-colors">Cancel</button>
+                                    <button onClick={saveEdit} className="text-xs px-4 py-1.5 bg-primary text-primary-foreground font-medium rounded-md shadow-sm hover:opacity-90 transition-opacity">Save</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex-1 min-w-0 space-y-1">
+                                {/* Title Row */}
+                                <div className="flex items-start justify-between gap-2">
+                                    <h4
+                                        className="font-semibold text-foreground text-[15px] leading-tight flex-1 cursor-pointer"
+                                        onClick={onToggleExpand}
+                                    >
+                                        {task.title}
+                                    </h4>
+
+                                    {/* Priority Badge (always shown) */}
+                                    <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                                        <div
+                                            className="relative flex items-center gap-1 px-2 py-0.5 rounded-full border border-border/30 bg-muted/40 cursor-pointer"
+                                            title="Click to change Priority"
+                                        >
+                                            <div className={cn("w-1.5 h-1.5 rounded-full shrink-0 pointer-events-none", getDotColor(task.priority))} />
+                                            <span className="text-[10px] font-medium text-muted-foreground capitalize pointer-events-none">
+                                                {task.priority}
+                                            </span>
+                                            <select
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-[10px]"
+                                                value={task.priority}
+                                                onChange={(e) => onUpdate({ priority: e.target.value as any })}
+                                            >
+                                                <option value="low">Low</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="high">High</option>
+                                                <option value="urgent">Urgent</option>
+                                            </select>
+                                        </div>
+
+                                        {/* Delete button — small, always visible on mobile, hover on desktop */}
+                                        <button
+                                            onClick={onDelete}
+                                            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 -mr-1 text-muted-foreground hover:text-destructive"
+                                            aria-label="Delete task"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Description — always visible if set */}
+                                {task.description && (
+                                    <p className={cn(
+                                        "text-sm text-muted-foreground",
+                                        isExpanded ? "whitespace-pre-wrap leading-relaxed" : "line-clamp-1"
+                                    )}>
+                                        {task.description}
+                                    </p>
+                                )}
+
+                                {/* Metadata Row — always visible */}
+                                <div className="flex items-center gap-2 flex-wrap pt-1 text-xs text-muted-foreground/70">
+                                    {task.due_date && (
+                                        <div className={cn(
+                                            "flex items-center gap-1",
+                                            isOverdue && "text-red-500 font-medium"
+                                        )}>
+                                            <Calendar className="h-3 w-3" />
+                                            {format(new Date(task.due_date), "MMM d")}
+                                        </div>
+                                    )}
+
+                                    {task.duration_estimate && (
+                                        <div className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {task.duration_estimate} min
+                                        </div>
+                                    )}
+
+                                    {showEmergencyChip && (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 capitalize">
+                                            🔥 {task.emergency_level}
+                                        </span>
+                                    )}
+
+                                    {showImportanceChip && (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 capitalize">
+                                            ⭐ {task.importance_level}
+                                        </span>
+                                    )}
+
                                     {task.scope === 'shared' && (
-                                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                                             Shared
                                         </span>
                                     )}
-                                    <div className={cn(
-                                        "relative flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted/50 border border-muted-foreground/10 hover:border-primary/30 transition-colors cursor-pointer",
-                                    )} title={`Click to change Priority`}>
-                                        <div className={cn("w-1.5 h-1.5 rounded-full pointer-events-none", getPriorityColor(task.priority))} />
-                                        <span className="hidden sm:inline-block text-[10px] font-medium text-muted-foreground capitalize tracking-wide pointer-events-none">
-                                            {task.priority}
-                                        </span>
-                                        <select
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-[10px]"
-                                            value={task.priority}
-                                            onChange={(e) => onUpdate({ priority: e.target.value as any })}
+
+                                    {/* Edit + Chevron at far right */}
+                                    <div className="ml-auto flex items-center gap-1">
+                                        {isExpanded && (
+                                            <button
+                                                onClick={onStartEditing}
+                                                className="text-muted-foreground hover:text-primary p-1.5 rounded-md transition-colors"
+                                                title="Edit task"
+                                            >
+                                                <Pencil className="h-3.5 w-3.5" />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={onToggleExpand}
+                                            className="text-muted-foreground hover:text-foreground p-1 transition-colors"
                                         >
-                                            <option value="low">Low</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="high">High</option>
-                                            <option value="urgent">Urgent</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {task.description && isExpanded && (
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                                    {task.description}
-                                </p>
-                            )}
-
-                            {/* Meta Info & Actions */}
-                            <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground/70">
-                                {isExpanded && task.due_date && (
-                                    <div className={cn(
-                                        "flex items-center gap-1",
-                                        new Date(task.due_date) < new Date() && "text-red-500 font-medium"
-                                    )}>
-                                        <Calendar className="h-3 w-3" />
-                                        {format(new Date(task.due_date), "MMM d, h:mm a")}
-                                    </div>
-                                )}
-                                {isExpanded && task.priority === 'urgent' && (
-                                    <div className="flex items-center gap-1 text-red-500 font-medium">
-                                        <AlertCircle className="h-3 w-3" />
-                                        Urgent
-                                    </div>
-                                )}
-                                {isExpanded && task.duration_estimate && (
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                        <Clock className="h-3 w-3" />
-                                        {task.duration_estimate} min
-                                    </div>
-                                )}
-                                <div className="ml-auto flex items-center gap-1">
-                                    {isExpanded && (
-                                        <button onClick={onStartEditing} className="text-muted-foreground hover:text-primary p-1.5 rounded-md transition-colors" title="Edit task">
-                                            <Pencil className="h-3.5 w-3.5" />
+                                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                         </button>
-                                    )}
-                                    <button onClick={onToggleExpand} className="text-muted-foreground hover:text-foreground p-1 transition-colors">
-                                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                    </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* AI Subtasks Preview */}
-                            {isExpanded && task.subtasks && task.subtasks.length > 0 && (
-                                <div className="mt-2 pl-1 border-l-2 border-primary/20 space-y-1">
-                                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">AI Breakdown</p>
-                                    {task.subtasks.map((st: any, i: number) => {
-                                        if (typeof st === 'string') {
+                                {/* AI Breakdown — expanded only, if subtasks exist */}
+                                {isExpanded && task.subtasks && task.subtasks.length > 0 && (
+                                    <div className="mt-3 pl-3 border-l-2 border-primary/30 space-y-1.5">
+                                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                                            AI Breakdown
+                                        </p>
+                                        {task.subtasks.map((st: any, i: number) => {
+                                            if (typeof st === 'string') {
+                                                return (
+                                                    <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground/80">
+                                                        <div className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
+                                                        <span className="truncate">{st}</span>
+                                                    </div>
+                                                )
+                                            }
+
                                             return (
-                                                <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground/80">
-                                                    <div className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
-                                                    <span className="truncate">{st}</span>
-                                                </div>
+                                                <label key={st.id} className="flex items-center gap-2 text-xs cursor-pointer group/st py-0.5">
+                                                    <div className="relative flex items-center justify-center shrink-0">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={st.is_completed}
+                                                            onChange={() => handleSubtaskToggle(st.id)}
+                                                            className="peer h-3.5 w-3.5 appearance-none rounded-sm border border-muted-foreground/40 checked:border-primary checked:bg-primary hover:border-primary transition-all"
+                                                        />
+                                                        <Check className="absolute h-2.5 w-2.5 text-primary-foreground opacity-0 peer-checked:opacity-100 pointer-events-none" strokeWidth={3} />
+                                                    </div>
+                                                    <span className={cn(
+                                                        "truncate transition-colors user-select-none",
+                                                        st.is_completed ? "text-muted-foreground line-through decoration-muted-foreground/50" : "text-foreground group-hover/st:text-primary/90"
+                                                    )}>
+                                                        {st.title}
+                                                    </span>
+                                                </label>
                                             )
-                                        }
-
-                                        return (
-                                            <label key={st.id} className="flex items-center gap-2 text-xs cursor-pointer group/st py-0.5">
-                                                <div className="relative flex items-center justify-center shrink-0">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={st.is_completed}
-                                                        onChange={() => handleSubtaskToggle(st.id)}
-                                                        className="peer h-3.5 w-3.5 appearance-none rounded-sm border border-muted-foreground/40 checked:border-primary checked:bg-primary hover:border-primary transition-all"
-                                                    />
-                                                    <Check className="absolute h-2.5 w-2.5 text-primary-foreground opacity-0 peer-checked:opacity-100 pointer-events-none" strokeWidth={3} />
-                                                </div>
-                                                <span className={cn(
-                                                    "truncate transition-colors user-select-none",
-                                                    st.is_completed ? "text-muted-foreground line-through decoration-muted-foreground/50" : "text-foreground group-hover/st:text-primary/90"
-                                                )}>
-                                                    {st.title}
-                                                </span>
-                                            </label>
-                                        )
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <button
-                        onClick={onDelete}
-                        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity p-2 -mr-2 -mt-2 text-muted-foreground hover:text-destructive"
-                        aria-label="Delete task"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </button>
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </motion.div>
         </motion.div>

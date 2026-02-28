@@ -22,7 +22,7 @@ export default async function RootLayout({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let dbTheme = "light"
+  let dbTheme = "daylight"
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -48,7 +48,7 @@ export default async function RootLayout({
           attribute="class"
           defaultTheme={dbTheme}
           enableSystem={false}
-          themes={['light', 'dark', 'neo-brutalist', 'floral', 'creamy', 'burgundy']}
+          themes={['daylight', 'midnight', 'burgundy', 'aurora', 'obsidian', 'ocean', 'rose']}
         >
           {/* Animated Aurora Background Elements */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-background transition-colors duration-1000">
