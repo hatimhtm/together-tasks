@@ -76,26 +76,27 @@ export function TaskList({
         let updates: Partial<Task> = {}
         let newStatus = !isCompleted
 
-        if (task.scope === 'shared') {
-            const currentArray = task.completed_by || []
+        if (task.scope === 'shared' && Array.isArray(task.completed_by)) {
+            // completed_by column exists (migration applied) — track per-user completion
+            const currentArray = task.completed_by
             let newArray = [...currentArray]
 
             if (currentArray.includes(userId)) {
-                // Unmark
+                // Unmark — remove from array, only unmark is_completed if nobody else marked it
                 newArray = newArray.filter(id => id !== userId)
-                newStatus = false // Definitively not complete
+                newStatus = newArray.length > 0
             } else {
-                // Mark
+                // Mark — any single person marking = task is done
                 newArray.push(userId)
-                // If partner already marked it, it will now be 2!
-                if (newArray.length >= 2) {
-                    newStatus = true
-                } else {
-                    newStatus = false
-                }
+                newStatus = true
             }
-            updates = { completed_by: newArray, is_completed: newStatus }
+            updates = {
+                completed_by: newArray,
+                is_completed: newStatus,
+                completed_at: newStatus ? new Date().toISOString() : null
+            }
         } else {
+            // Simple completion: personal task, or completed_by column not yet in DB
             updates = {
                 is_completed: newStatus,
                 completed_at: newStatus ? new Date().toISOString() : null
