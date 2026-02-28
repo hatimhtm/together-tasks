@@ -239,12 +239,9 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                     </div>
                                 </div>
 
-                                {/* Description — always visible if set */}
-                                {task.description && (
-                                    <p className={cn(
-                                        "text-sm text-muted-foreground",
-                                        isExpanded ? "whitespace-pre-wrap leading-relaxed" : "line-clamp-1"
-                                    )}>
+                                {/* Description — only when expanded */}
+                                {isExpanded && task.description && (
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                                         {task.description}
                                     </p>
                                 )}
