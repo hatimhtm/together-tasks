@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { toast } from 'sonner'
 
-const APP_VERSION = '2.0.7'
+const APP_VERSION = '2.0.8'
 const GITHUB_REPO = 'hatimhtm/together-tasks'
 
 export default function Providers({ children }: { children: ReactNode }) {
