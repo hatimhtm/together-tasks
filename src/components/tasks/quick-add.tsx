@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { GlassCard } from "@/components/ui/glass-card"
 import { Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -143,7 +142,7 @@ export function QuickAdd({
     }
 
     return (
-        <GlassCard className="p-4 relative mt-6">
+        <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl px-4 py-3 relative mt-6">
             <AnimatePresence>
                 {isPartnerTyping && (
                     <motion.div
@@ -195,12 +194,12 @@ export function QuickAdd({
                             handleSubmit(e);
                         }
                     }}
-                    placeholder="What needs to be done?"
-                    className="flex-1 min-h-[40px] max-h-[160px] py-2 px-4 rounded-xl bg-background/50 border border-border focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary resize-none outline-none overflow-hidden w-full transition-all text-sm leading-relaxed"
+                    placeholder="What needs to be done? ✨"
+                    className="flex-1 min-h-[40px] max-h-[160px] py-2 px-3 rounded-xl bg-transparent border-0 focus-visible:ring-0 resize-none outline-none overflow-hidden w-full text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50"
                     disabled={loading}
                     rows={1}
                 />
-                <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-xl p-0 shadow-sm">
+                <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-xl p-0 shadow-sm bg-primary text-primary-foreground">
                     {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -208,6 +207,6 @@ export function QuickAdd({
                     )}
                 </Button>
             </form>
-        </GlassCard>
+        </div>
     )
 }

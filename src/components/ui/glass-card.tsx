@@ -17,15 +17,11 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
-                    "relative overflow-hidden rounded-[24px] border transition-all duration-500",
-                    // Default variant: Deep Frost Spatial Glass (Liquid Glass Aesthetic)
-                    variant === "default" && "bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border-white/60 dark:border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.6),0_16px_48px_0_rgba(31,38,135,0.15)] hover:-translate-y-1",
-                    // Clear variant: Super subtle overlay
-                    variant === "clear" && "bg-white/10 dark:bg-black/10 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-none",
-                    // Solid variant: Heavy frosted
-                    variant === "solid" && "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-[64px] border-white/60 dark:border-white/20 shadow-lg",
-
-                    gradient && "bg-gradient-to-br from-white/20 to-transparent dark:from-white/5 dark:to-transparent",
+                    "relative overflow-hidden rounded-[24px] border transition-all duration-300",
+                    variant === "default" && "bg-card/80 backdrop-blur-[40px] border-border/50 shadow-sm hover:shadow-md hover:border-border/70",
+                    variant === "clear" && "bg-card/30 backdrop-blur-xl border-border/20 shadow-none",
+                    variant === "solid" && "bg-card border-border shadow-lg",
+                    gradient && "bg-gradient-to-br from-primary/5 via-transparent to-secondary/5",
                     className
                 )}
                 {...props}

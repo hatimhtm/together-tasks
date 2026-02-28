@@ -78,7 +78,7 @@ export function TasksContainer({
                 {/* Focus Tabs */}
                 {partnerId && (
                     <div className="w-full">
-                        <div className="flex p-1.5 space-x-1.5 bg-muted/60 rounded-xl glass-card backdrop-blur-md">
+                        <div className="flex p-1 space-x-1 bg-muted/50 rounded-full">
                             {(['my', 'partner', 'shared'] as Tab[]).map((tab) => (
                                 <button
                                     key={tab}
@@ -91,10 +91,10 @@ export function TasksContainer({
                                         }
                                     }}
                                     className={cn(
-                                        "flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300",
+                                        "flex-1 px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200",
                                         activeTab === tab
-                                            ? "bg-background text-foreground shadow-sm ring-1 ring-border/50 scale-[1.02]"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                                            ? "bg-primary text-primary-foreground shadow-sm"
+                                            : "text-muted-foreground hover:text-foreground"
                                     )}
                                 >
                                     {tab === 'my' ? 'Mine' : tab === 'partner' ? 'Partner' : 'Shared'}
@@ -147,7 +147,7 @@ export function TasksContainer({
                                     exit={{ opacity: 0, height: 0 }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] rounded-[20px] overflow-hidden divide-y divide-border/20 opacity-80">
+                                    <div className="bg-card border border-border/40 rounded-2xl overflow-hidden divide-y divide-border/20 opacity-80">
                                         {upcomingTasks.map(task => (
                                             <div key={task.id} className="flex items-center gap-3 px-4 py-3">
                                                 <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

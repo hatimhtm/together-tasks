@@ -135,15 +135,15 @@ export default function Home() {
         {/* Task container skeleton */}
         <div className="flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-[350px] space-y-4">
-            <div className="h-32 rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 animate-pulse" />
+            <div className="h-32 rounded-2xl bg-card border border-border/40 animate-pulse" />
             <div className="h-12 rounded-xl bg-muted/30 animate-pulse" />
-            <div className="h-28 rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 animate-pulse" />
+            <div className="h-28 rounded-2xl bg-card border border-border/40 animate-pulse" />
           </div>
           <div className="flex-1 space-y-3">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-20 rounded-[20px] bg-white/40 dark:bg-black/40 backdrop-blur-[40px] border border-white/30 animate-pulse"
+                className="h-20 rounded-2xl bg-card border border-border/40 animate-pulse"
                 style={{ opacity: 1 - (i - 1) * 0.25 }}
               >
                 <div className="flex items-center gap-4 h-full px-5">

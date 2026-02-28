@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Home, Plus, Settings, User, BarChart2 } from "lucide-react"
+import { Home, Plus, Settings, BarChart2 } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { triggerHaptic } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
@@ -17,12 +17,11 @@ export function BottomNav() {
         { name: "Stats", href: "/analytics", icon: BarChart2 },
         { name: "Add", href: "#add", icon: Plus, isAction: true },
         { name: "Settings", href: "/settings", icon: Settings },
-        { name: "Me", href: "/profile", icon: User },
     ]
 
     return (
         <nav className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none pb-safe">
-            <div className="flex items-center justify-around h-[64px] min-w-[320px] max-w-[380px] w-[90%] bg-glass-white/90 dark:bg-black/60 backdrop-blur-2xl rounded-3xl border border-glass-border shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] pointer-events-auto px-4">
+            <div className="flex items-center justify-around h-[64px] min-w-[280px] max-w-[360px] w-[85%] bg-card/90 backdrop-blur-2xl border border-border rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] pointer-events-auto px-4">
                 {tabs.map((tab) => {
                     const isActive = pathname === tab.href
 
@@ -44,7 +43,6 @@ export function BottomNav() {
                                     }
                                 }}
                             >
-                                <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping opacity-50" />
                                 <Plus className="w-7 h-7 relative z-10" strokeWidth={3} />
                             </motion.button>
                         )
@@ -68,6 +66,7 @@ export function BottomNav() {
                                 <tab.icon
                                     className="w-[22px] h-[22px]"
                                     strokeWidth={isActive ? 2.5 : 2}
+                                    style={isActive ? { filter: 'drop-shadow(0 0 6px var(--primary))' } : undefined}
                                 />
                                 <span className={cn(
                                     "text-[9px] font-bold tracking-wider uppercase transition-opacity",
