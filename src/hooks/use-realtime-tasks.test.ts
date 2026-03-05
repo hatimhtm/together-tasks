@@ -70,7 +70,18 @@ describe('useRealtimeTasks', () => {
 
         mockSupabase = {
             from: mock.fn(() => ({
-                select: mockSelect
+                select: mockSelect,
+                update: mock.fn(() => ({
+                    eq: mock.fn(() => Promise.resolve({ data: null, error: null }))
+                })),
+                delete: mock.fn(() => ({
+                    eq: mock.fn(() => Promise.resolve({ data: null, error: null }))
+                })),
+                insert: mock.fn(() => ({
+                    select: mock.fn(() => ({
+                        single: mock.fn(() => Promise.resolve({ data: { id: 'real-task-id' }, error: null }))
+                    }))
+                }))
             })),
             channel: mock.fn(() => mockChannel)
         };
@@ -342,9 +353,7 @@ describe('useRealtimeTasks', () => {
         assert.strictEqual(result.current.tasks[0].is_completed, true);
 
         // Check API call
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        assert.strictEqual(fetchCall.arguments[0], '/api/tasks/task-1');
-        assert.strictEqual(fetchCall.arguments[1].method, 'PATCH');
-        assert.strictEqual(JSON.parse(fetchCall.arguments[1].body).is_completed, true);
+        assert.strictEqual(mockSupabase.from.mock.calls.length, 1);
+        assert.strictEqual(mockSupabase.from.mock.calls[0].arguments[0], 'tasks');
     });
 });

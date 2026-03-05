@@ -25,7 +25,6 @@ export function LocationTracker({ userId }: { userId: string }) {
             // Save to database
             saveLocationUpdate(userId, location, context)
 
-            console.log("Location context:", context.currentPlace)
         })
 
         // Cleanup on unmount
