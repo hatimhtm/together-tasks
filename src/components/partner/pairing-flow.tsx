@@ -123,8 +123,10 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
             if (!partnerProfile) throw new Error("Partner vanished")
 
             // Perform Mutual Link
-            await supabase.from('profiles').update({ partner_id: partnerProfile.id }).eq('id', user.id)
-            await supabase.from('profiles').update({ partner_id: user.id }).eq('id', partnerProfile.id)
+            await supabase.from('profiles').upsert([
+                { id: user.id, partner_id: partnerProfile.id },
+                { id: partnerProfile.id, partner_id: user.id }
+            ])
 
             // SUCCESS! 🎉
             confetti({
