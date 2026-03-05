@@ -35,6 +35,8 @@ export async function sendWebPush(
         body
     })
 
+    const expiredSubIds: string[] = []
+
     const promises = subs.map(async (sub) => {
         try {
             await webPushLib.sendNotification({
@@ -45,13 +47,18 @@ export async function sendWebPush(
                 }
             }, payload)
         } catch (e: any) {
-            // Subscription might be invalid/expired, remove it
+            // Subscription might be invalid/expired, mark for removal
             if (e.statusCode === 410 || e.statusCode === 404) {
-                await supabase.from('push_subscriptions').delete().eq('id', sub.id)
+                expiredSubIds.push(sub.id)
             }
             console.error("Error sending push:", e)
         }
     })
 
     await Promise.allSettled(promises)
+
+    // Clean up expired subscriptions in a single query
+    if (expiredSubIds.length > 0) {
+        await supabase.from('push_subscriptions').delete().in('id', expiredSubIds)
+    }
 }
