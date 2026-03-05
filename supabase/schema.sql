@@ -7,6 +7,7 @@ drop function if exists public.handle_new_user();
 drop table if exists public.categories cascade;
 drop table if exists public.tasks cascade;
 drop table if exists public.profiles cascade;
+drop table if exists public.allowed_emails cascade;
 
 -- 2. SETUP EXTENSIONS
 create extension if not exists "uuid-ossp";
@@ -123,6 +124,20 @@ create policy "Manage own categories"
   on categories for all
   using ( user_id = auth.uid() );
 
+-- Allowed Emails Table (for secure role assignment)
+create table public.allowed_emails (
+  email text primary key,
+  role text check (role in ('queen', 'king')) not null
+);
+
+-- Enable RLS for Allowed Emails (no policies = access restricted to superuser/service_role and security definer functions)
+alter table public.allowed_emails enable row level security;
+
+-- Insert initial allowed emails
+insert into public.allowed_emails (email, role) values
+  ('hatimhtm2003@gmail.com', 'king'),
+  ('queen@example.com', 'queen');
+
 -- 4. AUTH & SECURITY LOGIC
 
 create or replace function public.handle_new_user()
@@ -130,16 +145,11 @@ returns trigger as $$
 declare
   user_role text;
 begin
-  -- Validate Email
-  if new.email not in ('hatimhtm2003@gmail.com', 'queen@example.com') then
-    raise exception 'Access Denied: This app is restricted.';
-  end if;
+  -- Validate Email and Assign Role from allowed_emails table
+  select role into user_role from public.allowed_emails where email = new.email;
 
-  -- Assign Role
-  if new.email = 'hatimhtm2003@gmail.com' then
-    user_role := 'king';
-  elsif new.email = 'queen@example.com' then
-    user_role := 'queen';
+  if user_role is null then
+    raise exception 'Access Denied: This app is restricted.';
   end if;
 
   insert into public.profiles (id, email, phone, role, xp, level, has_completed_onboarding)
