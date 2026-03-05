@@ -51,11 +51,13 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error("Not logged in")
 
-            // Generate 6-char code
+            // Generate 6-char code securely
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
             let code = ''
+            const randomValues = new Uint8Array(6)
+            crypto.getRandomValues(randomValues)
             for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length))
+                code += chars.charAt(randomValues[i] % chars.length)
             }
 
             const { error } = await supabase
