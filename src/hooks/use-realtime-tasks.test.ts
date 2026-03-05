@@ -1,4 +1,4 @@
-import { test, describe, before, after, beforeEach, afterEach, mock } from 'node:test';
+import { test, describe, before, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
 import { JSDOM } from 'jsdom';
 
@@ -46,9 +46,13 @@ describe('useRealtimeTasks', () => {
     let mockSelect: any;
     let mockOrder: any;
     let mockOr: any;
+    let mockUpdate: any;
+    let mockEq: any;
+    let mockDelete: any;
+    let mockInsert: any;
+    let mockSingle: any;
 
     before(async () => {
-        // Mock Supabase client
         mockChannel = {
             on: mock.fn(() => mockChannel),
             subscribe: mock.fn(() => mockChannel),
@@ -57,12 +61,33 @@ describe('useRealtimeTasks', () => {
 
         mockOrder = mock.fn(() => Promise.resolve({ data: [], error: null }));
 
-        // The query builder chain
+        mockEq = mock.fn(() => Promise.resolve({ error: null }));
+
+        mockUpdate = mock.fn(() => ({
+            eq: mockEq
+        }));
+
+        mockDelete = mock.fn(() => ({
+            eq: mockEq
+        }));
+
+        mockSingle = mock.fn(() => Promise.resolve({ data: { id: 'real-id' }, error: null }));
+
+        mockInsert = mock.fn(() => ({
+            select: mock.fn(() => ({
+                single: mockSingle
+            }))
+        }));
+
         const queryBuilder = {
             order: mockOrder,
             or: mock.fn(() => ({
                 order: mockOrder
-            }))
+            })),
+            update: mockUpdate,
+            delete: mockDelete,
+            insert: mockInsert,
+            select: mock.fn()
         };
         mockOr = queryBuilder.or;
 
@@ -70,7 +95,10 @@ describe('useRealtimeTasks', () => {
 
         mockSupabase = {
             from: mock.fn(() => ({
-                select: mockSelect
+                select: mockSelect,
+                update: mockUpdate,
+                delete: mockDelete,
+                insert: mockInsert
             })),
             channel: mock.fn(() => mockChannel)
         };
@@ -106,10 +134,17 @@ describe('useRealtimeTasks', () => {
         mockChannel.unsubscribe.mock.resetCalls();
         mockSupabase.from.mock.resetCalls();
         mockSupabase.channel.mock.resetCalls();
-        (global.fetch as any).mock.resetCalls();
+        mockUpdate.mock.resetCalls();
+        mockEq.mock.resetCalls();
+        mockDelete.mock.resetCalls();
+        mockInsert.mock.resetCalls();
+        mockSingle.mock.resetCalls();
+        ((global.fetch as any)).mock.resetCalls();
 
         // Reset specific mock implementations if needed
         mockOrder.mock.mockImplementation(() => Promise.resolve({ data: [], error: null }));
+        mockEq.mock.mockImplementation(() => Promise.resolve({ error: null }));
+        mockSingle.mock.mockImplementation(() => Promise.resolve({ data: { id: 'real-id' }, error: null }));
     });
 
     test('should fetch tasks on mount', async () => {
@@ -280,9 +315,9 @@ describe('useRealtimeTasks', () => {
         const { result } = renderHook(() => useRealtimeTasks('user1', null));
         await waitFor(() => result.current.loading === false);
 
-        // Mock fetch to fail
-        (global.fetch as any).mock.mockImplementationOnce(() => Promise.resolve({
-            ok: false
+        // Mock supabase insert to fail
+        mockSingle.mock.mockImplementationOnce(() => Promise.resolve({
+            error: new Error("Insert failed")
         }));
 
         const originalConsoleError = console.error;
@@ -297,18 +332,11 @@ describe('useRealtimeTasks', () => {
                 }
             });
 
-            // Should have added it optimistically (but we might miss it if it rolls back too fast?
-            // Actually addTask awaits the fetch.
-            // So during the await, state should be updated.
-            // But we can't inspect state *during* the await easily in this test structure without checking calls.
-            // However, after it fails, it should be gone.
+            // Wait a bit to ensure rollback happens
+            await new Promise(r => setTimeout(r, 50));
 
             assert.strictEqual(result.current.tasks.length, 0);
 
-            // If we want to verify optimistic update happened, we'd need to mock fetch to hang, check state, then resolve.
-            // But checking rollback is sufficient.
-
-            assert.strictEqual((global.fetch as any).mock.calls.length, 1);
         } finally {
             console.error = originalConsoleError;
         }
@@ -328,11 +356,7 @@ describe('useRealtimeTasks', () => {
         const { result } = renderHook(() => useRealtimeTasks('user1', null));
         await waitFor(() => result.current.loading === false);
 
-        // Mock fetch success
-        (global.fetch as any).mock.mockImplementationOnce(() => Promise.resolve({
-            ok: true,
-            json: async () => ({})
-        }));
+        // Supabase mock will return error=null automatically by our before block
 
         await act(async () => {
             await result.current.updateTask('task-1', { is_completed: true });
@@ -342,9 +366,10 @@ describe('useRealtimeTasks', () => {
         assert.strictEqual(result.current.tasks[0].is_completed, true);
 
         // Check API call
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        assert.strictEqual(fetchCall.arguments[0], '/api/tasks/task-1');
-        assert.strictEqual(fetchCall.arguments[1].method, 'PATCH');
-        assert.strictEqual(JSON.parse(fetchCall.arguments[1].body).is_completed, true);
+        assert.strictEqual(mockSupabase.from.mock.calls[1].arguments[0], 'tasks'); // 0 was fetchTasks
+        assert.strictEqual(mockUpdate.mock.calls.length, 1);
+        assert.strictEqual(mockUpdate.mock.calls[0].arguments[0].is_completed, true);
+        assert.strictEqual(mockEq.mock.calls[0].arguments[0], 'id');
+        assert.strictEqual(mockEq.mock.calls[0].arguments[1], 'task-1');
     });
 });
