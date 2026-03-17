@@ -11,7 +11,7 @@ interface Message {
     timestamp: Date
 }
 
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
 
 export function AIChatWidget({
     userName,
@@ -40,6 +40,15 @@ export function AIChatWidget({
 
     const handleSend = async () => {
         if (!input.trim() || loading) return
+        if (!GEMINI_API_KEY) {
+            setMessages(prev => [...prev, {
+                role: "assistant",
+                content: "Please set your Gemini API key in the settings to chat with me! 💙",
+                timestamp: new Date()
+            }])
+            return
+        }
+
 
         const userMessage: Message = { role: "user", content: input, timestamp: new Date() }
         setMessages(prev => [...prev, userMessage])
