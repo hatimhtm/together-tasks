@@ -106,8 +106,8 @@ describe('sendWebPush', () => {
 
         const subscription = { id: 123, endpoint: 'ep1', p256dh: 'key1', auth: 'auth1' }
 
-        const deleteEqMock = mock.fn(async () => {})
-        const deleteMock = mock.fn(() => ({ eq: deleteEqMock }))
+        const deleteInMock = mock.fn(async () => {})
+        const deleteMock = mock.fn(() => ({ in: deleteInMock }))
 
         const supabaseMock = {
             from: mock.fn((table) => {
@@ -130,9 +130,9 @@ describe('sendWebPush', () => {
         await sendWebPush('user-1', 'Test', 'Body', createClientMock, webpushMock)
 
         assert.strictEqual(deleteMock.mock.callCount(), 1)
-        assert.strictEqual(deleteEqMock.mock.callCount(), 1)
-        assert.strictEqual(deleteEqMock.mock.calls[0].arguments[0], 'id')
-        assert.strictEqual(deleteEqMock.mock.calls[0].arguments[1], 123)
+        assert.strictEqual(deleteInMock.mock.callCount(), 1)
+        assert.strictEqual(deleteInMock.mock.calls[0].arguments[0], 'id')
+        assert.deepStrictEqual(deleteInMock.mock.calls[0].arguments[1], [123])
 
         consoleErrorMock.mock.restore()
     })
