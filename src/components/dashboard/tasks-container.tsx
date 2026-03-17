@@ -13,36 +13,48 @@ import { format } from "date-fns"
 type Tab = "my" | "partner" | "shared"
 
 function getDateBuckets(tasks: any[], userId: string, partnerId: string | null | undefined, activeTab: Tab) {
-    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-    const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const todayStartMs = todayStart.getTime();
 
-    // Tab filter — Mine and Partner also show shared tasks so nothing disappears
-    const tabFiltered = tasks.filter(task => {
-        if (activeTab === "shared") return task.scope === 'shared'
-        if (activeTab === "my") return task.assignee_id === userId || task.scope === 'shared'
-        if (activeTab === "partner") return task.assignee_id === partnerId || task.scope === 'shared'
-        return true
-    })
+    const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+    const todayEndMs = todayEnd.getTime();
 
-    // Today/overdue bucket: due today, overdue, OR undated (always relevant until completed)
-    const todayTasks = tabFiltered.filter(t => {
-        if (t.is_completed) {
-            // Only show completions from today
-            if (t.completed_at) return new Date(t.completed_at) >= todayStart
-            return false
+    const todayTasks = [];
+    const upcomingTasks = [];
+
+    // O(N) traversal, categorizing into today/upcoming while checking tabs
+    for (let i = 0; i < tasks.length; i++) {
+        const t = tasks[i];
+
+        let include = true;
+        if (activeTab === "shared") {
+            include = t.scope === 'shared';
+        } else if (activeTab === "my") {
+            include = t.assignee_id === userId || t.scope === 'shared';
+        } else if (activeTab === "partner") {
+            include = t.assignee_id === partnerId || t.scope === 'shared';
         }
-        if (t.due_date) return new Date(t.due_date) <= todayEnd
-        return true // No due date = always show until done
-    })
 
-    // Upcoming: due in the future, not completed
-    const upcomingTasks = tabFiltered.filter(t => {
-        if (t.is_completed) return false
-        if (!t.due_date) return false
-        return new Date(t.due_date) > todayEnd
-    })
+        if (!include) continue;
 
-    return { todayTasks, upcomingTasks }
+        if (t.is_completed) {
+            if (t.completed_at && new Date(t.completed_at).getTime() >= todayStartMs) {
+                todayTasks.push(t);
+            }
+        } else {
+            if (!t.due_date) {
+                todayTasks.push(t);
+            } else {
+                if (new Date(t.due_date).getTime() <= todayEndMs) {
+                    todayTasks.push(t);
+                } else {
+                    upcomingTasks.push(t);
+                }
+            }
+        }
+    }
+
+    return { todayTasks, upcomingTasks };
 }
 
 export function TasksContainer({

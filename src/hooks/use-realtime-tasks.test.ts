@@ -328,10 +328,12 @@ describe('useRealtimeTasks', () => {
         const { result } = renderHook(() => useRealtimeTasks('user1', null));
         await waitFor(() => result.current.loading === false);
 
-        // Mock fetch success
-        (global.fetch as any).mock.mockImplementationOnce(() => Promise.resolve({
-            ok: true,
-            json: async () => ({})
+        // Mock supabase update success
+        const mockEq = mock.fn(() => Promise.resolve({ error: null }));
+        const mockUpdate = mock.fn(() => ({ eq: mockEq }));
+        mockSupabase.from.mock.mockImplementation(() => ({
+            select: mockSelect,
+            update: mockUpdate
         }));
 
         await act(async () => {
@@ -341,10 +343,10 @@ describe('useRealtimeTasks', () => {
         // Check if state is updated
         assert.strictEqual(result.current.tasks[0].is_completed, true);
 
-        // Check API call
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        assert.strictEqual(fetchCall.arguments[0], '/api/tasks/task-1');
-        assert.strictEqual(fetchCall.arguments[1].method, 'PATCH');
-        assert.strictEqual(JSON.parse(fetchCall.arguments[1].body).is_completed, true);
+        // Check Supabase call
+        assert.strictEqual(mockSupabase.from.mock.calls[1].arguments[0], 'tasks'); // calls[0] is from initial fetch
+        assert.strictEqual(mockUpdate.mock.calls[0].arguments[0].is_completed, true);
+        assert.strictEqual(mockEq.mock.calls[0].arguments[0], 'id');
+        assert.strictEqual(mockEq.mock.calls[0].arguments[1], 'task-1');
     });
 });
