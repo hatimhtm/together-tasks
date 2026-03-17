@@ -1,6 +1,6 @@
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert';
-import { detectLocationContext, type Location } from './geolocation.ts';
+import { detectLocationContext, saveLocationUpdate, type Location } from './geolocation.ts';
 
 describe('Geolocation Context', () => {
     // Store original env
@@ -92,5 +92,54 @@ describe('Geolocation Context', () => {
         assert.strictEqual(context.isAtWork, false);
         assert.strictEqual(context.isAtHome, false);
         assert.strictEqual(context.currentPlace, 'unknown');
+    });
+});
+
+
+describe('saveLocationUpdate', () => {
+    let logMock: any;
+    let errorMock: any;
+
+    beforeEach(() => {
+        logMock = mock.method(console, 'log', () => {});
+        errorMock = mock.method(console, 'error', () => {});
+    });
+
+    afterEach(() => {
+        if (logMock) logMock.mock.restore();
+        if (errorMock) errorMock.mock.restore();
+    });
+
+    it('should log the location update', async () => {
+        const userId = 'user-123';
+        const location: Location = { latitude: 10, longitude: 20, accuracy: 5, timestamp: 12345 };
+        const context = { isAtWork: false, isAtHome: true, isCommuting: false, currentPlace: 'home' as const };
+
+        await saveLocationUpdate(userId, location, context);
+
+        assert.strictEqual(logMock.mock.callCount(), 1);
+        assert.deepStrictEqual(logMock.mock.calls[0].arguments, [
+            "Local static build: location update tracked locally.",
+            { userId, location, context }
+        ]);
+        assert.strictEqual(errorMock.mock.callCount(), 0);
+    });
+
+    it('should catch and log errors', async () => {
+        const userId = 'user-123';
+        const location: Location = { latitude: 10, longitude: 20, accuracy: 5, timestamp: 12345 };
+        const context = { isAtWork: false, isAtHome: true, isCommuting: false, currentPlace: 'home' as const };
+
+        const expectedError = new Error('Test error');
+        logMock.mock.restore(); // restore first so we can throw
+        logMock = mock.method(console, 'log', () => { throw expectedError; });
+
+        await saveLocationUpdate(userId, location, context);
+
+        assert.strictEqual(errorMock.mock.callCount(), 1);
+        assert.deepStrictEqual(errorMock.mock.calls[0].arguments, [
+            "Failed to save location:",
+            expectedError
+        ]);
     });
 });
