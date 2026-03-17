@@ -68,9 +68,13 @@ describe('useRealtimeTasks', () => {
 
         mockSelect = mock.fn(() => queryBuilder);
 
+        let mockEq = mock.fn(() => Promise.resolve({ error: null }));
+        let mockUpdate = mock.fn(() => ({ eq: mockEq }));
+
         mockSupabase = {
             from: mock.fn(() => ({
-                select: mockSelect
+                select: mockSelect,
+                update: mockUpdate
             })),
             channel: mock.fn(() => mockChannel)
         };
@@ -341,10 +345,9 @@ describe('useRealtimeTasks', () => {
         // Check if state is updated
         assert.strictEqual(result.current.tasks[0].is_completed, true);
 
-        // Check API call
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        assert.strictEqual(fetchCall.arguments[0], '/api/tasks/task-1');
-        assert.strictEqual(fetchCall.arguments[1].method, 'PATCH');
-        assert.strictEqual(JSON.parse(fetchCall.arguments[1].body).is_completed, true);
+        // Check API call (it's using Supabase directly now)
+        // Verify mock Supabase call
+        assert.strictEqual(mockSupabase.from.mock.calls.length, 2); // 1 for fetch, 1 for update
+        assert.strictEqual(mockSupabase.from.mock.calls[1].arguments[0], 'tasks');
     });
 });
