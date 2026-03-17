@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
-import { detectLocationContext, type Location } from './geolocation.ts';
+import { detectLocationContext, getCurrentLocation, type Location } from './geolocation.ts';
 
 describe('Geolocation Context', () => {
     // Store original env
@@ -92,5 +92,105 @@ describe('Geolocation Context', () => {
         assert.strictEqual(context.isAtWork, false);
         assert.strictEqual(context.isAtHome, false);
         assert.strictEqual(context.currentPlace, 'unknown');
+    });
+});
+
+describe('getCurrentLocation', () => {
+    let originalWarn: any;
+    let originalError: any;
+
+    beforeEach(() => {
+        // Save original globals
+        originalWarn = console.warn;
+        originalError = console.error;
+
+        // Suppress console output during tests
+        console.warn = () => {};
+        console.error = () => {};
+
+        // Ensure navigator is writable or object configurable by redefining it if necessary
+        // In Node environments, `global.navigator` usually doesn't exist, but if it does and is read-only, we can overwrite it.
+    });
+
+    afterEach(() => {
+        // Restore original globals
+        console.warn = originalWarn;
+        console.error = originalError;
+
+        // Cleanup global navigator
+        if ('navigator' in global) {
+            delete (global as any).navigator;
+        }
+    });
+
+    it('should return null and warn if geolocation is not supported', async () => {
+        // Mock navigator without geolocation
+        Object.defineProperty(global, 'navigator', {
+            value: {},
+            writable: true,
+            configurable: true
+        });
+
+        let warnCalled = false;
+        console.warn = () => { warnCalled = true; };
+
+        const result = await getCurrentLocation();
+
+        assert.strictEqual(result, null);
+        assert.strictEqual(warnCalled, true);
+    });
+
+    it('should resolve with Location when getCurrentPosition succeeds', async () => {
+        // Mock navigator with successful geolocation
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    getCurrentPosition: (successCallback: any) => {
+                        successCallback({
+                            coords: {
+                                latitude: 12.34,
+                                longitude: 56.78,
+                                accuracy: 10
+                            },
+                            timestamp: 1234567890
+                        });
+                    }
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        const result = await getCurrentLocation();
+
+        assert.deepStrictEqual(result, {
+            latitude: 12.34,
+            longitude: 56.78,
+            accuracy: 10,
+            timestamp: 1234567890
+        });
+    });
+
+    it('should resolve with null and log error when getCurrentPosition fails', async () => {
+        // Mock navigator with failing geolocation
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    getCurrentPosition: (_successCallback: any, errorCallback: any) => {
+                        errorCallback(new Error('Permission denied'));
+                    }
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        let errorCalled = false;
+        console.error = () => { errorCalled = true; };
+
+        const result = await getCurrentLocation();
+
+        assert.strictEqual(result, null);
+        assert.strictEqual(errorCalled, true);
     });
 });
