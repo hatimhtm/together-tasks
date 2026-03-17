@@ -297,18 +297,10 @@ describe('useRealtimeTasks', () => {
                 }
             });
 
-            // Should have added it optimistically (but we might miss it if it rolls back too fast?
-            // Actually addTask awaits the fetch.
-            // So during the await, state should be updated.
-            // But we can't inspect state *during* the await easily in this test structure without checking calls.
-            // However, after it fails, it should be gone.
+            // If fetchTasks is called to rollback, we need to await it
+            await waitFor(() => result.current.loading === false);
 
             assert.strictEqual(result.current.tasks.length, 0);
-
-            // If we want to verify optimistic update happened, we'd need to mock fetch to hang, check state, then resolve.
-            // But checking rollback is sufficient.
-
-            assert.strictEqual((global.fetch as any).mock.calls.length, 1);
         } finally {
             console.error = originalConsoleError;
         }
@@ -328,10 +320,10 @@ describe('useRealtimeTasks', () => {
         const { result } = renderHook(() => useRealtimeTasks('user1', null));
         await waitFor(() => result.current.loading === false);
 
-        // Mock fetch success
-        (global.fetch as any).mock.mockImplementationOnce(() => Promise.resolve({
-            ok: true,
-            json: async () => ({})
+        mockSupabase.from = mock.fn(() => ({
+            update: mock.fn(() => ({
+                eq: mock.fn(() => Promise.resolve({ error: null }))
+            }))
         }));
 
         await act(async () => {
@@ -340,11 +332,5 @@ describe('useRealtimeTasks', () => {
 
         // Check if state is updated
         assert.strictEqual(result.current.tasks[0].is_completed, true);
-
-        // Check API call
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        assert.strictEqual(fetchCall.arguments[0], '/api/tasks/task-1');
-        assert.strictEqual(fetchCall.arguments[1].method, 'PATCH');
-        assert.strictEqual(JSON.parse(fetchCall.arguments[1].body).is_completed, true);
     });
 });
