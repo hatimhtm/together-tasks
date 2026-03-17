@@ -1,5 +1,3 @@
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
-
 const systemInstruction = `You are an expert productivity assistant for a couple's task manager app.
 Analyze the user's natural language input and extract structured task details.
 Keep the breakdown very concise. Provide AT MOST 2 or 3 short, actionable subtasks ONLY if the task is highly complex. For most tasks, return an empty array for subtasks to keep the UI clean and uncluttered. Avoid lengthy explanations.
@@ -32,6 +30,10 @@ Time-of-day mapping (use these EXACT times when user uses vague time expressions
 CRITICAL: NEVER default to 08:00 unless the user explicitly said "8am" or "8:00". If no time is specified at all, set dueTime to null.`
 
 export async function parseTaskInput(input: string) {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY
+    if (!apiKey) {
+        throw new Error('Gemini API key is not configured');
+    }
     const now = new Date()
     const todayDate = now.toLocaleDateString('en-CA')
     const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
@@ -45,7 +47,7 @@ Current day of week: ${dayOfWeek}`
 
     try {
         const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
