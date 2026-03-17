@@ -69,9 +69,18 @@ describe('useRealtimeTasks', () => {
         mockSelect = mock.fn(() => queryBuilder);
 
         mockSupabase = {
-            from: mock.fn(() => ({
-                select: mockSelect
-            })),
+            from: mock.fn(() => {
+                const chain: any = {
+                    select: mockSelect,
+                    update: mock.fn(() => chain),
+                    delete: mock.fn(() => chain),
+                    insert: mock.fn(() => chain),
+                    single: mock.fn(() => Promise.resolve({ data: { id: 'test-real-id' }, error: null })),
+                    eq: mock.fn(() => Promise.resolve({ error: null })),
+                    or: mockOr
+                };
+                return chain;
+            }),
             channel: mock.fn(() => mockChannel)
         };
 
@@ -280,9 +289,9 @@ describe('useRealtimeTasks', () => {
         const { result } = renderHook(() => useRealtimeTasks('user1', null));
         await waitFor(() => result.current.loading === false);
 
-        // Mock fetch to fail
-        (global.fetch as any).mock.mockImplementationOnce(() => Promise.resolve({
-            ok: false
+        // Mock supabase insert to fail
+        mockSupabase.from = mock.fn(() => ({
+            insert: mock.fn(() => ({ select: mock.fn(() => ({ single: mock.fn(() => Promise.resolve({ data: null, error: new Error('Insert failed') })) })) }))
         }));
 
         const originalConsoleError = console.error;
@@ -297,18 +306,7 @@ describe('useRealtimeTasks', () => {
                 }
             });
 
-            // Should have added it optimistically (but we might miss it if it rolls back too fast?
-            // Actually addTask awaits the fetch.
-            // So during the await, state should be updated.
-            // But we can't inspect state *during* the await easily in this test structure without checking calls.
-            // However, after it fails, it should be gone.
-
             assert.strictEqual(result.current.tasks.length, 0);
-
-            // If we want to verify optimistic update happened, we'd need to mock fetch to hang, check state, then resolve.
-            // But checking rollback is sufficient.
-
-            assert.strictEqual((global.fetch as any).mock.calls.length, 1);
         } finally {
             console.error = originalConsoleError;
         }
@@ -328,12 +326,6 @@ describe('useRealtimeTasks', () => {
         const { result } = renderHook(() => useRealtimeTasks('user1', null));
         await waitFor(() => result.current.loading === false);
 
-        // Mock fetch success
-        (global.fetch as any).mock.mockImplementationOnce(() => Promise.resolve({
-            ok: true,
-            json: async () => ({})
-        }));
-
         await act(async () => {
             await result.current.updateTask('task-1', { is_completed: true });
         });
@@ -341,10 +333,8 @@ describe('useRealtimeTasks', () => {
         // Check if state is updated
         assert.strictEqual(result.current.tasks[0].is_completed, true);
 
-        // Check API call
-        const fetchCall = (global.fetch as any).mock.calls[0];
-        assert.strictEqual(fetchCall.arguments[0], '/api/tasks/task-1');
-        assert.strictEqual(fetchCall.arguments[1].method, 'PATCH');
-        assert.strictEqual(JSON.parse(fetchCall.arguments[1].body).is_completed, true);
+        // Check API call (it's now using Supabase, not fetch)
+        assert.strictEqual(mockSupabase.from.mock.calls.length, 2); // 1 for initial select, 1 for update
+        assert.strictEqual(mockSupabase.from.mock.calls[1].arguments[0], 'tasks');
     });
 });
