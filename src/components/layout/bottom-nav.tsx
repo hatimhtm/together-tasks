@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Home, Plus, Settings, BarChart2 } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { triggerHaptic } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
@@ -13,106 +12,45 @@ export function BottomNav() {
     const router = useRouter()
 
     const tabs = [
-        { name: "Home", href: "/", icon: Home },
-        { name: "Stats", href: "/analytics", icon: BarChart2 },
-        { name: "Settings", href: "/settings", icon: Settings },
+        { name: "Home", href: "/", icon: "home" },
+        { name: "Nudge", href: "/nudge", icon: "favorite" },
+        { name: "Stats", href: "/analytics", icon: "insights" },
+        { name: "Settings", href: "/settings", icon: "settings" },
     ]
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none pb-safe">
-            <div className="flex items-center h-[68px] w-full max-w-md bg-card/95 backdrop-blur-2xl border-t border-border/50 shadow-[0_-1px_20px_rgba(0,0,0,0.12)] pointer-events-auto px-2">
-                {/* Left tabs */}
-                {tabs.slice(0, 2).map((tab) => {
+        <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pointer-events-none">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] rounded-full bg-surface-container/70 backdrop-blur-3xl shadow-[0_20px_50px_rgba(255,183,125,0.1)] flex justify-around items-center py-3 pointer-events-auto border border-outline-variant/10">
+                {tabs.map((tab) => {
                     const isActive = pathname === tab.href
                     return (
                         <Link
                             key={tab.name}
                             href={tab.href}
                             onClick={() => triggerHaptic(ImpactStyle.Light)}
-                            className="relative flex-1 flex flex-col items-center justify-center gap-1 h-full"
+                            className={cn(
+                                "flex flex-col items-center justify-center transition-colors scale-90 active:scale-95 duration-200 relative",
+                                isActive 
+                                    ? "text-primary drop-shadow-[0_0_8px_rgba(255,183,125,0.5)]" 
+                                    : "text-tertiary-fixed-dim/60 hover:text-secondary"
+                            )}
                         >
                             {isActive && (
                                 <motion.div
-                                    layoutId="nav-active-indicator"
-                                    className="absolute top-0 left-4 right-4 h-[2px] bg-primary rounded-b-full"
-                                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                                    layoutId="bottom-nav-indicator"
+                                    className="absolute inset-0 bg-primary/10 rounded-full -z-10 scale-125"
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 />
                             )}
-                            <motion.div whileTap={{ scale: 0.85 }} className="flex flex-col items-center gap-1">
-                                <tab.icon
-                                    className={cn(
-                                        "transition-all duration-200",
-                                        isActive
-                                            ? "w-[22px] h-[22px] text-primary"
-                                            : "w-[22px] h-[22px] text-muted-foreground/70"
-                                    )}
-                                    strokeWidth={isActive ? 2.5 : 1.8}
-                                />
-                                <span className={cn(
-                                    "text-[10px] font-semibold transition-colors duration-200",
-                                    isActive ? "text-primary" : "text-muted-foreground/60"
-                                )}>
-                                    {tab.name}
-                                </span>
-                            </motion.div>
-                        </Link>
-                    )
-                })}
-
-                {/* Center FAB */}
-                <div className="flex-1 flex items-center justify-center">
-                    <motion.button
-                        whileTap={{ scale: 0.88 }}
-                        className="h-[52px] w-[52px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(255,255,255,0.06)] -mt-4"
-                        onClick={() => {
-                            triggerHaptic(ImpactStyle.Medium)
-                            if (pathname !== "/") {
-                                router.push("/")
-                            } else {
-                                window.scrollTo({ top: 0, behavior: 'smooth' })
-                                const input = document.querySelector('textarea[placeholder*="What needs to be done"]') as HTMLTextAreaElement
-                                if (input) { input.focus() }
-                            }
-                        }}
-                    >
-                        <Plus className="w-6 h-6" strokeWidth={2.5} />
-                    </motion.button>
-                </div>
-
-                {/* Right tab */}
-                {tabs.slice(2).map((tab) => {
-                    const isActive = pathname === tab.href
-                    return (
-                        <Link
-                            key={tab.name}
-                            href={tab.href}
-                            onClick={() => triggerHaptic(ImpactStyle.Light)}
-                            className="relative flex-1 flex flex-col items-center justify-center gap-1 h-full"
-                        >
-                            {isActive && (
-                                <motion.div
-                                    layoutId="nav-active-indicator"
-                                    className="absolute top-0 left-4 right-4 h-[2px] bg-primary rounded-b-full"
-                                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                                />
-                            )}
-                            <motion.div whileTap={{ scale: 0.85 }} className="flex flex-col items-center gap-1">
-                                <tab.icon
-                                    className={cn(
-                                        "transition-all duration-200",
-                                        isActive
-                                            ? "w-[22px] h-[22px] text-primary"
-                                            : "w-[22px] h-[22px] text-muted-foreground/70"
-                                    )}
-                                    strokeWidth={isActive ? 2.5 : 1.8}
-                                />
-                                <span className={cn(
-                                    "text-[10px] font-semibold transition-colors duration-200",
-                                    isActive ? "text-primary" : "text-muted-foreground/60"
-                                )}>
-                                    {tab.name}
-                                </span>
-                            </motion.div>
+                            <span 
+                                className="material-symbols-outlined text-[28px]" 
+                                style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
+                            >
+                                {tab.icon}
+                            </span>
+                            <span className="font-label text-[10px] font-medium mt-1">
+                                {tab.name}
+                            </span>
                         </Link>
                     )
                 })}

@@ -6,7 +6,6 @@ import { AIChatWidget } from "@/components/ai/chat-widget"
 import { NotificationPrompt } from "@/components/settings/notification-prompt"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { PageTransition } from "@/components/ui/page-transition"
 import { useEffect, useState } from "react"
 import { Profile } from "@/types/task"
 
@@ -66,12 +65,10 @@ export default function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen bg-transparent pb-32 pt-24">
+        <div className="min-h-screen bg-background pb-32">
             <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} />
-            <main className="container mx-auto px-4">
-                <PageTransition>
-                    {children}
-                </PageTransition>
+            <main className="px-6 pt-4 max-w-2xl mx-auto space-y-8">
+                {children}
             </main>
             <BottomNav />
 

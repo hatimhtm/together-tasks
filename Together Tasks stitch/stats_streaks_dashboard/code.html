@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-variant": "#393431",
+              "on-primary-fixed": "#2f1500",
+              "tertiary": "#bac7e2",
+              "surface-container-high": "#2e2927",
+              "surface-tint": "#ffb77d",
+              "outline": "#a48c7a",
+              "primary": "#ffb77d",
+              "inverse-on-surface": "#342f2d",
+              "on-primary": "#4d2600",
+              "surface-container-highest": "#393431",
+              "background": "#161311",
+              "surface-container-low": "#1f1b19",
+              "tertiary-container": "#9daac5",
+              "on-primary-fixed-variant": "#6e3900",
+              "surface": "#161311",
+              "on-tertiary-fixed": "#0e1c30",
+              "primary-fixed": "#ffdcc3",
+              "on-primary-container": "#623200",
+              "on-secondary-fixed-variant": "#8e0048",
+              "primary-container": "#ff8c00",
+              "on-secondary-fixed": "#3f001c",
+              "inverse-primary": "#904d00",
+              "error-container": "#93000a",
+              "on-tertiary": "#243146",
+              "inverse-surface": "#eae1dd",
+              "on-surface-variant": "#ddc1ae",
+              "on-secondary": "#650031",
+              "on-background": "#eae1dd",
+              "on-tertiary-container": "#323f55",
+              "secondary-container": "#b5015e",
+              "secondary-fixed-dim": "#ffb1c7",
+              "secondary": "#ffb1c7",
+              "on-error-container": "#ffdad6",
+              "primary-fixed-dim": "#ffb77d",
+              "outline-variant": "#564334",
+              "surface-container-lowest": "#110d0c",
+              "surface-container": "#231f1d",
+              "tertiary-fixed-dim": "#bac7e2",
+              "tertiary-fixed": "#d6e3ff",
+              "on-secondary-container": "#ffc6d4",
+              "on-error": "#690005",
+              "on-tertiary-fixed-variant": "#3a475e",
+              "secondary-fixed": "#ffd9e2",
+              "surface-bright": "#3d3836",
+              "error": "#ffb4ab",
+              "on-surface": "#eae1dd",
+              "surface-dim": "#161311"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .glass-card {
+        background: rgba(35, 31, 29, 0.6);
+        backdrop-filter: blur(20px);
+      }
+      .royal-glow {
+        box-shadow: 0 0 40px rgba(255, 140, 0, 0.15);
+      }
+      .pulse-animation {
+        mask-image: linear-gradient(to right, transparent, black, transparent);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen pb-32">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 bg-[#161311]/70 backdrop-blur-xl flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container border border-outline-variant/20 flex items-center justify-center overflow-hidden">
+<img alt="King Profile" class="w-full h-full object-cover" data-alt="Avatar of a male character with a crown" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgOo9RCqxd9gsje32xjaVnzxKVjPIlg_5tVEQwMJzzfyunaHvlSrNR770Wg-1uOHJS1YrGp_sabSLQ6pO_N3p2v3iSHi0-aRzezocoT1v0-Epa02WMh-abHz_OQ6KQ749BWhAJZOFPORg6uuGB7JBHorMr-_Y-WjT1_b7w5rKeMgvSJB8Lkn76jnAPMKVZp3DKmjEYqTYuS6bJqJer311YnDIYbELQryUYdyCba7Bq26xZp8yrI3hg_ASJXerJywPdT9T50g-c2CLP"/>
+</div>
+<span class="text-xl font-headline font-bold tracking-tighter text-[#ffb77d]">Together Tasks</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container border border-outline-variant/20 flex items-center justify-center overflow-hidden">
+<img alt="Queen Profile" class="w-full h-full object-cover" data-alt="Avatar of a female character with a crown" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_iklYaj9R_71WL786w5bfTW-8pqMcxxtX5ySi7tZX5gf_yI5eAL-2Ztgi7upt1rJRGOGkBdADJ7vhtm9duts0AmCkMQ8aj97p2pWdpPGHI0nupRH4Fhfw6dnBrsc881P1rQo_nGWxcf1tCtCrlNtvbFlCwBpt5lb2EuP1CZr4RtJpu-CIxFr45gkKwoZVj5oTgFePLf4ain1cRaVNTSskwpNezvN2-gUkvYvS02HkiaeKCzd5zZMIiEQxD2yb0C_rc9ufZstAtfGu"/>
+</div>
+</header>
+<main class="pt-24 px-6 max-w-2xl mx-auto space-y-8">
+<!-- Hero Section: Stats Title -->
+<section class="space-y-2">
+<h1 class="text-4xl font-headline font-extrabold tracking-tight">Our Progress</h1>
+<p class="text-on-surface-variant font-label text-sm tracking-wide">Building a legacy, one task at a time.</p>
+</section>
+<!-- XP Progress Bar: Level Up Gamification -->
+<section class="bg-surface-container-low p-8 rounded-xl space-y-4 royal-glow">
+<div class="flex justify-between items-end">
+<div>
+<span class="text-primary font-label text-xs uppercase tracking-widest font-bold">Current Level</span>
+<h2 class="text-3xl font-headline font-extrabold text-white">Level 12</h2>
+</div>
+<div class="text-right">
+<span class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Next Level</span>
+<p class="text-lg font-headline font-bold text-on-surface">Level 13</p>
+</div>
+</div>
+<div class="relative w-full h-4 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[72%] bg-gradient-to-r from-primary-container to-primary shadow-[0_0_15px_rgba(255,183,125,0.4)] rounded-full"></div>
+</div>
+<div class="flex justify-between items-center text-xs font-label text-on-surface-variant">
+<span>1,440 / 2,000 XP</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+                    560 XP to level up
+                </span>
+</div>
+</section>
+<!-- Bento Grid: Royal Streaks & Love Pulse -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Royal Streaks -->
+<div class="col-span-1 bg-surface-container p-6 rounded-xl flex flex-col justify-between aspect-square">
+<div class="bg-primary-container/10 w-12 h-12 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-3xl" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div class="space-y-1">
+<p class="text-4xl font-headline font-black text-white">42</p>
+<p class="text-sm font-label text-on-surface-variant">Days Together</p>
+</div>
+</div>
+<!-- Love Pulse Harmony -->
+<div class="col-span-1 bg-surface-container p-6 rounded-xl flex flex-col justify-between aspect-square overflow-hidden relative">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<p class="text-sm font-label text-on-surface-variant mt-2">Love Pulse</p>
+</div>
+<div class="relative z-10">
+<p class="text-2xl font-headline font-bold text-white">98%</p>
+<p class="text-xs font-label text-secondary">In Harmony</p>
+</div>
+<!-- Abstract Heart Rate Visualizer -->
+<div class="absolute bottom-0 left-0 w-full h-1/2 opacity-30 flex items-center justify-center">
+<svg class="w-full h-full text-secondary stroke-current fill-none stroke-2" viewbox="0 0 100 40">
+<path class="pulse-animation" d="M0 20 L20 20 L25 5 L35 35 L40 20 L60 20 L65 10 L75 30 L80 20 L100 20"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Productivity Analytics: Chart Section -->
+<section class="bg-surface-container-low p-8 rounded-xl space-y-6">
+<div class="flex justify-between items-center">
+<h3 class="font-headline font-bold text-xl">Task Completion</h3>
+<span class="text-xs font-label text-tertiary bg-tertiary/10 px-3 py-1 rounded-full">Last 7 Days</span>
+</div>
+<div class="flex items-end justify-between h-40 gap-2">
+<!-- Bar 1 -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg transition-all duration-300 group-hover:bg-primary/50" style="height: 60%"></div>
+<span class="text-[10px] font-label text-on-surface-variant">Mon</span>
+</div>
+<!-- Bar 2 -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg transition-all duration-300 group-hover:bg-primary/50" style="height: 40%"></div>
+<span class="text-[10px] font-label text-on-surface-variant">Tue</span>
+</div>
+<!-- Bar 3 -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg transition-all duration-300 group-hover:bg-primary/50" style="height: 85%"></div>
+<span class="text-[10px] font-label text-on-surface-variant">Wed</span>
+</div>
+<!-- Bar 4 -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/80 rounded-t-lg shadow-[0_0_10px_rgba(255,183,125,0.3)]" style="height: 100%"></div>
+<span class="text-[10px] font-label text-primary font-bold">Thu</span>
+</div>
+<!-- Bar 5 -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg transition-all duration-300 group-hover:bg-primary/50" style="height: 55%"></div>
+<span class="text-[10px] font-label text-on-surface-variant">Fri</span>
+</div>
+<!-- Bar 6 -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg transition-all duration-300 group-hover:bg-primary/50" style="height: 70%"></div>
+<span class="text-[10px] font-label text-on-surface-variant">Sat</span>
+</div>
+<!-- Bar 7 -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg transition-all duration-300 group-hover:bg-primary/50" style="height: 90%"></div>
+<span class="text-[10px] font-label text-on-surface-variant">Sun</span>
+</div>
+</div>
+</section>
+<!-- Insights Bento Section -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container p-6 rounded-xl flex items-center gap-4">
+<div class="p-3 bg-tertiary/10 rounded-full">
+<span class="material-symbols-outlined text-tertiary">calendar_month</span>
+</div>
+<div>
+<p class="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Most Productive</p>
+<p class="text-lg font-headline font-bold text-white">Sunday</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-xl flex items-center gap-4">
+<div class="p-3 bg-tertiary/10 rounded-full">
+<span class="material-symbols-outlined text-tertiary">schedule</span>
+</div>
+<div>
+<p class="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Best Hour</p>
+<p class="text-lg font-headline font-bold text-white">7 PM</p>
+</div>
+</div>
+</div>
+<!-- Romantic Milestones -->
+<section class="space-y-4">
+<h3 class="font-headline font-bold text-xl px-2">Romantic Milestones</h3>
+<div class="bg-surface-container-low divide-y divide-outline-variant/10 rounded-xl overflow-hidden">
+<div class="flex items-center justify-between p-6">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">quick_phrases</span>
+<span class="font-label font-medium">Nudges Sent</span>
+</div>
+<span class="text-xl font-headline font-bold text-secondary">312</span>
+</div>
+<div class="flex items-center justify-between p-6">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">photo_library</span>
+<span class="font-label font-medium">Memories Captured</span>
+</div>
+<span class="text-xl font-headline font-bold text-secondary">84</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] rounded-full bg-[#231f1d]/70 backdrop-blur-2xl flex justify-around items-center px-4 py-3 z-50 shadow-[0_20px_50px_rgba(255,140,0,0.1)]">
+<a class="flex items-center justify-center text-[#bac7e2] p-3 hover:bg-[#3d3836] rounded-full transition-all scale-90 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<a class="flex items-center justify-center bg-gradient-to-br from-[#ffb77d] to-[#ff8c00] text-white rounded-full p-3 shadow-[0_0_15px_rgba(255,183,125,0.4)] scale-90 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">insights</span>
+</a>
+<a class="flex items-center justify-center text-[#bac7e2] p-3 hover:bg-[#3d3836] rounded-full transition-all scale-90 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+</a>
+</nav>
+</body></html>

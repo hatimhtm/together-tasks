@@ -1,17 +1,23 @@
-import type { Metadata } from "next"
-import { Outfit } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { Inter, Plus_Jakarta_Sans } from "next/font/google"
 import "./globals.css"
 import Providers from "@/components/providers"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const outfit = Outfit({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta" })
 
 export const metadata: Metadata = {
   title: "Together Tasks",
   description: "A premium shared task manager for couples",
   manifest: "/manifest.json",
+}
+
+export const viewport: Viewport = {
+  themeColor: "#161311",
+  colorScheme: "dark",
 }
 
 export default async function RootLayout({
@@ -40,8 +46,10 @@ export default async function RootLayout({
       <body
         suppressHydrationWarning
         className={cn(
-          outfit.className,
-          "antialiased min-h-screen relative selection:bg-primary/30"
+          inter.className,
+          inter.variable,
+          plusJakarta.variable,
+          "antialiased min-h-screen relative selection:bg-primary/30 font-body bg-background text-on-surface"
         )}
       >
         <ThemeProvider

@@ -9,32 +9,46 @@ export function AiNudge() {
 
     if (loading) {
         return (
-            <div className="px-4 py-3.5 bg-card border border-border/40 rounded-2xl flex items-center gap-3">
-                <Loader2 className="h-4 w-4 text-muted-foreground/50 animate-spin shrink-0" />
-                <div className="space-y-2 flex-1">
-                    <div className="h-3 bg-muted/40 rounded-full w-3/4 animate-pulse" />
-                    <div className="h-3 bg-muted/30 rounded-full w-1/2 animate-pulse" />
+            <section className="relative group animate-pulse opacity-70">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-secondary to-primary opacity-20 blur-xl rounded-xl"></div>
+                <div className="relative bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 backdrop-blur-sm">
+                    <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-secondary/30">auto_awesome</span>
+                        </div>
+                        <div className="space-y-3 flex-1 mt-1">
+                            <div className="h-4 bg-outline-variant/30 rounded-full w-1/3"></div>
+                            <div className="h-3 bg-outline-variant/20 rounded-full w-3/4"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </section>
         )
     }
 
     if (!nudge) return null
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            className="px-4 py-3.5 bg-card border border-border/40 rounded-2xl"
+        <motion.section 
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative group mb-8"
         >
-            <p className="text-xs font-medium text-muted-foreground/70 mb-1.5 flex items-center gap-1.5">
-                <span>💌</span>
-                <span>A little note for you</span>
-            </p>
-            <p className="text-sm text-foreground/90 leading-relaxed">
-                {nudge}
-            </p>
-        </motion.div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-secondary to-primary opacity-20 blur-xl rounded-xl group-hover:opacity-30 transition-opacity"></div>
+            <div className="relative bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 backdrop-blur-sm shadow-[0_4px_24px_rgba(0,0,0,0.2)]">
+                <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center shrink-0 shadow-inner">
+                        <span className="material-symbols-outlined text-secondary text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="font-headline font-bold text-secondary text-lg">Thinking of you</h3>
+                        <p className="text-on-surface font-body leading-relaxed italic text-[15px]">
+                            {nudge}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </motion.section>
     )
 }

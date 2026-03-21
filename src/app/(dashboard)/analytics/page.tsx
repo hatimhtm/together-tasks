@@ -3,10 +3,8 @@
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { GlassCard } from "@/components/ui/glass-card"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { CheckCircle2, TrendingUp, Zap, Trophy, Calendar } from "lucide-react"
 import { format, subDays, startOfDay, endOfDay, isSameDay } from "date-fns"
 
 interface DayStats {
@@ -29,67 +27,6 @@ interface Analytics {
     partnerName: string
 }
 
-function BarChart({ data }: { data: DayStats[] }) {
-    const max = Math.max(...data.map(d => d.completed), 1)
-    const today = new Date()
-
-    return (
-        <div className="flex items-end gap-2 h-28">
-            {data.map((day, i) => {
-                const height = Math.max((day.completed / max) * 100, day.completed > 0 ? 8 : 0)
-                const isToday = isSameDay(day.date, today)
-
-                return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                        <div className="w-full flex items-end justify-center" style={{ height: 88 }}>
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: `${height}%`, opacity: 1 }}
-                                transition={{ delay: i * 0.06, type: "spring", stiffness: 200, damping: 20 }}
-                                className={cn(
-                                    "w-full rounded-t-lg",
-                                    isToday
-                                        ? "bg-gradient-to-t from-primary to-primary/60 shadow-[0_0_14px_color-mix(in_srgb,var(--primary)_45%,transparent)]"
-                                        : day.completed > 0
-                                            ? "bg-gradient-to-t from-primary/60 to-primary/30"
-                                            : "bg-muted/30"
-                                )}
-                                style={{ minHeight: day.completed > 0 ? 6 : 0 }}
-                            />
-                        </div>
-                        <span className={`text-[10px] font-semibold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                            {day.label}
-                        </span>
-                    </div>
-                )
-            })}
-        </div>
-    )
-}
-
-function StatCard({ icon, label, value, sub, delay = 0 }: {
-    icon: React.ReactNode, label: string, value: string | number, sub?: string, delay?: number
-}) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, type: "spring", stiffness: 260, damping: 26 }}
-        >
-            <GlassCard className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                    <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
-                    <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        {icon}
-                    </div>
-                </div>
-                <p className="text-sm font-semibold text-foreground/80 leading-none">{label}</p>
-                {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
-            </GlassCard>
-        </motion.div>
-    )
-}
-
 export default function AnalyticsPage() {
     const supabase = createClient()
     const router = useRouter()
@@ -101,7 +38,6 @@ export default function AnalyticsPage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) { router.push("/login"); return }
 
-            // Fetch profile first so we can use partner_id in the tasks query
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('username, partner_id, streak')
@@ -148,16 +84,13 @@ export default function AnalyticsPage() {
 
                 if (isMyTask) {
                     totalAll++
-
                     if (t.created_at) {
                         const createdTime = new Date(t.created_at).getTime()
                         for (let j = 0; j < 7; j++) {
                             const day = weekData[j] as DayStats & { start: number; end: number }
                             if (createdTime >= day.start && createdTime <= day.end) {
                                 day.total++
-                                if (t.is_completed) {
-                                    day.completed++
-                                }
+                                if (t.is_completed) day.completed++
                                 break
                             }
                         }
@@ -167,9 +100,7 @@ export default function AnalyticsPage() {
                         totalCompletedAllTime++
                         if (t.completed_at) {
                             const completedTime = new Date(t.completed_at).getTime()
-                            if (completedTime >= weekAgoTime) {
-                                completedThisWeek++
-                            }
+                            if (completedTime >= weekAgoTime) completedThisWeek++
                             const h = new Date(t.completed_at).getHours()
                             hourCounts[h] = (hourCounts[h] || 0) + 1
                         }
@@ -177,9 +108,7 @@ export default function AnalyticsPage() {
                 } else if (isPartnerTask) {
                     if (t.is_completed && t.completed_at) {
                         const completedTime = new Date(t.completed_at).getTime()
-                        if (completedTime >= weekAgoTime) {
-                            partnerCompletedThisWeek++
-                        }
+                        if (completedTime >= weekAgoTime) partnerCompletedThisWeek++
                     }
                 }
             }
@@ -214,123 +143,192 @@ export default function AnalyticsPage() {
 
     if (loading || !analytics) {
         return (
-            <div className="space-y-6 pb-20">
-                <div className="space-y-1">
-                    <div className="h-8 w-40 bg-muted/40 rounded-lg animate-pulse" />
-                    <div className="h-4 w-64 bg-muted/30 rounded-lg animate-pulse" />
+            <div className="pt-8 px-6 max-w-2xl mx-auto space-y-8 animate-pulse text-center">
+                <div className="h-10 w-48 bg-surface-container-high rounded-lg mx-auto mb-2" />
+                <div className="h-32 bg-surface-container-low rounded-xl" />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="aspect-square bg-surface-container rounded-xl" />
+                    <div className="aspect-square bg-surface-container rounded-xl" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                    {[1,2,3,4].map(i => <div key={i} className="h-28 rounded-2xl bg-card border border-border/40 animate-pulse" />)}
-                </div>
-                <div className="h-48 rounded-2xl bg-card border border-border/40 animate-pulse" />
+                <div className="h-64 bg-surface-container-low rounded-xl" />
             </div>
         )
     }
 
-    const bestHourLabel = analytics.bestHour !== null
-        ? format(new Date().setHours(analytics.bestHour, 0, 0, 0), 'h a')
-        : null
+    const { totalCompletedAllTime, completionRate, streak, weekData, bestDay, bestHour } = analytics
+
+    // Gamification Logic
+    const currentLevel = Math.floor(totalCompletedAllTime / 10) + 1
+    const nextLevel = currentLevel + 1
+    const xpInCurrentLevel = (totalCompletedAllTime % 10) * 100 // 1 task = 100 XP
+    const xpRequiredForNextLevel = 1000 // 10 tasks to level up
+    const levelProgress = (xpInCurrentLevel / xpRequiredForNextLevel) * 100
+
+    const bestHourLabel = bestHour !== null
+        ? format(new Date().setHours(bestHour, 0, 0, 0), 'h a')
+        : "—"
+
+    const maxChartComplete = Math.max(...weekData.map(d => d.completed), 1)
 
     return (
-        <div className="space-y-7 pb-20 max-w-2xl mx-auto">
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="space-y-1">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Your Analytics</h1>
-                <p className="text-muted-foreground">How you two have been doing.</p>
-            </motion.div>
+        <motion.main 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="pt-8 px-6 max-w-2xl mx-auto space-y-8 pb-32"
+        >
+            {/* Hero Section */}
+            <section className="space-y-2">
+                <h1 className="text-[32px] font-headline font-extrabold tracking-tight text-on-surface">Our Progress</h1>
+                <p className="text-on-surface-variant font-label text-sm tracking-wide">Building a legacy, one task at a time.</p>
+            </section>
 
-            {/* Stat Grid */}
-            <div className="grid grid-cols-2 gap-3">
-                <StatCard
-                    icon={<CheckCircle2 className="h-5 w-5 text-primary" />}
-                    label="Done this week"
-                    value={analytics.completedThisWeek}
-                    sub={`${analytics.totalCompletedAllTime} all time`}
-                    delay={0}
-                />
-                <StatCard
-                    icon={<Trophy className="h-5 w-5 text-amber-500" />}
-                    label="Streak"
-                    value={`${analytics.streak}d`}
-                    sub="Days in a row"
-                    delay={0.06}
-                />
-                <StatCard
-                    icon={<TrendingUp className="h-5 w-5 text-green-500" />}
-                    label="Completion rate"
-                    value={`${analytics.completionRate}%`}
-                    sub="Of all your tasks"
-                    delay={0.12}
-                />
-                <StatCard
-                    icon={<Zap className="h-5 w-5 text-secondary" />}
-                    label="Best hour"
-                    value={bestHourLabel || "—"}
-                    sub="Most productive time"
-                    delay={0.18}
-                />
-            </div>
-
-            {/* 7-Day Chart */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}>
-                <GlassCard className="p-6 space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        <h2 className="font-semibold text-foreground">Last 7 Days</h2>
+            {/* XP Progress Bar */}
+            <section className="bg-surface-container-low p-7 rounded-2xl space-y-4 shadow-[0_0_40px_rgba(255,140,0,0.08)] border border-outline-variant/10">
+                <div className="flex justify-between items-end">
+                    <div>
+                        <span className="text-primary font-label text-xs uppercase tracking-widest font-bold">Current Level</span>
+                        <h2 className="text-3xl font-headline font-extrabold text-on-surface">Level {currentLevel}</h2>
                     </div>
-                    <BarChart data={analytics.weekData} />
-                    {analytics.bestDay && (
-                        <p className="text-xs text-muted-foreground">
-                            Your best day this week was <span className="font-semibold text-foreground">{analytics.bestDay.label}</span> with {analytics.bestDay.count} task{analytics.bestDay.count !== 1 ? 's' : ''} done.
-                        </p>
-                    )}
-                </GlassCard>
-            </motion.div>
+                    <div className="text-right">
+                        <span className="text-on-surface-variant font-label text-xs uppercase tracking-widest">Next Level</span>
+                        <p className="text-lg font-headline font-bold text-on-surface">Level {nextLevel}</p>
+                    </div>
+                </div>
+                <div className="relative w-full h-3.5 bg-surface-container-highest rounded-full overflow-hidden">
+                    <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: \`\${levelProgress}%\` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-container to-primary rounded-full shadow-[0_0_15px_rgba(255,183,125,0.4)]"
+                    />
+                </div>
+                <div className="flex justify-between items-center text-xs font-label text-on-surface-variant">
+                    <span>{xpInCurrentLevel} / {xpRequiredForNextLevel} XP</span>
+                    <span className="flex items-center gap-1 font-medium">
+                        <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
+                        {xpRequiredForNextLevel - xpInCurrentLevel} XP to level up
+                    </span>
+                </div>
+            </section>
 
-            {/* Couple Comparison */}
-            {analytics.partnerCompletedThisWeek > 0 && (
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <GlassCard className="p-6 space-y-4">
-                        <h2 className="font-semibold text-foreground">This Week Together 💕</h2>
-                        <div className="space-y-3">
-                            <CompareBar
-                                name={analytics.myName}
-                                count={analytics.completedThisWeek}
-                                max={Math.max(analytics.completedThisWeek, analytics.partnerCompletedThisWeek)}
-                                color="bg-primary"
+            {/* Bento Grid */}
+            <div className="grid grid-cols-2 gap-4">
+                {/* Royal Streaks */}
+                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square border border-outline-variant/5">
+                    <div className="bg-primary-container/10 w-12 h-12 rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary-container text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                    </div>
+                    <div className="space-y-0.5 mt-4">
+                        <p className="text-4xl font-headline font-black text-on-surface">{streak}</p>
+                        <p className="text-[13px] font-label font-medium text-on-surface-variant">Days Streak</p>
+                    </div>
+                </div>
+
+                {/* Love Pulse Harmony */}
+                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square overflow-hidden relative border border-outline-variant/5 group">
+                    <div className="relative z-10">
+                        <span className="material-symbols-outlined text-secondary text-[28px] group-hover:scale-110 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                        <p className="text-[13px] font-label font-medium text-on-surface-variant mt-1.5">Task Rate</p>
+                    </div>
+                    <div className="relative z-10 mt-2">
+                        <p className="text-3xl font-headline font-bold text-on-surface">{completionRate}%</p>
+                        <p className="text-xs font-label font-medium text-secondary">In Harmony</p>
+                    </div>
+                    {/* Abstract Heart Rate Visualizer */}
+                    <div className="absolute bottom-0 left-0 w-full h-[55%] opacity-30 flex items-center justify-center">
+                        <svg className="w-full h-full text-secondary stroke-current fill-none stroke-2" viewBox="0 0 100 40">
+                            <path 
+                                style={{ WebkitMaskImage: "linear-gradient(to right, transparent, black, transparent)", maskImage: "linear-gradient(to right, transparent, black, transparent)" }} 
+                                d="M0 20 L20 20 L25 5 L35 35 L40 20 L60 20 L65 10 L75 30 L80 20 L100 20" 
                             />
-                            <CompareBar
-                                name={analytics.partnerName}
-                                count={analytics.partnerCompletedThisWeek}
-                                max={Math.max(analytics.completedThisWeek, analytics.partnerCompletedThisWeek)}
-                                color="bg-secondary"
-                            />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            {/* Productivity Analytics: Bar Chart */}
+            <section className="bg-surface-container-low p-7 rounded-2xl space-y-8 border border-outline-variant/10">
+                <div className="flex justify-between items-center">
+                    <h3 className="font-headline font-bold text-xl text-on-surface">Task Output</h3>
+                    <span className="text-[10px] uppercase font-bold font-label text-tertiary-fixed-dim bg-tertiary-fixed/10 px-3 py-1.5 rounded-full tracking-wider">
+                        Last 7 Days
+                    </span>
+                </div>
+                <div className="flex items-end justify-between h-44 gap-2.5">
+                    {weekData.map((day, i) => {
+                        const isToday = isSameDay(day.date, new Date())
+                        const heightPct = Math.max((day.completed / maxChartComplete) * 100, day.completed > 0 ? 8 : 0)
+
+                        return (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
+                                <div className="w-full h-full flex items-end relative overflow-hidden rounded-t-[10px]">
+                                    <motion.div
+                                        initial={{ height: 0 }}
+                                        animate={{ height: \`\${heightPct}%\` }}
+                                        transition={{ duration: 0.8, delay: i * 0.05 }}
+                                        className={cn(
+                                            "w-full rounded-t-[10px] transition-colors duration-300",
+                                            isToday ? "bg-primary shadow-[0_0_15px_rgba(255,183,125,0.4)]" : 
+                                            day.completed > 0 ? "bg-surface-container-highest group-hover:bg-primary/40" : "bg-transparent"
+                                        )}
+                                        style={{ minHeight: day.completed > 0 ? "4px" : "0px" }}
+                                    />
+                                </div>
+                                <span className={cn(
+                                    "text-[11px] font-label font-bold tracking-wide",
+                                    isToday ? "text-primary" : "text-on-surface-variant/60 group-hover:text-on-surface-variant"
+                                )}>
+                                    {day.label}
+                                </span>
+                            </div>
+                        )
+                    })}
+                </div>
+            </section>
+
+            {/* Insights Bento Section */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-surface-container p-6 rounded-2xl flex items-center gap-4 border border-outline-variant/5">
+                    <div className="p-3 bg-tertiary-fixed/10 rounded-full shrink-0">
+                        <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider overflow-hidden text-ellipsis whitespace-nowrap">Most Prod.</p>
+                        <p className="text-lg font-headline font-bold text-on-surface truncate">{bestDay?.label || "—"}</p>
+                    </div>
+                </div>
+                <div className="bg-surface-container p-6 rounded-2xl flex items-center gap-4 border border-outline-variant/5">
+                    <div className="p-3 bg-tertiary-fixed/10 rounded-full shrink-0">
+                        <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider overflow-hidden text-ellipsis whitespace-nowrap">Best Hour</p>
+                        <p className="text-lg font-headline font-bold text-on-surface truncate">{bestHourLabel}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Romantic Milestones */}
+            <section className="space-y-4 pt-2">
+                <h3 className="font-headline font-bold text-xl px-2 text-on-surface">Romantic Milestones</h3>
+                <div className="bg-surface-container-low divide-y divide-outline-variant/10 rounded-2xl overflow-hidden border border-outline-variant/10">
+                    <div className="flex items-center justify-between p-6 hover:bg-surface-container-low/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                            <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>quick_phrases</span>
+                            <span className="font-label font-medium text-on-surface">Nudges Sent</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            {analytics.completedThisWeek + analytics.partnerCompletedThisWeek} tasks completed together this week. Keep it up!
-                        </p>
-                    </GlassCard>
-                </motion.div>
-            )}
-        </div>
-    )
-}
-
-function CompareBar({ name, count, max, color }: { name: string; count: number; max: number; color: string }) {
-    const pct = max > 0 ? (count / max) * 100 : 0
-    return (
-        <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-foreground">{name}</span>
-                <span className="text-muted-foreground font-semibold">{count}</span>
-            </div>
-            <div className="h-2.5 rounded-full bg-muted/30 overflow-hidden">
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className={`h-full rounded-full ${color}`}
-                />
-            </div>
-        </div>
+                        <span className="text-xl font-headline font-bold text-secondary">312</span>
+                    </div>
+                    <div className="flex items-center justify-between p-6 hover:bg-surface-container-low/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                            <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>photo_library</span>
+                            <span className="font-label font-medium text-on-surface">Memories Saved</span>
+                        </div>
+                        <span className="text-xl font-headline font-bold text-secondary">84</span>
+                    </div>
+                </div>
+            </section>
+        </motion.main>
     )
 }

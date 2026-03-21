@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-on-surface": "#f1f0f4",
+              "on-surface": "#e2e2e6",
+              "surface-tint": "#b1c5ff",
+              "on-tertiary-container": "#d9e2ff",
+              "on-primary-fixed": "#001a41",
+              "primary": "#b1c5ff",
+              "surface-bright": "#38393e",
+              "secondary": "#c1c5dd",
+              "surface-container-lowest": "#0c0e13",
+              "primary-fixed": "#d9e2ff",
+              "on-primary-fixed-variant": "#254481",
+              "on-primary": "#002d6f",
+              "on-tertiary-fixed": "#001945",
+              "on-secondary-container": "#dde1f9",
+              "tertiary": "#e0bbff",
+              "surface-dim": "#111318",
+              "on-tertiary-fixed-variant": "#49454f",
+              "error": "#ffb4ab",
+              "on-secondary-fixed": "#191c2e",
+              "background": "#0c0e13",
+              "surface-container-high": "#282a2f",
+              "on-background": "#e2e2e6",
+              "tertiary-fixed-dim": "#e0bbff",
+              "surface-container": "#1e2025",
+              "on-error-container": "#ffdad6",
+              "primary-container": "#00419e",
+              "on-tertiary": "#41276d",
+              "secondary-container": "#44465f",
+              "surface-container-highest": "#33353a",
+              "on-secondary-fixed-variant": "#44465f",
+              "on-secondary": "#2b2f42",
+              "surface": "#111318",
+              "primary-fixed-dim": "#b1c5ff",
+              "tertiary-container": "#593f84",
+              "tertiary-fixed": "#f0dbff",
+              "outline": "#8e9099",
+              "on-error": "#690005",
+              "error-container": "#93000a",
+              "inverse-surface": "#e2e2e6",
+              "inverse-primary": "#0056d0",
+              "secondary-fixed-dim": "#c1c5dd",
+              "surface-container-low": "#191c21",
+              "on-surface-variant": "#c4c6d0",
+              "secondary-fixed": "#dde1f9",
+              "on-primary-container": "#d9e2ff",
+              "surface-variant": "#44474e",
+              "outline-variant": "#44474e",
+              "sapphire": "#1a3a6d",
+              "silver": "#c0c0c0"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .glass-card {
+        background: rgba(30, 32, 37, 0.4);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(192, 192, 192, 0.2);
+      }
+      .sapphire-glow {
+        filter: drop-shadow(0 0 15px rgba(177, 197, 255, 0.4));
+      }
+      .celestial-gradient {
+        background: linear-gradient(135deg, #00419e 0%, #001a41 100%);
+      }
+      .silver-gradient {
+        background: linear-gradient(135deg, #e2e2e6 0%, #8e9099 100%);
+      }
+      .sapphire-border {
+        border: 1px solid rgba(177, 197, 255, 0.3);
+      }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#0c0e13]/70 backdrop-blur-3xl flex justify-between items-center px-6 h-20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
+<img alt="Queen Enarcylyn's royal portrait" class="w-full h-full object-cover" data-alt="Regal oil painting portrait of a queen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRCQB0EkO3cjGu0akqCUfCI2IhhAwoC7564e6rM2QXAcsZrUUc3kj14adtz3QyiTGqUjAUNX72hz4YRP9KCpK3njdLbxlJ8xUwk6njL69iVCHGMQa5cOckTGSJ4NUBhFFCm29rwQbEOCTwsBXfhn981kMnx2tz8OPQoDr3ZPtV12TZNzpThQl3o7gRhxsSOdUQ_qsSg-wTnXNGhugnZXK2-F07IEUAHT2oi2T50TRh1nClOv1JrnJ2NyqJ0EXTwDHZsnoLPVXj3fK6"/>
+</div>
+<h1 class="font-headline font-bold tracking-tight text-2xl text-primary sapphire-glow">The Palace</h1>
+</div>
+<button class="text-primary hover:opacity-80 transition-opacity p-2">
+<span class="material-symbols-outlined text-2xl">auto_awesome</span>
+</button>
+</header>
+<main class="pt-28 px-6 max-w-5xl mx-auto space-y-8">
+<!-- Royal Profile Header -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-primary/20">Sapphire Rank</span>
+<span class="text-secondary font-headline font-bold">Queen</span>
+</div>
+<h2 class="font-headline text-5xl font-extrabold tracking-tight mb-2 text-on-surface">Enarcylyn</h2>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-medium tracking-wide">Celestial Harmony Level 48</span>
+</div>
+</div>
+<div class="flex gap-2">
+<div class="bg-surface-container-low sapphire-border px-4 py-2 rounded-xl flex items-center gap-2 shadow-[0_0_15px_rgba(177,197,255,0.1)]">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#b1c5ff]"></span>
+<span class="text-sm font-medium">In Residence</span>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Heart of the Palace (Large Widget) -->
+<div class="md:col-span-8 glass-card rounded-xl p-8 relative overflow-hidden group">
+<div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+<div class="relative">
+<div class="w-48 h-48 rounded-full border border-primary/10 flex items-center justify-center relative">
+<!-- Circular Progress Simulation -->
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-surface-container-highest" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-primary" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" stroke-dasharray="300" stroke-dashoffset="40" stroke-linecap="round" stroke-width="6"></circle>
+</svg>
+<span class="material-symbols-outlined text-7xl text-primary sapphire-glow" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<h3 class="font-headline text-3xl font-bold mb-2">Celestial Pulse</h3>
+<p class="text-on-surface-variant mb-6 text-sm">The King's current astral alignment</p>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<span class="text-primary font-bold text-4xl">88%</span>
+<span class="text-xs font-medium tracking-widest text-on-surface-variant uppercase">Devotion Level</span>
+</div>
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full celestial-gradient w-[88%] rounded-full shadow-[0_0_10px_rgba(0,65,158,0.5)]"></div>
+</div>
+<p class="text-xs text-secondary italic">"Your light echoes through the midnight sky."</p>
+</div>
+</div>
+</div>
+<!-- Abstract background pattern -->
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-[100px]"></div>
+</div>
+<!-- Royal Decree (Nudge Card) -->
+<div class="md:col-span-4 bg-primary-container rounded-xl p-8 flex flex-col justify-between text-on-primary-container sapphire-border shadow-[0_20px_40px_rgba(0,65,158,0.3)]">
+<div>
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-4xl text-primary-fixed">diamond</span>
+<span class="text-[10px] font-bold tracking-[0.2em] uppercase opacity-70">Royal Decree</span>
+</div>
+<p class="font-headline text-xl font-bold leading-tight mb-4 italic">
+                        "Meet me in the Crystal Observatory at moonrise. I have found a star named after my Queen."
+                    </p>
+</div>
+<div class="flex items-center gap-3 mt-4">
+<img alt="King's profile" class="w-10 h-10 rounded-full border-2 border-primary/30" data-alt="Charismatic portrait of a bearded king" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh5j9b4aNzTk-5zLFvdY3CwRpLUXhp7kYV8bPLOYY9PjmY-wMmaIVFUroXci-a9AZlBXW26BwFHGEVvZWeyO2VbEKPefL6ZsbhMtyDM4lNccm-iMzGS53_Ul9hWUXTEg-v70MhfbhWGnGEIb2oZP_5QeaJ4sBl5h2UPbslOiSFQKFCHeG48qaPNn5b_Xol2Atz3TbZpZmM7hLccbbvgHPycQJNggy1YFCqDoi1J3TLmfJP-Z-z6XbFbsa77Z_tJHeHNmvC2M7ojYk9"/>
+<div>
+<p class="text-sm font-bold text-primary-fixed">The King</p>
+<p class="text-xs opacity-70">2 hours ago</p>
+</div>
+</div>
+</div>
+<!-- Royal Stats Grid -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Stat Card 1 -->
+<div class="surface-container sapphire-border p-6 rounded-lg flex items-center gap-6">
+<div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">verified</span>
+</div>
+<div>
+<p class="text-3xl font-headline font-extrabold text-on-surface">124</p>
+<p class="text-xs text-on-surface-variant font-medium tracking-wide uppercase">Celestial Favors</p>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="surface-container sapphire-border p-6 rounded-lg flex items-center gap-6">
+<div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">flare</span>
+</div>
+<div>
+<p class="text-3xl font-headline font-extrabold text-on-surface">12</p>
+<p class="text-xs text-on-surface-variant font-medium tracking-wide uppercase">Astral Streaks</p>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="surface-container sapphire-border p-6 rounded-lg flex items-center gap-6">
+<div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">military_tech</span>
+</div>
+<div>
+<p class="text-3xl font-headline font-extrabold text-on-surface">14.2k</p>
+<p class="text-xs text-on-surface-variant font-medium tracking-wide uppercase">Sovereign XP</p>
+</div>
+</div>
+</div>
+<!-- Kingdom Progress Section -->
+<div class="md:col-span-12 glass-card rounded-xl p-8">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline text-2xl font-bold">Kingdom Constellations</h3>
+<button class="text-primary text-sm font-semibold flex items-center gap-1">
+                        Stellar Map <span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+<div class="relative h-24 flex items-center px-4">
+<!-- Progress Line -->
+<div class="absolute left-0 right-0 h-1 bg-surface-container-highest rounded-full top-1/2 -translate-y-1/2"></div>
+<div class="absolute left-0 w-3/4 h-1 celestial-gradient rounded-full top-1/2 -translate-y-1/2 shadow-[0_0_10px_#00419e]"></div>
+<!-- Milestones -->
+<div class="relative w-full flex justify-between">
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center z-10 sapphire-glow">
+<span class="material-symbols-outlined text-on-primary text-sm" style="font-variation-settings: 'FILL' 1;">done</span>
+</div>
+<span class="mt-2 text-[10px] font-bold uppercase tracking-tighter">Engagement</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center z-10 sapphire-glow">
+<span class="material-symbols-outlined text-on-primary text-sm" style="font-variation-settings: 'FILL' 1;">done</span>
+</div>
+<span class="mt-2 text-[10px] font-bold uppercase tracking-tighter">Moonlit Gala</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-full border-4 border-surface-container-low bg-primary flex items-center justify-center z-10 shadow-[0_0_20px_rgba(177,197,255,0.5)]">
+<span class="material-symbols-outlined text-on-primary text-lg">castle</span>
+</div>
+<span class="mt-2 text-[10px] font-bold text-primary uppercase tracking-tighter">The Throne</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center z-10 border border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
+</div>
+<span class="mt-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Celestial Void</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-6 left-0 right-0 z-50 flex justify-around items-center px-4 h-20">
+<div class="bg-[#1e2025]/70 backdrop-blur-2xl fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-primary/10 flex justify-around items-center h-20 px-4">
+<a class="flex flex-col items-center justify-center text-secondary p-3 hover:text-primary transition-colors scale-90 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-gradient-to-tr from-[#00419e] to-[#b1c5ff] text-white rounded-full p-3 shadow-[0_0_20px_rgba(0,65,158,0.4)] scale-90 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">fort</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide">Palace</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary p-3 hover:text-primary transition-colors scale-90 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary p-3 hover:text-primary transition-colors scale-90 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-wide">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>
