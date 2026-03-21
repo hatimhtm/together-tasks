@@ -39,7 +39,7 @@ alter table public.profiles enable row level security;
 
 create policy "Public profiles are viewable by everyone"
   on profiles for select
-  using ( true );
+  using ( auth.uid() = id OR auth.uid() = partner_id );
 
 create policy "Users can insert their own profile"
   on profiles for insert
@@ -152,3 +152,43 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Function to get partner profile info by link code securely
+create or replace function public.get_partner_by_code(code text)
+returns table(id uuid, username text) as $$
+begin
+  return query
+  select p.id, p.username
+  from public.profiles p
+  where p.link_code = code;
+end;
+$$ language plpgsql security definer;
+
+-- Function to securely link partners
+create or replace function public.link_partner(code text)
+returns boolean as $$
+declare
+  partner_id_val uuid;
+begin
+  -- Find the partner
+  select id into partner_id_val
+  from public.profiles
+  where link_code = code;
+
+  if partner_id_val is null then
+    return false;
+  end if;
+
+  -- Update current user's partner_id
+  update public.profiles
+  set partner_id = partner_id_val
+  where id = auth.uid();
+
+  -- Update partner's partner_id
+  update public.profiles
+  set partner_id = auth.uid()
+  where id = partner_id_val;
+
+  return true;
+end;
+$$ language plpgsql security definer;
