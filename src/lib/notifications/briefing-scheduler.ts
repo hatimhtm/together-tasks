@@ -3,7 +3,7 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import { GoogleGenAI } from '@google/genai'
 
 // NEXT_PUBLIC_ prefix required for client-side access in Capacitor static builds
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
 
 const BRIEFING_NOTIF_ID = 1001
 const WEEKLY_REVIEW_NOTIF_ID = 1002
@@ -19,6 +19,10 @@ interface BriefingContext {
 
 async function generateBriefingMessage(ctx: BriefingContext): Promise<string> {
     const fallback = `Good morning ${ctx.userName} ☀️ You have ${ctx.todayTaskCount} task${ctx.todayTaskCount !== 1 ? 's' : ''} today. ${ctx.partnerCompletedYesterday > 0 ? `${ctx.partnerName} knocked out ${ctx.partnerCompletedYesterday} yesterday. ` : ''}Let's make it a great day!`
+
+    if (!GEMINI_API_KEY) return fallback
+
+
 
     try {
         const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })

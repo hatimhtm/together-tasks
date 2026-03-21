@@ -3,7 +3,7 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import { GoogleGenAI } from '@google/genai'
 
 // NEXT_PUBLIC_ prefix required for client-side access in Capacitor static builds
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
 
 // AI-generated message for when a partner completes a task you created for them
 async function generateCompletionMessage(taskTitle: string, partnerName: string): Promise<string> {
@@ -14,6 +14,10 @@ async function generateCompletionMessage(taskTitle: string, partnerName: string)
         `I've got your back — just finished "${taskTitle}" ✓`,
         `All done with "${taskTitle}"! Love you 💕`,
     ]
+
+    if (!GEMINI_API_KEY) return fallbacks[Math.floor(Math.random() * fallbacks.length)]
+
+
 
     try {
         const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })

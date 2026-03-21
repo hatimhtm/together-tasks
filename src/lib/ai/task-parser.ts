@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
 
 const systemInstruction = `You are an expert productivity assistant for a couple's task manager app.
 Analyze the user's natural language input and extract structured task details.
@@ -42,6 +42,10 @@ export async function parseTaskInput(input: string) {
 Today's date is: ${todayDate} (YYYY-MM-DD format)
 Current time is: ${currentTime}
 Current day of week: ${dayOfWeek}`
+
+    if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not configured')
+
+
 
     try {
         const res = await fetch(

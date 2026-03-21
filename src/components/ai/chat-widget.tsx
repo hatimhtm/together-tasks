@@ -11,7 +11,7 @@ interface Message {
     timestamp: Date
 }
 
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
 
 export function AIChatWidget({
     userName,
@@ -46,6 +46,15 @@ export function AIChatWidget({
         const currentInput = input
         setInput("")
         setLoading(true)
+        if (!GEMINI_API_KEY) {
+            setMessages(prev => [...prev, {
+                role: "assistant",
+                content: "Oops! It looks like my brain (the Gemini API key) isn't configured right now. Ask Hatim to set it up! 💙",
+                timestamp: new Date()
+            }])
+            setLoading(false)
+            return
+        }
 
         try {
             const systemPrompt = `You are a warm, helpful AI assistant embedded in "Together Tasks" — a personal task app built for a couple: Hatim (the King) and Enarcylyn (the Queen).
