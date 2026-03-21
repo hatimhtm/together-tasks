@@ -168,7 +168,7 @@ export default function SettingsPage() {
                     {/* Custom Toggle Switch */}
                     <label className="relative inline-flex items-center cursor-pointer active:scale-95 transition-transform" onClick={(e) => { e.preventDefault(); toggleBriefing(); }}>
                         <input type="checkbox" className="sr-only peer" checked={briefingEnabled} readOnly />
-                        <div className={\`w-14 h-8 rounded-full transition-colors duration-300 \${briefingEnabled ? 'bg-primary shadow-[0_0_15px_rgba(255,183,125,0.4)]' : 'bg-surface-container-highest border border-outline-variant/10'}\`}>
+                        <div className={`w-14 h-8 rounded-full transition-colors duration-300 ${briefingEnabled ? 'bg-primary shadow-[0_0_15px_rgba(255,183,125,0.4)]' : 'bg-surface-container-highest border border-outline-variant/10'}`}>
                             <motion.div 
                                 className="absolute top-[4px] left-[4px] bg-auto bg-white rounded-full h-6 w-6 shadow-sm"
                                 animate={{ x: briefingEnabled ? 24 : 0 }}

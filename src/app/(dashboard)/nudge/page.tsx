@@ -240,14 +240,14 @@ export default function NudgePage() {
                                 key={nudge.id} 
                                 className="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 transition-colors hover:bg-surface-container border border-outline-variant/5"
                             >
-                                <div className={\`w-12 h-12 rounded-full \${bgClass} flex items-center justify-center shrink-0\`}>
-                                    <span className={\`material-symbols-outlined \${colorClass} text-[24px]\`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                                <div className={`w-12 h-12 rounded-full ${bgClass} flex items-center justify-center shrink-0`}>
+                                    <span className={`material-symbols-outlined ${colorClass} text-[24px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
                                         {icon}
                                     </span>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-on-surface font-semibold text-[15px] truncate">
-                                        {isMine ? "You nudged back" : \`\${partnerName} sent a 💖\`}
+                                        {isMine ? "You nudged back" : `${partnerName} sent a 💖`}
                                     </p>
                                     <p className="text-on-surface-variant text-[13px] truncate mt-0.5">
                                         {nudge.message}
