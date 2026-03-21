@@ -1,4 +1,4 @@
-import { test, describe, before, after, beforeEach, afterEach, mock } from 'node:test';
+import { test, describe, before, after, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
 import { JSDOM } from 'jsdom';
 
