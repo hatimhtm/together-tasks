@@ -54,8 +54,10 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
             // Generate 6-char code
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
             let code = ''
+            const randomValues = new Uint8Array(6)
+            crypto.getRandomValues(randomValues)
             for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length))
+                code += chars.charAt(randomValues[i] % chars.length)
             }
 
             const { error } = await supabase
