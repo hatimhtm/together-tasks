@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
-import { detectLocationContext, type Location } from './geolocation.ts';
+import { detectLocationContext, stopWatchingLocation, type Location } from './geolocation.ts';
 
 describe('Geolocation Context', () => {
     // Store original env
@@ -92,5 +92,59 @@ describe('Geolocation Context', () => {
         assert.strictEqual(context.isAtWork, false);
         assert.strictEqual(context.isAtHome, false);
         assert.strictEqual(context.currentPlace, 'unknown');
+    });
+});
+
+describe('stopWatchingLocation', () => {
+    let originalNavigator: any;
+
+    beforeEach(() => {
+        originalNavigator = global.navigator;
+    });
+
+    afterEach(() => {
+        if (originalNavigator === undefined) {
+            delete (global as any).navigator;
+        } else {
+            Object.defineProperty(global, 'navigator', {
+                value: originalNavigator,
+                writable: true,
+                configurable: true
+            });
+        }
+    });
+
+    it('should call clearWatch when geolocation is available', () => {
+        const mockClearWatch = Object.assign(
+            function(id: number) { mockClearWatch.calls.push(id); },
+            { calls: [] as number[] }
+        );
+
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    clearWatch: mockClearWatch
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        stopWatchingLocation(123);
+
+        assert.strictEqual(mockClearWatch.calls.length, 1);
+        assert.strictEqual(mockClearWatch.calls[0], 123);
+    });
+
+    it('should not throw when geolocation is missing', () => {
+        Object.defineProperty(global, 'navigator', {
+            value: {},
+            writable: true,
+            configurable: true
+        });
+
+        assert.doesNotThrow(() => {
+            stopWatchingLocation(456);
+        });
     });
 });
