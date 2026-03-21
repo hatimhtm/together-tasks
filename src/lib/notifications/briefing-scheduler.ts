@@ -2,9 +2,6 @@ import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { GoogleGenAI } from '@google/genai'
 
-// NEXT_PUBLIC_ prefix required for client-side access in Capacitor static builds
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "***REMOVED***"
-
 const BRIEFING_NOTIF_ID = 1001
 const WEEKLY_REVIEW_NOTIF_ID = 1002
 const BRIEFING_SCHEDULED_KEY = 'briefing_scheduled_date'
@@ -21,7 +18,12 @@ async function generateBriefingMessage(ctx: BriefingContext): Promise<string> {
     const fallback = `Good morning ${ctx.userName} ☀️ You have ${ctx.todayTaskCount} task${ctx.todayTaskCount !== 1 ? 's' : ''} today. ${ctx.partnerCompletedYesterday > 0 ? `${ctx.partnerName} knocked out ${ctx.partnerCompletedYesterday} yesterday. ` : ''}Let's make it a great day!`
 
     try {
-        const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
+        if (!apiKey) {
+            return fallback
+        }
+
+        const ai = new GoogleGenAI({ apiKey })
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Write a warm, loving morning briefing notification (max 100 chars) for ${ctx.userName}. They have ${ctx.todayTaskCount} task${ctx.todayTaskCount !== 1 ? 's' : ''} today. Their partner ${ctx.partnerName} completed ${ctx.partnerCompletedYesterday} task${ctx.partnerCompletedYesterday !== 1 ? 's' : ''} yesterday. Keep it sweet, encouraging, couple-focused. Return ONLY the message text.`,

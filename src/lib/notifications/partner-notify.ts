@@ -2,9 +2,6 @@ import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { GoogleGenAI } from '@google/genai'
 
-// NEXT_PUBLIC_ prefix required for client-side access in Capacitor static builds
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "***REMOVED***"
-
 // AI-generated message for when a partner completes a task you created for them
 async function generateCompletionMessage(taskTitle: string, partnerName: string): Promise<string> {
     const fallbacks = [
@@ -16,7 +13,12 @@ async function generateCompletionMessage(taskTitle: string, partnerName: string)
     ]
 
     try {
-        const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
+        if (!apiKey) {
+            return fallbacks[Math.floor(Math.random() * fallbacks.length)]
+        }
+
+        const ai = new GoogleGenAI({ apiKey })
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Write a short, sweet, loving push notification message (max 70 characters) from ${partnerName} saying they just completed the task: "${taskTitle}". Sound warm and caring, like a loving partner. Be casual. Include a checkmark or heart emoji. Return ONLY the message text, nothing else.`,
