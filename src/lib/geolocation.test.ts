@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
-import { detectLocationContext, type Location } from './geolocation.ts';
+import { detectLocationContext, type Location, stopWatchingLocation } from './geolocation.ts';
 
 describe('Geolocation Context', () => {
     // Store original env
@@ -92,5 +92,57 @@ describe('Geolocation Context', () => {
         assert.strictEqual(context.isAtWork, false);
         assert.strictEqual(context.isAtHome, false);
         assert.strictEqual(context.currentPlace, 'unknown');
+    });
+});
+
+describe('stopWatchingLocation', () => {
+    let originalNavigator: any;
+
+    beforeEach(() => {
+        originalNavigator = global.navigator;
+    });
+
+    afterEach(() => {
+        if (originalNavigator === undefined) {
+            delete (global as any).navigator;
+        } else {
+            Object.defineProperty(global, 'navigator', {
+                value: originalNavigator,
+                writable: true,
+                configurable: true
+            });
+        }
+    });
+
+    it('should call clearWatch when geolocation is available', () => {
+        let calledWithId = -1;
+
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    clearWatch: (id: number) => {
+                        calledWithId = id;
+                    }
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        stopWatchingLocation(42);
+
+        assert.strictEqual(calledWithId, 42);
+    });
+
+    it('should not throw when geolocation is not available', () => {
+        Object.defineProperty(global, 'navigator', {
+            value: {},
+            writable: true,
+            configurable: true
+        });
+
+        assert.doesNotThrow(() => {
+            stopWatchingLocation(42);
+        });
     });
 });

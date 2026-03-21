@@ -1,0 +1,5 @@
+🎯 **What:** Added missing tests for the `stopWatchingLocation` function in `src/lib/geolocation.ts` which lacked test coverage.
+
+📊 **Coverage:** Covered the happy path where `geolocation` is available on the `navigator` object, verifying `clearWatch` is called with the provided `watchId`. Also added a test for the edge case where `geolocation` is missing from `navigator` to ensure the function does not throw an error.
+
+✨ **Result:** Improved test coverage for geolocation utility functions by ensuring both happy paths and missing API fallbacks function correctly.
