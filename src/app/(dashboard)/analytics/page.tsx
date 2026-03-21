@@ -29,27 +29,6 @@ interface Analytics {
     partnerName: string
 }
 
-function buildWeekData(tasks: any[], userId: string): DayStats[] {
-    return Array.from({ length: 7 }, (_, i) => {
-        const date = subDays(new Date(), 6 - i)
-        const dayStart = startOfDay(date)
-        const dayEnd = endOfDay(date)
-        const dayTasks = tasks.filter(t =>
-            t.assignee_id === userId &&
-            t.created_at &&
-            new Date(t.created_at) >= dayStart &&
-            new Date(t.created_at) <= dayEnd
-        )
-        const completed = dayTasks.filter(t => t.is_completed).length
-        return {
-            date,
-            label: format(date, 'EEE'),
-            completed,
-            total: dayTasks.length,
-        }
-    })
-}
-
 function BarChart({ data }: { data: DayStats[] }) {
     const max = Math.max(...data.map(d => d.completed), 1)
     const today = new Date()
@@ -141,38 +120,84 @@ export default function AnalyticsPage() {
             ])
 
             const allTasks = tasks || []
-            const weekAgo = subDays(new Date(), 7)
+            const weekAgoTime = subDays(new Date(), 7).getTime()
 
-            const myTasks = allTasks.filter((t: any) => t.assignee_id === user.id)
-            const partnerTasks = allTasks.filter((t: any) => profile?.partner_id && t.assignee_id === profile.partner_id)
-
-            const myCompleted = myTasks.filter((t: any) => t.is_completed)
-            const myCompletedThisWeek = myCompleted.filter((t: any) => t.completed_at && new Date(t.completed_at) >= weekAgo)
-            const partnerCompletedThisWeek = partnerTasks.filter((t: any) => t.is_completed && t.completed_at && new Date(t.completed_at) >= weekAgo).length
-
+            let totalCompletedAllTime = 0
+            let completedThisWeek = 0
+            let partnerCompletedThisWeek = 0
+            let totalAll = 0
             const hourCounts: Record<number, number> = {}
-            myCompleted.forEach((t: any) => {
-                if (t.completed_at) {
-                    const h = new Date(t.completed_at).getHours()
-                    hourCounts[h] = (hourCounts[h] || 0) + 1
-                }
+
+            const now = new Date()
+            const weekData: DayStats[] = Array.from({ length: 7 }, (_, i) => {
+                const date = subDays(now, 6 - i)
+                return {
+                    date,
+                    label: format(date, 'EEE'),
+                    start: startOfDay(date).getTime(),
+                    end: endOfDay(date).getTime(),
+                    completed: 0,
+                    total: 0
+                } as DayStats & { start: number; end: number }
             })
+
+            for (let i = 0; i < allTasks.length; i++) {
+                const t = allTasks[i]
+                const isMyTask = t.assignee_id === user.id
+                const isPartnerTask = profile?.partner_id && t.assignee_id === profile.partner_id
+
+                if (isMyTask) {
+                    totalAll++
+
+                    if (t.created_at) {
+                        const createdTime = new Date(t.created_at).getTime()
+                        for (let j = 0; j < 7; j++) {
+                            const day = weekData[j] as DayStats & { start: number; end: number }
+                            if (createdTime >= day.start && createdTime <= day.end) {
+                                day.total++
+                                if (t.is_completed) {
+                                    day.completed++
+                                }
+                                break
+                            }
+                        }
+                    }
+
+                    if (t.is_completed) {
+                        totalCompletedAllTime++
+                        if (t.completed_at) {
+                            const completedTime = new Date(t.completed_at).getTime()
+                            if (completedTime >= weekAgoTime) {
+                                completedThisWeek++
+                            }
+                            const h = new Date(t.completed_at).getHours()
+                            hourCounts[h] = (hourCounts[h] || 0) + 1
+                        }
+                    }
+                } else if (isPartnerTask) {
+                    if (t.is_completed && t.completed_at) {
+                        const completedTime = new Date(t.completed_at).getTime()
+                        if (completedTime >= weekAgoTime) {
+                            partnerCompletedThisWeek++
+                        }
+                    }
+                }
+            }
+
             const bestHour = Object.keys(hourCounts).length > 0
                 ? parseInt(Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0][0])
                 : null
 
-            const weekData = buildWeekData(allTasks, user.id)
             const bestDay = weekData.reduce(
                 (best, d) => (!best || d.completed > best.count) ? { label: d.label, count: d.completed } : best,
                 null as { label: string; count: number } | null
             )
 
-            const totalAll = myTasks.length
-            const rate = totalAll > 0 ? Math.round((myCompleted.length / totalAll) * 100) : 0
+            const rate = totalAll > 0 ? Math.round((totalCompletedAllTime / totalAll) * 100) : 0
 
             setAnalytics({
-                totalCompletedAllTime: myCompleted.length,
-                completedThisWeek: myCompletedThisWeek.length,
+                totalCompletedAllTime,
+                completedThisWeek,
                 partnerCompletedThisWeek,
                 completionRate: rate,
                 streak: profile?.streak || 0,
