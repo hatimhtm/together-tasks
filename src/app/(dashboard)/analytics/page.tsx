@@ -198,7 +198,7 @@ export default function AnalyticsPage() {
                 <div className="relative w-full h-3.5 bg-surface-container-highest rounded-full overflow-hidden">
                     <motion.div 
                         initial={{ width: 0 }}
-                        animate={{ width: \`\${levelProgress}%\` }}
+                        animate={{ width: `${levelProgress}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-container to-primary rounded-full shadow-[0_0_15px_rgba(255,183,125,0.4)]"
                     />
@@ -265,7 +265,7 @@ export default function AnalyticsPage() {
                                 <div className="w-full h-full flex items-end relative overflow-hidden rounded-t-[10px]">
                                     <motion.div
                                         initial={{ height: 0 }}
-                                        animate={{ height: \`\${heightPct}%\` }}
+                                        animate={{ height: `${heightPct}%` }}
                                         transition={{ duration: 0.8, delay: i * 0.05 }}
                                         className={cn(
                                             "w-full rounded-t-[10px] transition-colors duration-300",
