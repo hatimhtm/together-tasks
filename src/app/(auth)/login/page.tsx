@@ -6,7 +6,7 @@ import { Loader2, Eye, EyeOff, Check } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion"
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion"
 import { KING_EMAIL, QUEEN_EMAIL } from "@/lib/constants"
 import { triggerHaptic, triggerHapticSuccess } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
@@ -27,7 +27,9 @@ export default function LoginPage() {
 
     // Slider State
     const x = useMotionValue(0)
-    const affectionLevel = useTransform(x, [0, 200], [0, 420])
+    const affectionLevel = useTransform(x, [0, 200], [0, 100])
+    const sprungAffection = useSpring(affectionLevel, { stiffness: 400, damping: 25 })
+    const roundedPercentage = useTransform(sprungAffection, (v) => `${Math.min(100, Math.max(0, Math.round(v)))}%`)
     const dashOffset = useTransform(x, [0, 200], [1000, 250])
     const bgColor = useTransform(x, [0, 200], ["rgba(255, 177, 199, 0)", "rgba(255, 140, 0, 0.4)"])
 
@@ -220,7 +222,7 @@ export default function LoginPage() {
                                                 className="flex flex-col items-center"
                                             >
                                                 <motion.div className="text-5xl font-headline font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-secondary-container">
-                                                    {motion.useSpring(affectionLevel).get().toFixed(0)}%
+                                                    {roundedPercentage}
                                                 </motion.div>
                                                 <p className="text-secondary font-headline font-bold tracking-[0.2em] text-[10px] mt-1 uppercase">Current Affection Level</p>
                                             </motion.div>
