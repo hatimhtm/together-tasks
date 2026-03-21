@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { RealtimeChannel } from "@supabase/supabase-js"
+import { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js"
 import { Task } from "@/types/task"
 import { sendPartnerCompletionNotification } from "@/lib/notifications/partner-notify"
 import { parseTaskInput } from "@/lib/ai/task-parser"
@@ -70,7 +70,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     table: "tasks",
                     filter: `creator_id=eq.${userId}` // Your created tasks
                 },
-                (payload: any) => {
+                (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
                     handleRealtimeEvent(payload)
                 }
             )
@@ -82,7 +82,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     table: "tasks",
                     filter: `assignee_id=eq.${userId}` // Tasks assigned to you
                 },
-                (payload: any) => {
+                (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
                     handleRealtimeEvent(payload)
                 }
             )
@@ -97,7 +97,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     table: "tasks",
                     filter: `creator_id=eq.${partnerId}` // Partner's created tasks
                 },
-                (payload: any) => {
+                (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
                     handleRealtimeEvent(payload)
                 }
             ).on(
@@ -108,7 +108,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                     table: "tasks",
                     filter: `assignee_id=eq.${partnerId}` // Tasks assigned to partner
                 },
-                (payload: any) => {
+                (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
                     handleRealtimeEvent(payload)
                 }
             )
@@ -119,7 +119,7 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
         return channel
     }
 
-    const handleRealtimeEvent = (payload: any) => {
+    const handleRealtimeEvent = (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
 
         switch (eventType) {
