@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ffb77d",
+              "surface-container-high": "#2e2927",
+              "inverse-primary": "#904d00",
+              "surface-tint": "#ffb77d",
+              "on-primary-fixed": "#2f1500",
+              "surface-container-highest": "#393431",
+              "surface-bright": "#3d3836",
+              "on-error-container": "#ffdad6",
+              "background": "#161311",
+              "outline": "#a48c7a",
+              "on-surface-variant": "#ddc1ae",
+              "surface-container": "#231f1d",
+              "on-background": "#eae1dd",
+              "on-tertiary-container": "#323f55",
+              "on-secondary": "#650031",
+              "error": "#ffb4ab",
+              "on-primary": "#4d2600",
+              "surface-container-low": "#1f1b19",
+              "primary-container": "#ff8c00",
+              "on-primary-fixed-variant": "#6e3900",
+              "error-container": "#93000a",
+              "surface-variant": "#393431",
+              "outline-variant": "#564334",
+              "surface": "#161311",
+              "secondary-fixed": "#ffd9e2",
+              "secondary-fixed-dim": "#ffb1c7",
+              "on-secondary-fixed": "#3f001c",
+              "secondary-container": "#b5015e",
+              "on-tertiary": "#243146",
+              "on-surface": "#eae1dd",
+              "on-tertiary-fixed-variant": "#3a475e",
+              "on-tertiary-fixed": "#0e1c30",
+              "on-secondary-fixed-variant": "#8e0048",
+              "tertiary-fixed-dim": "#bac7e2",
+              "tertiary-container": "#9daac5",
+              "surface-container-lowest": "#110d0c",
+              "secondary": "#ffb1c7",
+              "on-error": "#690005",
+              "tertiary-fixed": "#d6e3ff",
+              "tertiary": "#bac7e2",
+              "inverse-on-surface": "#342f2d",
+              "primary-fixed": "#ffdcc3",
+              "primary-fixed-dim": "#ffb77d",
+              "on-secondary-container": "#ffc6d4",
+              "surface-dim": "#161311",
+              "on-primary-container": "#623200",
+              "inverse-surface": "#eae1dd"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#161311]/70 backdrop-blur-3xl flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<img alt="AI Assistant Sage Avatar" class="w-full h-full object-cover" data-alt="Stylized glowing AI assistant avatar icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDBd-u_nbALzMqYN23ffRbGWjdAGW0PAoJtruN3sNbXZtgkv5l-Qh5xKA1taMzL0U3zkcYFIHvnCRLke8wkePuVVhyQJwSCYubf41FFnTLOg3fCiPrb4z0CDWzRyy8qDywYH163gkBgasrARbO-nuUrP_Tk19vClt1DISyblm0edpgfJVTF-3GLwuDnGyOjvv-3Bi-RPIrhfgMRgkk9fTL3Lthfp6G0UoND4ZsFDwUFP88qsmx8pNBNKj8Dk-5GP0gteaAgSP4uwAO"/>
+</div>
+<span class="text-[#ffb77d] font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-xl">Sparkles</span>
+</div>
+<button class="text-[#ffb77d] hover:bg-[#3d3836]/50 transition-colors p-2 rounded-full active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</header>
+<main class="min-h-screen pt-24 pb-44 px-4">
+<!-- AI Personality Header Section -->
+<div class="mb-8 px-2">
+<div class="bg-surface-container-low rounded-xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(255,183,125,0.05)]">
+<div class="relative">
+<div class="absolute inset-0 bg-primary/20 blur-md rounded-full"></div>
+<span class="material-symbols-outlined text-primary relative z-10 text-3xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<h2 class="font-headline font-bold text-on-surface text-sm tracking-wide">AI Sage</h2>
+<p class="text-tertiary text-xs italic">Thinking of a productivity tip...</p>
+</div>
+</div>
+</div>
+<!-- Chat History -->
+<div class="space-y-6 flex flex-col">
+<!-- AI Message -->
+<div class="flex flex-col gap-2 max-w-[85%] self-start group">
+<div class="bg-surface-container/60 backdrop-blur-xl p-5 rounded-tr-xl rounded-br-xl rounded-bl-xl shadow-sm border border-outline-variant/10">
+<p class="text-on-surface leading-relaxed text-sm">
+                        Good morning, <span class="text-primary font-semibold">King Hatim</span>! 👑 You have <span class="underline decoration-primary/30 underline-offset-4">3 shared tasks</span> today. Would you like to tackle the grocery run first, or shall we plan the weekend getaway?
+                    </p>
+</div>
+<span class="text-[10px] text-outline px-1 font-label">Sage • 09:12 AM</span>
+</div>
+<!-- User Message -->
+<div class="flex flex-col gap-2 max-w-[85%] self-end">
+<div class="bg-gradient-to-br from-primary to-primary-container p-5 rounded-tl-xl rounded-bl-xl rounded-br-xl shadow-[0_4px_20px_rgba(255,140,0,0.15)]">
+<p class="text-on-primary font-medium text-sm">
+                        Let's start with the grocery run. Can you nudge the Queen to add her favorite snacks to the list?
+                    </p>
+</div>
+<span class="text-[10px] text-outline self-end px-1 font-label">You • 09:14 AM</span>
+</div>
+<!-- AI Message -->
+<div class="flex flex-col gap-2 max-w-[85%] self-start">
+<div class="bg-surface-container/60 backdrop-blur-xl p-5 rounded-tr-xl rounded-br-xl rounded-bl-xl border border-outline-variant/10">
+<p class="text-on-surface leading-relaxed text-sm">
+                        Of course! Sending a gentle nudge to the <span class="text-secondary font-semibold">Queen</span> now. 🌸 I'll also highlight the organic section for you both.
+                    </p>
+</div>
+<div class="flex items-center gap-1.5 px-1">
+<span class="material-symbols-outlined text-[10px] text-secondary" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="text-[10px] text-outline font-label">Nudge sent to Queen Sarah</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Fixed Interaction Layer -->
+<div class="fixed bottom-0 left-0 right-0 z-40 px-4 pb-28">
+<!-- Floating Suggestions -->
+<div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
+<button class="whitespace-nowrap bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-medium px-4 py-2.5 rounded-full border border-outline-variant/15 transition-all active:scale-95">
+                Give me a tip
+            </button>
+<button class="whitespace-nowrap bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-medium px-4 py-2.5 rounded-full border border-outline-variant/15 transition-all active:scale-95">
+                Check my schedule
+            </button>
+<button class="whitespace-nowrap bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-medium px-4 py-2.5 rounded-full border border-outline-variant/15 transition-all active:scale-95">
+                Send a nudge
+            </button>
+</div>
+<!-- Chat Input Area -->
+<div class="bg-surface-container/80 backdrop-blur-2xl rounded-full p-2 flex items-center shadow-2xl border border-outline-variant/10">
+<button class="p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-outline/60 px-2 font-body" placeholder="Whisper something to Sage..." type="text"/>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container p-3 rounded-full shadow-[0_0_15px_rgba(255,183,125,0.4)] active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="sparkle" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] rounded-full bg-[#231f1d]/70 backdrop-blur-2xl flex justify-around items-center p-2 z-50 shadow-[0_20px_50px_rgba(255,140,0,0.1)]">
+<button class="bg-gradient-to-br from-[#ffb77d] to-[#ff8c00] text-white rounded-full p-3 shadow-[0_0_15px_rgba(255,183,125,0.4)] active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="chat_bubble" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+</button>
+<button class="text-[#bac7e2] p-3 hover:text-[#ffb77d] transition-all active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<button class="text-[#bac7e2] p-3 hover:text-[#ffb77d] transition-all active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</button>
+<button class="text-[#bac7e2] p-3 hover:text-[#ffb77d] transition-all active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</button>
+</nav>
+</body></html>

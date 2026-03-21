@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 /* @import "shadcn/tailwind.css"; -- Removing this as it causes build errors in v4 */
@@ -5,6 +7,57 @@
 /* Dark mode handled by Next-themes class strategy */
 
 @theme inline {
+  --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-surface-dim: var(--surface-dim);
+  --color-on-primary-fixed-variant: var(--on-primary-fixed-variant);
+  --color-surface-tint: var(--surface-tint);
+  --color-background: var(--background);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-primary-container: var(--primary-container);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-surface-variant: var(--surface-variant);
+  --color-inverse-primary: var(--inverse-primary);
+  --color-error: var(--error);
+  --color-on-secondary-fixed-variant: var(--on-secondary-fixed-variant);
+  --color-surface-bright: var(--surface-bright);
+  --color-secondary-fixed: var(--secondary-fixed);
+  --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+  --color-secondary-fixed-dim: var(--secondary-fixed-dim);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-on-surface: var(--on-surface);
+  --color-on-error: var(--on-error);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-secondary-container: var(--secondary-container);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-on-primary-fixed: var(--on-primary-fixed);
+  --color-error-container: var(--error-container);
+  --color-inverse-surface: var(--inverse-surface);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface: var(--surface);
+  --color-tertiary: var(--tertiary);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-primary: var(--primary);
+  --color-on-tertiary-fixed: var(--on-tertiary-fixed);
+  --color-outline: var(--outline);
+  --color-surface-container: var(--surface-container);
+  --color-on-error-container: var(--on-error-container);
+  --color-on-secondary-fixed: var(--on-secondary-fixed);
+  --color-on-background: var(--on-background);
+  --color-on-secondary: var(--on-secondary);
+  --color-on-primary: var(--on-primary);
+  --color-outline-variant: var(--outline-variant);
+  --color-secondary: var(--secondary);
+  --font-headline: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-label: 'Inter', sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -51,6 +104,54 @@
 }
 
 :root, .daylight {
+  --on-tertiary-fixed-variant: #3a475e;
+  --on-secondary-container: #ffc6d4;
+  --surface-dim: #161311;
+  --on-primary-fixed-variant: #6e3900;
+  --surface-tint: #ffb77d;
+  --background: #161311;
+  --tertiary-fixed: #d6e3ff;
+  --primary-container: #ff8c00;
+  --surface-container-low: #1f1b19;
+  --on-surface-variant: #ddc1ae;
+  --on-tertiary-container: #323f55;
+  --primary-fixed: #ffdcc3;
+  --surface-variant: #393431;
+  --inverse-primary: #904d00;
+  --error: #ffb4ab;
+  --on-secondary-fixed-variant: #8e0048;
+  --surface-bright: #3d3836;
+  --secondary-fixed: #ffd9e2;
+  --tertiary-fixed-dim: #bac7e2;
+  --secondary-fixed-dim: #ffb1c7;
+  --surface-container-lowest: #110d0c;
+  --on-surface: #eae1dd;
+  --on-error: #690005;
+  --tertiary-container: #9daac5;
+  --secondary-container: #b5015e;
+  --inverse-on-surface: #342f2d;
+  --on-primary-fixed: #2f1500;
+  --error-container: #93000a;
+  --inverse-surface: #eae1dd;
+  --on-tertiary: #243146;
+  --on-primary-container: #623200;
+  --surface-container-highest: #393431;
+  --surface: #161311;
+  --tertiary: #bac7e2;
+  --surface-container-high: #2e2927;
+  --primary-fixed-dim: #ffb77d;
+  --primary: #ffb77d;
+  --on-tertiary-fixed: #0e1c30;
+  --outline: #a48c7a;
+  --surface-container: #231f1d;
+  --on-error-container: #ffdad6;
+  --on-secondary-fixed: #3f001c;
+  --on-background: #eae1dd;
+  --on-secondary: #650031;
+  --on-primary: #4d2600;
+  --outline-variant: #564334;
+  --secondary: #ffb1c7;
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -94,6 +195,54 @@
 }
 
 .dark, .midnight {
+  --on-tertiary-fixed-variant: #3a475e;
+  --on-secondary-container: #ffc6d4;
+  --surface-dim: #161311;
+  --on-primary-fixed-variant: #6e3900;
+  --surface-tint: #ffb77d;
+  --background: #161311;
+  --tertiary-fixed: #d6e3ff;
+  --primary-container: #ff8c00;
+  --surface-container-low: #1f1b19;
+  --on-surface-variant: #ddc1ae;
+  --on-tertiary-container: #323f55;
+  --primary-fixed: #ffdcc3;
+  --surface-variant: #393431;
+  --inverse-primary: #904d00;
+  --error: #ffb4ab;
+  --on-secondary-fixed-variant: #8e0048;
+  --surface-bright: #3d3836;
+  --secondary-fixed: #ffd9e2;
+  --tertiary-fixed-dim: #bac7e2;
+  --secondary-fixed-dim: #ffb1c7;
+  --surface-container-lowest: #110d0c;
+  --on-surface: #eae1dd;
+  --on-error: #690005;
+  --tertiary-container: #9daac5;
+  --secondary-container: #b5015e;
+  --inverse-on-surface: #342f2d;
+  --on-primary-fixed: #2f1500;
+  --error-container: #93000a;
+  --inverse-surface: #eae1dd;
+  --on-tertiary: #243146;
+  --on-primary-container: #623200;
+  --surface-container-highest: #393431;
+  --surface: #161311;
+  --tertiary: #bac7e2;
+  --surface-container-high: #2e2927;
+  --primary-fixed-dim: #ffb77d;
+  --primary: #ffb77d;
+  --on-tertiary-fixed: #0e1c30;
+  --outline: #a48c7a;
+  --surface-container: #231f1d;
+  --on-error-container: #ffdad6;
+  --on-secondary-fixed: #3f001c;
+  --on-background: #eae1dd;
+  --on-secondary: #650031;
+  --on-primary: #4d2600;
+  --outline-variant: #564334;
+  --secondary: #ffb1c7;
+
   --background: #080c14;
   --foreground: #e8eaf6;
   --card: #0d1117;

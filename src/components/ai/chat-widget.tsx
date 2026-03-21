@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { X, Send, Loader2, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { X, Loader2 } from "lucide-react"
 
 interface Message {
     role: "user" | "assistant"
@@ -23,8 +22,8 @@ export function AIChatWidget({
         {
             role: "assistant",
             content: userRole === "queen"
-                ? `Hey my Queen! 👑 I'm your AI assistant. Ask me anything — create tasks, check your list, or just chat.`
-                : `Hey King Hatim! 👑 I'm your AI assistant. I can help you create tasks, check your list, or just keep you company. What do you need?`,
+                ? `Hey my Queen! 👑 I'm Sage, your AI assistant. Need a productivity tip, or want me to ping the King?`
+                : `Good morning, King! 👑 I'm Sage. I can help you create tasks, check your schedule, or send a nudge. What do you need?`,
             timestamp: new Date()
         }
     ])
@@ -33,16 +32,25 @@ export function AIChatWidget({
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+        return () => { document.body.style.overflow = "auto"; }
+    }, [isOpen])
+
+    useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    }, [messages])
+    }, [messages, isOpen])
 
-    const handleSend = async () => {
-        if (!input.trim() || loading) return
+    const handleSend = async (forcedText?: string) => {
+        const textToSend = forcedText || input
+        if (!textToSend.trim() || loading) return
 
-        const userMessage: Message = { role: "user", content: input, timestamp: new Date() }
+        const userMessage: Message = { role: "user", content: textToSend, timestamp: new Date() }
         setMessages(prev => [...prev, userMessage])
-        const currentInput = input
-        setInput("")
+        if (!forcedText) setInput("")
         setLoading(true)
 
         try {
@@ -56,41 +64,31 @@ export function AIChatWidget({
                 return
             }
 
-            const systemPrompt = `You are a warm, helpful AI assistant embedded in "Together Tasks" — a personal task app built for a couple: Hatim (the King) and Enarcylyn (the Queen).
-
-The person talking to you right now is ${userName || (userRole === "queen" ? "Enarcylyn" : "Hatim")} (${userRole === "queen" ? "the Queen" : "the King"}).
-
-Your personality:
-- Warm, supportive, and encouraging — like a trusted friend
-- Aware that this is a personal couple app, not a corporate tool
-- Keep responses concise and friendly
-- Use a light royal theme occasionally (King/Queen references) but don't overdo it
-- Help with task management, productivity tips, encouragement, and general questions
-
-The user says: "${currentInput}"`
+            const systemPrompt = `You are a warm, helpful AI assistant named Sage embedded in "Together Tasks" — a personal task app built for a couple.
+The user is ${userName || "there"} (${userRole || "partner"}).
+Personality:
+- Warm, supportive, like a trusted friend.
+- Help with tasks, productivity tips, or cute nudges for the partner.
+User says: "${textToSend}"`
 
             const res = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: systemPrompt }] }]
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
                 }
             )
-
             if (!res.ok) throw new Error(`API error ${res.status}`)
 
             const data = await res.json()
             const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I didn't quite catch that — could you rephrase?"
-
             setMessages(prev => [...prev, { role: "assistant", content: aiText, timestamp: new Date() }])
         } catch (error) {
             console.error("AI chat error:", error)
             setMessages(prev => [...prev, {
                 role: "assistant",
-                content: "Sorry, I'm having a little trouble right now. Give it another try in a moment! 💙",
+                content: "Sorry, I'm having a little trouble connecting right now! 💙",
                 timestamp: new Date()
             }])
         } finally {
@@ -100,114 +98,152 @@ The user says: "${currentInput}"`
 
     return (
         <>
-            {/* Floating Chat Button */}
-            <motion.button
-                onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-24 right-5 z-50 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.9 }}
-            >
-                <AnimatePresence mode="wait">
-                    {isOpen ? (
-                        <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-                            <X className="h-5 w-5" />
-                        </motion.div>
-                    ) : (
-                        <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
-                            <Sparkles className="h-5 w-5" />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </motion.button>
+            {/* Floating FAB - Visible when chat is closed */}
+            <AnimatePresence>
+                {!isOpen && (
+                    <motion.button
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        onClick={() => setIsOpen(true)}
+                        className="fixed bottom-[110px] right-5 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0_8px_32px_rgba(255,183,125,0.4)] flex items-center justify-center active:scale-90 transition-transform duration-200"
+                    >
+                        <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                    </motion.button>
+                )}
+            </AnimatePresence>
 
-            {/* Chat Window */}
+            {/* Full-Screen Chat Modal */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 16, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 16, scale: 0.97 }}
-                        transition={{ type: "spring", stiffness: 320, damping: 30 }}
-                        className="fixed bottom-40 right-4 z-50 w-[340px] max-w-[calc(100vw-2rem)]"
+                        initial={{ opacity: 0, y: "100%" }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="fixed inset-0 z-[100] bg-background flex flex-col"
                     >
-                        <div className="flex flex-col h-[480px] bg-card border border-border/50 rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.24)] overflow-hidden">
-                            {/* Header */}
-                            <div className="px-4 py-3 border-b border-border/40 flex items-center gap-3 bg-card">
-                                <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-                                    <Sparkles className="h-4 w-4 text-primary" />
+                        {/* Header */}
+                        <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-3xl flex items-center justify-between px-6 py-4 border-b border-outline-variant/10">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+                                    <img 
+                                        alt="AI Assistant Sage" 
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDBd-u_nbALzMqYN23ffRbGWjdAGW0PAoJtruN3sNbXZtgkv5l-Qh5xKA1taMzL0U3zkcYFIHvnCRLke8wkePuVVhyQJwSCYubf41FFnTLOg3fCiPrb4z0CDWzRyy8qDywYH163gkBgasrARbO-nuUrP_Tk19vClt1DISyblm0edpgfJVTF-3GLwuDnGyOjvv-3Bi-RPIrhfgMRgkk9fTL3Lthfp6G0UoND4ZsFDwUFP88qsmx8pNBNKj8Dk-5GP0gteaAgSP4uwAO" 
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-sm text-foreground leading-none">AI Assistant</p>
-                                    <p className="text-xs text-muted-foreground mt-0.5">Always here for you</p>
-                                </div>
-                                <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground p-1 transition-colors">
-                                    <X className="h-4 w-4" />
-                                </button>
+                                <span className="text-primary font-headline font-bold tracking-tight text-xl drop-shadow-[0_0_8px_rgba(255,183,125,0.3)]">Sparkles</span>
                             </div>
+                            <button 
+                                onClick={() => setIsOpen(false)}
+                                className="text-primary hover:bg-surface-bright/50 transition-colors p-2 rounded-full active:scale-95"
+                            >
+                                <span className="material-symbols-outlined text-[28px]">stat_minus_1</span>
+                            </button>
+                        </header>
 
-                            {/* Messages */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                        <div className="flex-1 overflow-y-auto px-4 pt-24 pb-48 no-scrollbar bg-surface/30">
+                            
+                            {/* AI Personality Header Section */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                                className="mb-8 px-2"
+                            >
+                                <div className="bg-surface-container-low rounded-xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(255,183,125,0.05)] border border-outline-variant/5">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-primary/20 blur-md rounded-full"></div>
+                                        <span className="material-symbols-outlined text-primary relative z-10 text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                                    </div>
+                                    <div>
+                                        <h2 className="font-headline font-bold text-on-surface text-sm tracking-wide">AI Sage</h2>
+                                        <p className="text-tertiary-fixed-dim text-xs italic">{loading ? "Thinking..." : "Always here to help."}</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Chat History */}
+                            <div className="space-y-6 flex flex-col">
                                 {messages.map((msg, idx) => (
-                                    <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                                        <div className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 ${
-                                            msg.role === "user"
-                                                ? "bg-primary text-primary-foreground rounded-br-sm"
-                                                : "bg-muted/60 text-foreground rounded-bl-sm border border-border/40"
+                                    <motion.div 
+                                        key={idx}
+                                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        className={`flex flex-col gap-1 max-w-[85%] ${msg.role === "user" ? "self-end items-end" : "self-start items-start"}`}
+                                    >
+                                        <div className={`p-4 shadow-sm ${
+                                            msg.role === "user" 
+                                                ? "bg-gradient-to-br from-primary to-primary-container text-on-primary-container rounded-tl-2xl rounded-bl-2xl rounded-br-2xl shadow-[0_4px_20px_rgba(255,140,0,0.15)]" 
+                                                : "bg-surface-container/80 backdrop-blur-xl text-on-surface rounded-tr-2xl rounded-br-2xl rounded-bl-2xl border border-outline-variant/10"
                                         }`}>
-                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                                            <p className="text-[10px] opacity-50 mt-1 text-right">
-                                                {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                            <p className="font-body text-[14.5px] leading-relaxed whitespace-pre-wrap font-medium">
+                                                {msg.content}
                                             </p>
                                         </div>
-                                    </div>
+                                        <span className="text-[10px] text-on-surface-variant px-2 font-label opacity-70">
+                                            {msg.role === "user" ? "You" : "Sage"} • {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                        </span>
+                                    </motion.div>
                                 ))}
+                                
                                 {loading && (
-                                    <div className="flex justify-start">
-                                        <div className="bg-muted/60 border border-border/40 rounded-2xl rounded-bl-sm px-4 py-3">
-                                            <div className="flex gap-1 items-center">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.3s]" />
-                                                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.15s]" />
-                                                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce" />
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-1 max-w-[85%] self-start">
+                                        <div className="bg-surface-container/60 backdrop-blur-xl p-4 rounded-tr-2xl rounded-br-2xl rounded-bl-2xl border border-outline-variant/10">
+                                            <div className="flex gap-1.5 items-center justify-center py-1">
+                                                <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.3s]" />
+                                                <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.15s]" />
+                                                <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" />
                                             </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 )}
                                 <div ref={messagesEndRef} />
                             </div>
+                        </div>
 
-                            {/* Input */}
-                            <div className="p-3 border-t border-border/40 bg-card">
-                                <form
-                                    onSubmit={(e) => { e.preventDefault(); handleSend() }}
-                                    className="flex gap-2 items-end"
-                                >
-                                    <textarea
-                                        value={input}
-                                        onChange={(e) => {
-                                            setInput(e.target.value)
-                                            e.target.style.height = 'auto'
-                                            e.target.style.height = e.target.scrollHeight + 'px'
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault()
-                                                handleSend()
-                                            }
-                                        }}
-                                        placeholder="Ask me anything..."
+                        {/* Fixed Interaction Layer */}
+                        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-8 pt-4 bg-gradient-to-t from-background via-background to-transparent">
+                            {/* Floating Suggestions */}
+                            <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
+                                {["Give me a tip", "What's on my schedule?", "Send a nudge"].map((sug) => (
+                                    <button 
+                                        key={sug}
+                                        onClick={() => handleSend(sug)}
                                         disabled={loading}
-                                        rows={1}
-                                        className="flex-1 min-h-[38px] max-h-[120px] resize-none bg-muted/40 border border-border/50 rounded-xl px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/40 transition-colors overflow-hidden"
-                                    />
-                                    <Button
-                                        type="submit"
-                                        size="icon"
-                                        disabled={!input.trim() || loading}
-                                        className="h-[38px] w-[38px] rounded-xl shrink-0 bg-primary text-primary-foreground"
+                                        className="whitespace-nowrap shrink-0 bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-label font-bold px-5 py-2.5 rounded-full border border-outline-variant/15 transition-all active:scale-95 disabled:opacity-50"
                                     >
-                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                    </Button>
-                                </form>
+                                        {sug}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            {/* Chat Input Area */}
+                            <div className="bg-surface-container/90 backdrop-blur-2xl rounded-full p-1.5 flex items-center shadow-2xl border border-outline-variant/20">
+                                <button className="p-2 text-on-surface-variant hover:text-primary transition-colors shrink-0">
+                                    <span className="material-symbols-outlined text-[24px]">add_circle</span>
+                                </button>
+                                <input 
+                                    className="flex-1 bg-transparent border-none focus:ring-0 text-[15px] text-on-surface placeholder:text-on-surface-variant/50 px-2 font-body outline-none" 
+                                    placeholder="Whisper something to Sage..." 
+                                    type="text"
+                                    value={input}
+                                    onChange={e => setInput(e.target.value)}
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                    // @ts-ignore
+                                    onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
+                                    disabled={loading}
+                                />
+                                <button 
+                                    onClick={() => handleSend()}
+                                    disabled={!input.trim() || loading}
+                                    className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container p-2.5 rounded-full shadow-[0_0_15px_rgba(255,183,125,0.4)] active:scale-90 transition-all disabled:opacity-50 disabled:active:scale-100 shrink-0"
+                                >
+                                    {loading ? (
+                                        <Loader2 className="h-[20px] w-[20px] animate-spin text-on-primary" />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </motion.div>

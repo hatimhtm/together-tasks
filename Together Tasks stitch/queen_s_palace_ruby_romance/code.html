@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#110d0c",
+              "secondary-container": "#b5015e",
+              "tertiary-fixed-dim": "#bac7e2",
+              "on-tertiary-container": "#323f55",
+              "tertiary-fixed": "#d6e3ff",
+              "on-primary-container": "#623200",
+              "surface-dim": "#161311",
+              "surface-container-low": "#1f1b19",
+              "on-secondary-fixed": "#3f001c",
+              "surface-container-highest": "#393431",
+              "surface-bright": "#3d3836",
+              "on-primary-fixed": "#2f1500",
+              "on-surface-variant": "#ddc1ae",
+              "surface-container": "#231f1d",
+              "on-primary": "#4d2600",
+              "on-secondary": "#650031",
+              "on-primary-fixed-variant": "#6e3900",
+              "primary": "#ffb77d",
+              "on-background": "#eae1dd",
+              "error-container": "#93000a",
+              "surface-tint": "#ffb77d",
+              "primary-fixed": "#ffdcc3",
+              "on-secondary-fixed-variant": "#8e0048",
+              "on-error-container": "#ffdad6",
+              "inverse-on-surface": "#342f2d",
+              "surface-variant": "#393431",
+              "error": "#ffb4ab",
+              "primary-container": "#ff8c00",
+              "on-tertiary-fixed": "#0e1c30",
+              "on-error": "#690005",
+              "inverse-surface": "#eae1dd",
+              "background": "#161311",
+              "secondary-fixed": "#ffd9e2",
+              "tertiary-container": "#9daac5",
+              "surface-container-high": "#2e2927",
+              "tertiary": "#bac7e2",
+              "secondary-fixed-dim": "#ffb1c7",
+              "inverse-primary": "#904d00",
+              "outline-variant": "#564334",
+              "on-secondary-container": "#ffc6d4",
+              "on-surface": "#eae1dd",
+              "surface": "#161311",
+              "primary-fixed-dim": "#ffb77d",
+              "outline": "#a48c7a",
+              "on-tertiary-fixed-variant": "#3a475e",
+              "on-tertiary": "#243146",
+              "secondary": "#ffb1c7"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ruby-glow {
+            box-shadow: 0 0 50px rgba(181, 1, 94, 0.15);
+        }
+        .glass-panel {
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary-container/30">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-[#161311]/70 backdrop-blur-xl flex items-center justify-between px-6 h-20 shadow-[0_20px_50px_rgba(255,140,0,0.06)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 p-0.5 border border-secondary/20 overflow-hidden">
+<img alt="Queen Profile" class="w-full h-full object-cover rounded-full" data-alt="Close up portrait of an elegant queen profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPrHoI_UtM9z4KHBQhJhskH26ZuEYaMjN6puwdTl90lIaarH6MDq0S9nhQJhHKX9UHe-fUr12rnaS0Km79AsyTDVTZJA5a75O3e7TFbwF0xkzwc9lSO7TwJgIluN8ZDnIVO8SvWWpvnK82ACpbdYl2x4zA8Zmr9SD6EHXVOJKfkkD9hhvckzFmTm7n6_R-JvFEiMthQ4pj_PzNcAnTwR_BBpZTyK3YHNldiXdsi_9i7siJls5S2y0xw7P_hHj_vPkYFTvK2zPXSDQI"/>
+</div>
+<span class="text-[#ffb77d] font-black italic tracking-tighter text-2xl font-headline">Digital Palace</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#ffb77d] hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<main class="pt-28 pb-32 px-6 max-w-5xl mx-auto space-y-10">
+<!-- Welcome Hero Section -->
+<section class="space-y-2">
+<p class="text-secondary font-label text-[10px] uppercase tracking-[0.2em] font-semibold">Morning, Your Majesty</p>
+<h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface">The Ruby Sanctuary</h1>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Heart of the Palace Tracker (Large Card) -->
+<div class="md:col-span-8 group relative overflow-hidden bg-surface-container rounded-xl p-8 ruby-glow transition-all duration-300 hover:bg-surface-container-high">
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-secondary-container/10 rounded-full blur-[100px]"></div>
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+<div class="space-y-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-headline font-bold text-lg">Heart of the Palace</span>
+</div>
+<p class="text-on-surface-variant max-w-xs leading-relaxed">Your shared passion is at its peak today. Keep the fire burning with a small gesture.</p>
+<div class="flex gap-4 pt-2">
+<div class="px-4 py-2 rounded-full bg-secondary-container/20 border border-secondary/10 text-secondary text-sm font-semibold">88% Synchronized</div>
+</div>
+</div>
+<!-- Liquid Progress Gauge -->
+<div class="relative flex-shrink-0 w-40 h-40 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle class="text-surface-container-highest" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-width="8"></circle>
+<circle cx="80" cy="80" fill="transparent" r="70" stroke="url(#ruby-gradient)" stroke-dasharray="440" stroke-dashoffset="52.8" stroke-linecap="round" stroke-width="12"></circle>
+<defs>
+<lineargradient id="ruby-gradient" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" style="stop-color:#ffb1c7"></stop>
+<stop offset="100%" style="stop-color:#b5015e"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-headline font-black text-on-surface">88</span>
+<span class="text-[10px] font-label uppercase tracking-widest text-secondary font-bold">Vitality</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Stats (Small Card) -->
+<div class="md:col-span-4 bg-surface-container rounded-xl p-6 flex flex-col justify-between border-l-4 border-primary">
+<div class="space-y-4">
+<span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+<h3 class="font-headline font-bold text-xl text-on-surface">Palace Atelier</h3>
+<p class="text-on-surface-variant text-sm">3 Shared creations awaiting your final touch.</p>
+</div>
+<button class="mt-6 w-full py-3 bg-primary-container text-white rounded-full font-headline font-bold active:scale-95 duration-200 text-sm">Open Atelier</button>
+</div>
+<!-- Royal Decree Card (Deep Burgundy Gradient) -->
+<div class="md:col-span-12 relative overflow-hidden rounded-xl bg-gradient-to-br from-[#650031] to-[#3f001c] p-8 shadow-2xl">
+<div class="absolute top-0 right-0 p-8 opacity-10">
+<span class="material-symbols-outlined text-9xl">history_edu</span>
+</div>
+<div class="relative z-10 max-w-2xl space-y-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-md backdrop-blur-md">
+<span class="material-symbols-outlined text-xs text-secondary-fixed">workspace_premium</span>
+<span class="text-[10px] uppercase font-bold tracking-[0.2em] text-secondary-fixed">Royal Decree</span>
+</div>
+<h2 class="text-3xl font-headline font-bold text-white">Initiate the 'Date Night' Protocol for this Friday.</h2>
+<p class="text-secondary-fixed/80 leading-relaxed font-body">The kingdom requires a period of leisure and romance. Your King has requested a candlelit reservation at the Obsidian Lounge.</p>
+<div class="flex flex-wrap gap-4 pt-2">
+<button class="px-8 py-3 bg-white text-on-secondary-fixed font-headline font-bold rounded-full active:scale-95 duration-200">Seal Decree</button>
+<button class="px-8 py-3 bg-white/10 text-white font-headline font-bold rounded-full hover:bg-white/20 transition-colors active:scale-95 duration-200">Propose Change</button>
+</div>
+</div>
+</div>
+<!-- Task List / Recent Activity -->
+<div class="md:col-span-7 space-y-4">
+<h3 class="font-headline font-bold text-xl text-on-surface px-2">The Daily Ledger</h3>
+<div class="space-y-2">
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg transition-colors hover:bg-surface-container">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">local_florist</span>
+</div>
+<div>
+<h4 class="font-semibold text-on-surface text-sm">Order fresh lilies</h4>
+<p class="text-on-surface-variant text-xs">For the North Wing</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-lg">radio_button_unchecked</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg transition-colors hover:bg-surface-container border-l-2 border-secondary">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+<div>
+<h4 class="font-semibold text-on-surface text-sm">Palace quiet hours</h4>
+<p class="text-on-surface-variant text-xs">Set for 10:00 PM</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Quick Access / Gallery -->
+<div class="md:col-span-5 space-y-4">
+<h3 class="font-headline font-bold text-xl text-on-surface px-2">Echoes</h3>
+<div class="aspect-square w-full relative group rounded-xl overflow-hidden bg-surface-container-high">
+<img alt="Palace Garden" class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" data-alt="Dark romantic garden with warm glowing lanterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvz3vDEy1sGqsxvbESoGGWRuUGFRcJqN56tFULQjtcv2Mjbw4EdJ54u1V-vPQFr6pqpMEUJLTq8SLRRBjHVRWBh0zfIk87R7HHqcaOPlnfAzJHM8Lk2baaB93vTqrWu8mjh5IWB8jPtPToOelWZZWDJninZDY_jiYfPLnY5BQAuFyGX_-Ym0KdWkLp2OXJaPE18LDP7ROxycz7GzQlHUDnINEe6iZ3scN265B__yrhimkNqgwj2Jlvr6On1rgSa4ZNvvQML4506rD8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6">
+<p class="text-white font-headline font-bold text-lg">Anniversary Prep</p>
+<p class="text-white/60 text-xs">A collection of shared dreams</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Navigation Bar -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] md:max-w-md z-50">
+<div class="bg-[#231f1d]/70 backdrop-blur-2xl rounded-full px-6 py-4 flex justify-between items-center shadow-[0_0_40px_rgba(181,1,94,0.1)]">
+<!-- Active: Sanctuary (Matching context) -->
+<div class="flex flex-col items-center justify-center bg-gradient-to-tr from-[#ffb1c7] to-[#b5015e] text-white rounded-full p-3 shadow-lg active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fort</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest hidden md:block">Sanctuary</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#bac7e2] p-3 hover:text-[#ffb1c7] transition-colors active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest hidden md:block">Atelier</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#bac7e2] p-3 hover:text-[#ffb1c7] transition-colors active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined">favorite</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest hidden md:block">Our Story</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#bac7e2] p-3 hover:text-[#ffb1c7] transition-colors active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined">person_2</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest hidden md:block">Profile</span>
+</div>
+</div>
+</nav>
+<!-- Floating Action Button (FAB) -->
+<button class="fixed right-6 bottom-28 w-14 h-14 bg-primary text-on-primary rounded-full shadow-[0_0_40px_rgba(255,140,0,0.1)] flex items-center justify-center active:scale-90 transition-all z-40">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>

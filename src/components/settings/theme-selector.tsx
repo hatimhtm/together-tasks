@@ -2,19 +2,20 @@
 
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
-import { Check, Loader2, Sparkles } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { motion } from "framer-motion"
 
 const themes = [
-    { id: 'daylight', name: 'Daylight', color: '#f8fafc', icon: '☀️' },
-    { id: 'midnight', name: 'Midnight', color: '#080c14', icon: '🌙' },
-    { id: 'burgundy', name: 'Burgundy', color: '#150008', icon: '👑' },
-    { id: 'aurora', name: 'Aurora', color: '#07080f', icon: '🌌' },
-    { id: 'obsidian', name: 'Obsidian', color: '#0a0a0a', icon: '🔥' },
-    { id: 'ocean', name: 'Ocean', color: '#040d1a', icon: '🌊' },
-    { id: 'rose', name: 'Rose', color: '#0f0a0d', icon: '🌹' },
+    { id: 'obsidian', name: 'Obsidian', icon: 'dark_mode', bg: 'bg-surface-container border-primary ring-2 ring-primary bg-gradient-to-br from-primary/10 to-transparent', iconBg: 'bg-surface-container-highest text-primary shadow-xl', text: 'text-on-surface' },
+    { id: 'daylight', name: 'Daylight', icon: 'light_mode', bg: 'bg-[#f5f5f5] hover:bg-white border-black/5', iconBg: 'bg-white text-orange-500 shadow-sm', text: 'text-neutral-800' },
+    { id: 'midnight', name: 'Midnight', icon: 'nights_stay', bg: 'bg-[#0a192f] hover:brightness-110', iconBg: 'bg-blue-900/50 text-blue-300', text: 'text-blue-100' },
+    { id: 'burgundy', name: 'Burgundy', icon: 'palette', bg: 'bg-[#2d0a0a] hover:brightness-110', iconBg: 'bg-red-900/50 text-red-300', text: 'text-red-100' },
+    { id: 'aurora', name: 'Aurora', icon: 'eco', bg: 'bg-[#0a2d1a] hover:brightness-110', iconBg: 'bg-green-900/50 text-green-300', text: 'text-green-100' },
+    { id: 'ocean', name: 'Ocean', icon: 'waves', bg: 'bg-[#0a232d] hover:brightness-110', iconBg: 'bg-cyan-900/50 text-cyan-300', text: 'text-cyan-100' },
+    { id: 'rose', name: 'Rose', icon: 'favorite', bg: 'bg-[#2d0a1b] hover:brightness-110', iconBg: 'bg-pink-900/50 text-pink-300', text: 'text-pink-100' },
 ]
 
 export function ThemeSelector({ userId, currentDbTheme }: { userId: string, currentDbTheme: string }) {
@@ -30,7 +31,6 @@ export function ThemeSelector({ userId, currentDbTheme }: { userId: string, curr
     const handleThemeChange = async (newTheme: string) => {
         setTheme(newTheme)
 
-        // Only save to DB if it's different from what we loaded initially
         if (newTheme === currentDbTheme && !saving) return
 
         setSaving(newTheme)
@@ -41,9 +41,6 @@ export function ThemeSelector({ userId, currentDbTheme }: { userId: string, curr
                 .eq('id', userId)
 
             if (error) throw error
-            toast.success("Theme updated globally!", {
-                icon: <Sparkles className="h-4 w-4 text-primary" />
-            })
         } catch (error) {
             console.error(error)
             toast.error("Failed to save theme to your profile.")
@@ -52,44 +49,48 @@ export function ThemeSelector({ userId, currentDbTheme }: { userId: string, curr
         }
     }
 
-    if (!mounted) return <div className="animate-pulse h-32 bg-muted/20 rounded-xl w-full" />
+    if (!mounted) return <div className="animate-pulse h-[180px] bg-surface-container-low rounded-xl w-full" />
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-6 px-6 snap-x">
             {themes.map((t) => {
                 const isActive = theme === t.id
                 return (
                     <button
                         key={t.id}
                         onClick={() => handleThemeChange(t.id)}
+                        disabled={saving === t.id}
                         className={cn(
-                            "relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 overflow-hidden",
-                            isActive
-                                ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 scale-[1.02]"
-                                : "border-border/50 bg-card/60 hover:bg-card hover:border-primary/50"
+                            "snap-start shrink-0 w-[140px] aspect-[3/4] rounded-[1.25rem] p-5 flex flex-col justify-between relative overflow-hidden transition-all duration-300 text-left cursor-pointer",
+                            isActive ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background bg-surface-container shadow-[0_0_20px_rgba(255,183,125,0.15)]" : "border ring-0 ring-transparent shadow-sm",
+                            isActive ? "bg-gradient-to-br from-primary/10 to-transparent border-transparent" : t.bg,
+                            !isActive && !t.bg.includes('border') && "border-outline-variant/10"
                         )}
                     >
-                        <div
-                            className="w-12 h-12 rounded-full mb-3 shadow-sm border border-black/10 flex items-center justify-center text-xl transition-transform group-hover:scale-110"
-                            style={{ backgroundColor: t.color }}
-                        >
-                            {t.icon}
+                        <div className={cn(
+                            "z-10 w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shrink-0",
+                            isActive ? "bg-surface-container-highest text-primary shadow-xl" : t.iconBg
+                        )}>
+                            {saving === t.id ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>{t.icon}</span>
+                            )}
                         </div>
-                        <span className={cn(
-                            "font-semibold text-sm transition-colors",
-                            isActive ? "text-primary" : "text-foreground"
-                        )}>{t.name}</span>
-
-                        {isActive && (
-                            <div className="absolute top-2 right-2 h-6 w-6 bg-primary rounded-full flex items-center justify-center shadow-md animate-in zoom-in duration-300">
-                                <Check className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={3} />
-                            </div>
-                        )}
-                        {saving === t.id && (
-                            <div className="absolute top-2 right-2 h-6 w-6 bg-background/80 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                <Loader2 className="h-3 w-3 text-primary animate-spin" />
-                            </div>
-                        )}
+                        
+                        <div className="z-10 mt-auto">
+                            {isActive && (
+                                <motion.p 
+                                    initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} 
+                                    className="text-primary text-[10px] font-bold mb-1 tracking-widest uppercase"
+                                >
+                                    Selected
+                                </motion.p>
+                            )}
+                            <h4 className={cn("font-headline font-bold text-[15px] tracking-wide", isActive ? "text-on-surface" : t.text)}>
+                                {t.name}
+                            </h4>
+                        </div>
                     </button>
                 )
             })}

@@ -78,7 +78,7 @@ export function TasksContainer({
                 {/* Focus Tabs */}
                 {partnerId && (
                     <div className="w-full">
-                        <div className="flex p-1 space-x-1 bg-muted/50 rounded-full">
+                        <nav className="flex gap-2 overflow-x-auto pb-2 no-scrollbar px-1">
                             {(['my', 'partner', 'shared'] as Tab[]).map((tab) => (
                                 <button
                                     key={tab}
@@ -91,16 +91,16 @@ export function TasksContainer({
                                         }
                                     }}
                                     className={cn(
-                                        "flex-1 px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200",
+                                        "px-6 py-2.5 rounded-full font-label text-sm transition-colors whitespace-nowrap",
                                         activeTab === tab
-                                            ? "bg-primary text-primary-foreground shadow-sm"
-                                            : "text-muted-foreground hover:text-foreground"
+                                            ? "bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/10"
+                                            : "bg-surface-container text-on-surface-variant font-medium hover:bg-surface-container-high"
                                     )}
                                 >
                                     {tab === 'my' ? 'Mine' : tab === 'partner' ? 'Partner' : 'Shared'}
                                 </button>
                             ))}
-                        </div>
+                        </nav>
                     </div>
                 )}
 

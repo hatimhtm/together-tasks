@@ -12,6 +12,7 @@ import { Profile, Task } from "@/types/task"
 import { scheduleMorningBriefing, scheduleWeeklyReview } from "@/lib/notifications/briefing-scheduler"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
+import { CircularProgress } from "@/components/ui/circular-progress"
 
 export default function Home() {
   const supabase = createClient()
@@ -159,34 +160,27 @@ export default function Home() {
     <div className="space-y-8 pb-10">
       {/* ── Greeting ── */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="space-y-2"
+        initial={{ opacity: 0, scale: 0.98, filter: "blur(4px)" }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="space-y-4 pt-2 pb-2"
       >
-        {/* Date + action row */}
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-muted-foreground tracking-widest uppercase select-none">
-            {format(new Date(), "EEEE, MMMM d")}
-          </p>
-          {profile?.partner_id && (
-            <ThinkingOfYouButton partnerId={profile.partner_id} />
-          )}
-        </div>
-
-        {/* Primary greeting */}
-        <h1 className="text-[2.1rem] sm:text-4xl font-bold tracking-tight text-foreground leading-none">
-          {greeting}, {displayName} {icon}
-        </h1>
-
-        {/* Progress + subline */}
-        <div className="flex items-center gap-3 pt-0.5">
-          {user && (
-            <TasksTodayCounter userId={user.id} partnerId={profile?.partner_id} />
-          )}
-          <p className="text-sm text-muted-foreground/80 hidden sm:block">
-            {profile?.partner_id ? "Let's tackle it together." : "Let's make today count."}
-          </p>
+            <div className="space-y-1">
+                <p className="font-label text-tertiary-fixed-dim text-sm font-medium uppercase tracking-wider">
+                    {format(new Date(), "EEEE, MMM d")}
+                </p>
+                <h1 className="font-headline font-extrabold text-3xl sm:text-4xl text-on-surface flex items-center gap-2">
+                    {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">{displayName}</span>
+                </h1>
+            </div>
+            
+            {/* The right-aligned stat element */}
+            <div className="shrink-0 flex items-center gap-3">
+               {user && (
+                    <TasksTodayCounter userId={user.id} partnerId={profile?.partner_id} />
+               )}
+            </div>
         </div>
       </motion.div>
 
