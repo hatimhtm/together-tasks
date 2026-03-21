@@ -12,7 +12,6 @@ import { Profile, Task } from "@/types/task"
 import { scheduleMorningBriefing, scheduleWeeklyReview } from "@/lib/notifications/briefing-scheduler"
 import { format } from "date-fns"
 import { motion } from "framer-motion"
-import { CircularProgress } from "@/components/ui/circular-progress"
 
 export default function Home() {
   const supabase = createClient()
