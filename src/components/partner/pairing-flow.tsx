@@ -88,11 +88,8 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
         setLoading(true)
         try {
             const supabase = createClient()
-            const { data: partner, error } = await supabase
-                .from('profiles')
-                .select('id, username')
-                .eq('link_code', partnerCode.toUpperCase())
-                .single()
+            const { data: partnerData, error } = await supabase.rpc('get_partner_by_code', { code: partnerCode.toUpperCase() })
+            const partner = partnerData?.[0]
 
             if (error || !partner) {
                 throw new Error("Invalid or expired code")
@@ -114,17 +111,9 @@ export function PartnerPairingFlow({ profile }: { profile: Profile }) {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error("Not logged in")
 
-            const { data: partnerProfile } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('link_code', partnerCode.toUpperCase())
-                .single()
+            const { data: success, error } = await supabase.rpc('link_partner', { code: partnerCode.toUpperCase() })
 
-            if (!partnerProfile) throw new Error("Partner vanished")
-
-            // Perform Mutual Link
-            await supabase.from('profiles').update({ partner_id: partnerProfile.id }).eq('id', user.id)
-            await supabase.from('profiles').update({ partner_id: user.id }).eq('id', partnerProfile.id)
+            if (error || !success) throw new Error("Failed to link with partner. Code might be invalid or expired.")
 
             // SUCCESS! 🎉
             confetti({
