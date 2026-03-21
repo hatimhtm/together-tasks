@@ -1,5 +1,3 @@
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
-
 const systemInstruction = `You are an expert productivity assistant for a couple's task manager app.
 Analyze the user's natural language input and extract structured task details.
 Keep the breakdown very concise. Provide AT MOST 2 or 3 short, actionable subtasks ONLY if the task is highly complex. For most tasks, return an empty array for subtasks to keep the UI clean and uncluttered. Avoid lengthy explanations.
@@ -44,8 +42,11 @@ Current time is: ${currentTime}
 Current day of week: ${dayOfWeek}`
 
     try {
+        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
+        if (!apiKey) throw new Error("Missing Gemini API Key")
+
         const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
