@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCQfpCBocq37dw2PGTVtx-dVZUaq9vQeb0"
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
 
 const systemInstruction = `You are an expert productivity assistant for a couple's task manager app.
 Analyze the user's natural language input and extract structured task details.
@@ -32,6 +32,20 @@ Time-of-day mapping (use these EXACT times when user uses vague time expressions
 CRITICAL: NEVER default to 08:00 unless the user explicitly said "8am" or "8:00". If no time is specified at all, set dueTime to null.`
 
 export async function parseTaskInput(input: string) {
+    if (!GEMINI_API_KEY) {
+        console.error("GEMINI_API_KEY is not configured")
+        return {
+            title: input,
+            dueDate: null,
+            priority: 'medium',
+            category: 'personal',
+            emergency_level: 'medium',
+            importance_level: 'medium',
+            duration_estimate: 15,
+            subtasks: []
+        }
+    }
+
     const now = new Date()
     const todayDate = now.toLocaleDateString('en-CA')
     const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
