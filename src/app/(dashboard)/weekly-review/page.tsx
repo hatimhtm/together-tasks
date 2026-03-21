@@ -44,16 +44,35 @@ export default function WeeklyReviewPage() {
             const { data: weekTasks } = await tasksQuery
 
             const allTasks = weekTasks || []
-            const myCompleted = allTasks.filter((t: any) => t.assignee_id === user.id && t.is_completed).length
-            const partnerCompleted = allTasks.filter((t: any) => myProfile?.partner_id && t.assignee_id === myProfile.partner_id && t.is_completed).length
-
-            // Best day
+            let myCompleted = 0
+            let partnerCompleted = 0
             const dayMap: Record<string, number> = {}
-            allTasks.filter((t: any) => t.assignee_id === user.id && t.is_completed && t.completed_at).forEach((t: any) => {
-                const d = format(new Date(t.completed_at), 'EEE')
-                dayMap[d] = (dayMap[d] || 0) + 1
-            })
-            const bestDay = Object.entries(dayMap).sort((a, b) => b[1] - a[1])[0]
+            const partnerId = myProfile?.partner_id
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+            for (let i = 0; i < allTasks.length; i++) {
+                const t = allTasks[i]
+                if (t.is_completed) {
+                    if (t.assignee_id === user.id) {
+                        myCompleted++
+                        if (t.completed_at) {
+                            const d = days[new Date(t.completed_at).getDay()]
+                            dayMap[d] = (dayMap[d] || 0) + 1
+                        }
+                    } else if (partnerId && t.assignee_id === partnerId) {
+                        partnerCompleted++
+                    }
+                }
+            }
+
+            let bestDay: [string, number] | undefined
+            let maxCount = 0
+            for (const d in dayMap) {
+                if (dayMap[d] > maxCount) {
+                    maxCount = dayMap[d]
+                    bestDay = [d, maxCount]
+                }
+            }
 
             setReview({
                 myName: myProfile?.username || "You",
