@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
-import { detectLocationContext, stopWatchingLocation, type Location } from './geolocation.ts';
+import { detectLocationContext, stopWatchingLocation, saveLocationUpdate, type Location, type LocationContext } from './geolocation.ts';
 
 describe('Geolocation Context', () => {
     // Store original env
@@ -146,5 +146,90 @@ describe('stopWatchingLocation', () => {
         assert.doesNotThrow(() => {
             stopWatchingLocation(456);
         });
+    });
+});
+
+describe('saveLocationUpdate', () => {
+    let originalConsoleLog: any;
+    let originalConsoleError: any;
+
+    beforeEach(() => {
+        originalConsoleLog = console.log;
+        originalConsoleError = console.error;
+    });
+
+    afterEach(() => {
+        console.log = originalConsoleLog;
+        console.error = originalConsoleError;
+    });
+
+    it('should log the location update successfully', async () => {
+        const mockConsoleLog = Object.assign(
+            function(...args: any[]) { mockConsoleLog.calls.push(args); },
+            { calls: [] as any[][] }
+        );
+        console.log = mockConsoleLog;
+
+        const mockConsoleError = Object.assign(
+            function(...args: any[]) { mockConsoleError.calls.push(args); },
+            { calls: [] as any[][] }
+        );
+        console.error = mockConsoleError;
+
+        const location: Location = {
+            latitude: 10.0,
+            longitude: 20.0,
+            accuracy: 10,
+            timestamp: 1234567890
+        };
+
+        const context: LocationContext = {
+            isAtWork: true,
+            isAtHome: false,
+            isCommuting: false,
+            currentPlace: 'work'
+        };
+
+        await saveLocationUpdate('user-123', location, context);
+
+        assert.strictEqual(mockConsoleLog.calls.length, 1);
+        assert.strictEqual(mockConsoleLog.calls[0][0], 'Local static build: location update tracked locally.');
+        assert.deepStrictEqual(mockConsoleLog.calls[0][1], { userId: 'user-123', location, context });
+        assert.strictEqual(mockConsoleError.calls.length, 0);
+    });
+
+    it('should log an error if saving fails', async () => {
+        const testError = new Error('Simulated logging failure');
+        const mockConsoleLog = Object.assign(
+            function(...args: any[]) { throw testError; },
+            { calls: [] as any[][] }
+        );
+        console.log = mockConsoleLog;
+
+        const mockConsoleError = Object.assign(
+            function(...args: any[]) { mockConsoleError.calls.push(args); },
+            { calls: [] as any[][] }
+        );
+        console.error = mockConsoleError;
+
+        const location: Location = {
+            latitude: 10.0,
+            longitude: 20.0,
+            accuracy: 10,
+            timestamp: 1234567890
+        };
+
+        const context: LocationContext = {
+            isAtWork: true,
+            isAtHome: false,
+            isCommuting: false,
+            currentPlace: 'work'
+        };
+
+        await saveLocationUpdate('user-123', location, context);
+
+        assert.strictEqual(mockConsoleError.calls.length, 1);
+        assert.strictEqual(mockConsoleError.calls[0][0], 'Failed to save location:');
+        assert.strictEqual(mockConsoleError.calls[0][1], testError);
     });
 });
