@@ -77,6 +77,9 @@ export default function AnalyticsPage() {
                 } as DayStats & { start: number; end: number }
             })
 
+            const windowStart = (weekData[0] as DayStats & { start: number; end: number }).start
+            const windowEnd = (weekData[6] as DayStats & { start: number; end: number }).end
+
             for (let i = 0; i < allTasks.length; i++) {
                 const t = allTasks[i]
                 const isMyTask = t.assignee_id === user.id
@@ -86,12 +89,20 @@ export default function AnalyticsPage() {
                     totalAll++
                     if (t.created_at) {
                         const createdTime = new Date(t.created_at).getTime()
-                        for (let j = 0; j < 7; j++) {
-                            const day = weekData[j] as DayStats & { start: number; end: number }
-                            if (createdTime >= day.start && createdTime <= day.end) {
-                                day.total++
-                                if (t.is_completed) day.completed++
-                                break
+                        if (createdTime >= windowStart && createdTime <= windowEnd) {
+                            let j = Math.floor((createdTime - windowStart) / 86400000)
+                            if (j < 0) j = 0
+                            if (j > 6) j = 6
+
+                            if (createdTime < (weekData[j] as DayStats & { start: number; end: number }).start) j--
+                            else if (createdTime > (weekData[j] as DayStats & { start: number; end: number }).end) j++
+
+                            if (j >= 0 && j <= 6) {
+                                const day = weekData[j] as DayStats & { start: number; end: number }
+                                if (createdTime >= day.start && createdTime <= day.end) {
+                                    day.total++
+                                    if (t.is_completed) day.completed++
+                                }
                             }
                         }
                     }
