@@ -31,7 +31,7 @@ export default function Home() {
 
       let { data: currentProfile } = await supabase
         .from("profiles")
-        .select("*")
+        .select("*, partner:profiles!partner_id(id, theme, username, briefing_time, briefing_enabled, weekly_review_enabled)")
         .eq("id", user.id)
         .single()
 
@@ -45,29 +45,25 @@ export default function Home() {
         const oppositeRole = currentProfile.role === 'king' ? 'queen' : 'king'
         const { data: partnerProfile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, theme, username, briefing_time, briefing_enabled, weekly_review_enabled')
           .eq('role', oppositeRole)
           .single()
         if (partnerProfile) {
           await supabase.from('profiles').update({ partner_id: partnerProfile.id }).eq('id', user.id)
           currentProfile.partner_id = partnerProfile.id
+          currentProfile.partner = partnerProfile
         }
       }
       setProfile(currentProfile)
 
       let pTheme = "daylight"
-      if (currentProfile?.partner_id) {
-        const { data: partnerProfile } = await supabase
-          .from("profiles")
-          .select("theme, username, briefing_time, briefing_enabled, weekly_review_enabled")
-          .eq("id", currentProfile.partner_id)
-          .single()
-        if (partnerProfile?.theme) pTheme = partnerProfile.theme
-        if (partnerProfile?.username) setPartnerName(partnerProfile.username)
+      if (currentProfile?.partner) {
+        if (currentProfile.partner.theme) pTheme = currentProfile.partner.theme
+        if (currentProfile.partner.username) setPartnerName(currentProfile.partner.username)
       }
       setPartnerTheme(pTheme)
 
-      let tasksQuery = supabase.from("tasks").select("*")
+      let tasksQuery = supabase.from("tasks").select("*, partner:profiles!partner_id(id, theme, username, briefing_time, briefing_enabled, weekly_review_enabled)")
       if (currentProfile?.partner_id) {
         tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${currentProfile.partner_id},assignee_id.eq.${currentProfile.partner_id}`)
       } else {
