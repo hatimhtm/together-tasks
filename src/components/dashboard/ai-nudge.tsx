@@ -1,6 +1,5 @@
 "use client"
 
-import { Loader2 } from "lucide-react"
 import { useAiNudge } from "@/hooks/use-ai-nudge"
 import { motion } from "framer-motion"
 
