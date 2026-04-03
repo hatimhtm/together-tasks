@@ -2,7 +2,7 @@
 
 import { Task } from "@/types/task"
 import { motion, useMotionValue, useTransform } from "framer-motion"
-import { Pencil, Trash2, ChevronDown, ChevronUp } from "lucide-react"
+import { Trash2, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useState, useEffect, forwardRef } from "react"
