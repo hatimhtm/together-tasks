@@ -2,7 +2,6 @@
 
 import { TasksContainer } from "@/components/dashboard/tasks-container"
 import { AiNudge } from "@/components/dashboard/ai-nudge"
-import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-button"
 import { TasksTodayCounter } from "@/components/dashboard/tasks-today-counter"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
