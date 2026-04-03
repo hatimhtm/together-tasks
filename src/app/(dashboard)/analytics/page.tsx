@@ -56,7 +56,8 @@ export default function AnalyticsPage() {
             ])
 
             const allTasks = tasks || []
-            const weekAgoTime = subDays(new Date(), 7).getTime()
+            const weekAgoDate = subDays(new Date(), 7)
+            const weekAgoStr = weekAgoDate.toISOString()
 
             let totalCompletedAllTime = 0
             let completedThisWeek = 0
@@ -70,12 +71,15 @@ export default function AnalyticsPage() {
                 return {
                     date,
                     label: format(date, 'EEE'),
-                    start: startOfDay(date).getTime(),
-                    end: endOfDay(date).getTime(),
+                    startStr: startOfDay(date).toISOString(),
+                    endStr: endOfDay(date).toISOString(),
                     completed: 0,
                     total: 0
-                } as DayStats & { start: number; end: number }
+                } as DayStats & { startStr: string; endStr: string }
             })
+
+            const weekStartStr = (weekData[0] as DayStats & { startStr: string }).startStr
+            const weekEndStr = (weekData[6] as DayStats & { endStr: string }).endStr
 
             for (let i = 0; i < allTasks.length; i++) {
                 const t = allTasks[i]
@@ -85,13 +89,14 @@ export default function AnalyticsPage() {
                 if (isMyTask) {
                     totalAll++
                     if (t.created_at) {
-                        const createdTime = new Date(t.created_at).getTime()
-                        for (let j = 0; j < 7; j++) {
-                            const day = weekData[j] as DayStats & { start: number; end: number }
-                            if (createdTime >= day.start && createdTime <= day.end) {
-                                day.total++
-                                if (t.is_completed) day.completed++
-                                break
+                        if (t.created_at >= weekStartStr && t.created_at <= weekEndStr) {
+                            for (let j = 0; j < 7; j++) {
+                                const day = weekData[j] as DayStats & { startStr: string; endStr: string }
+                                if (t.created_at >= day.startStr && t.created_at <= day.endStr) {
+                                    day.total++
+                                    if (t.is_completed) day.completed++
+                                    break
+                                }
                             }
                         }
                     }
@@ -99,16 +104,18 @@ export default function AnalyticsPage() {
                     if (t.is_completed) {
                         totalCompletedAllTime++
                         if (t.completed_at) {
-                            const completedTime = new Date(t.completed_at).getTime()
-                            if (completedTime >= weekAgoTime) completedThisWeek++
-                            const h = new Date(t.completed_at).getHours()
-                            hourCounts[h] = (hourCounts[h] || 0) + 1
+                            if (t.completed_at >= weekAgoStr) completedThisWeek++
+                            if (t.completed_at.length >= 13) {
+                                const h = parseInt(t.completed_at.substring(11, 13), 10)
+                                if (!isNaN(h)) {
+                                    hourCounts[h] = (hourCounts[h] || 0) + 1
+                                }
+                            }
                         }
                     }
                 } else if (isPartnerTask) {
                     if (t.is_completed && t.completed_at) {
-                        const completedTime = new Date(t.completed_at).getTime()
-                        if (completedTime >= weekAgoTime) partnerCompletedThisWeek++
+                        if (t.completed_at >= weekAgoStr) partnerCompletedThisWeek++
                     }
                 }
             }
