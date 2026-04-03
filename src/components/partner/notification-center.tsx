@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
-import { Bell, Phone, MessageCircle, CheckCircle, X, Loader2 } from "lucide-react"
+import { Bell, Phone, MessageCircle, CheckCircle, X } from "lucide-react"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
