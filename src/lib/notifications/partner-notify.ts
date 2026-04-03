@@ -3,7 +3,7 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import { GoogleGenAI } from '@google/genai'
 
 // AI-generated message for when a partner completes a task you created for them
-async function generateCompletionMessage(taskTitle: string, partnerName: string): Promise<string> {
+export async function generateCompletionMessage(taskTitle: string, partnerName: string): Promise<string> {
     const fallbacks = [
         `Don't worry love, I got you! ✓ "${taskTitle}"`,
         `Done! I took care of "${taskTitle}" for you 💕`,
