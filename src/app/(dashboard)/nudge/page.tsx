@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useProfile } from "@/hooks/use-profile"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { format } from "date-fns"
@@ -19,26 +20,15 @@ interface Nudge {
 export default function NudgePage() {
     const supabase = createClient()
     const router = useRouter()
-    const [user, setUser] = useState<any>(null)
-    const [profile, setProfile] = useState<any>(null)
+    const { user, profile, loading: profileLoading } = useProfile()
     const [partner, setPartner] = useState<any>(null)
     const [nudges, setNudges] = useState<Nudge[]>([])
-    const [loading, setLoading] = useState(true)
+    const [loadingNudges, setLoadingNudges] = useState(true)
     const [sending, setSending] = useState(false)
 
     useEffect(() => {
-        async function loadData() {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) { router.push("/login"); return }
-            setUser(user)
-
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .single()
-
-            setProfile(profile)
+        async function loadPartnerAndNudges() {
+            if (!user || !profile) return
 
             if (profile?.partner_id) {
                 const { data: partnerProfile } = await supabase
@@ -63,10 +53,15 @@ export default function NudgePage() {
                 }
             }
 
-            setLoading(false)
+            setLoadingNudges(false)
         }
-        loadData()
-    }, [router, supabase])
+
+        if (!profileLoading) {
+            loadPartnerAndNudges()
+        }
+    }, [user, profile, profileLoading, supabase])
+
+    const loading = profileLoading || loadingNudges
 
     async function sendNudge(type: 'love' | 'sparkle' | 'mood', message: string) {
         if (!user || !partner) {
