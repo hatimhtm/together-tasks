@@ -212,7 +212,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                 <select
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                     value={task.priority}
-                                                    onChange={e => onUpdate({ priority: e.target.value as any })}
+                                                    onChange={e => onUpdate({ priority: e.target.value as Task["priority"] })}
                                                 >
                                                     <option value="low">Low</option>
                                                     <option value="medium">Medium</option>
@@ -297,7 +297,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                     <select
                                                         className="absolute inset-0 opacity-0 cursor-pointer w-full"
                                                         value={task.priority}
-                                                        onChange={e => onUpdate({ priority: e.target.value as any })}
+                                                        onChange={e => onUpdate({ priority: e.target.value as Task["priority"] })}
                                                     >
                                                         <option value="low">Low</option>
                                                         <option value="medium">Medium</option>
