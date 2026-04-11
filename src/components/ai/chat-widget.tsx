@@ -228,9 +228,7 @@ User says: "${textToSend}"`
                                     type="text"
                                     value={input}
                                     onChange={e => setInput(e.target.value)}
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                    // @ts-ignore
-                                    onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
+                                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') handleSend() }}
                                     disabled={loading}
                                 />
                                 <button 
