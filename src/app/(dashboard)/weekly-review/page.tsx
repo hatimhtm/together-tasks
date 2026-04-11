@@ -46,9 +46,12 @@ export default function WeeklyReviewPage() {
             const allTasks = weekTasks || []
             let myCompleted = 0
             let partnerCompleted = 0
-            const dayMap: Record<string, number> = {}
             const partnerId = myProfile?.partner_id
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+            let bestDayLabel = "—"
+            let maxCount = 0
+            const dayCounts = [0, 0, 0, 0, 0, 0, 0]
 
             for (let i = 0; i < allTasks.length; i++) {
                 const t = allTasks[i]
@@ -56,21 +59,16 @@ export default function WeeklyReviewPage() {
                     if (t.assignee_id === user.id) {
                         myCompleted++
                         if (t.completed_at) {
-                            const d = days[new Date(t.completed_at).getDay()]
-                            dayMap[d] = (dayMap[d] || 0) + 1
+                            const dayIndex = new Date(t.completed_at).getDay()
+                            const count = ++dayCounts[dayIndex]
+                            if (count > maxCount) {
+                                maxCount = count
+                                bestDayLabel = days[dayIndex]
+                            }
                         }
                     } else if (partnerId && t.assignee_id === partnerId) {
                         partnerCompleted++
                     }
-                }
-            }
-
-            let bestDay: [string, number] | undefined
-            let maxCount = 0
-            for (const d in dayMap) {
-                if (dayMap[d] > maxCount) {
-                    maxCount = dayMap[d]
-                    bestDay = [d, maxCount]
                 }
             }
 
@@ -81,7 +79,7 @@ export default function WeeklyReviewPage() {
                 partnerCompleted,
                 totalTogether: myCompleted + partnerCompleted,
                 streak: myProfile?.streak || 0,
-                bestDayLabel: bestDay?.[0] || "—",
+                bestDayLabel,
                 weekLabel: `${format(weekStart, 'MMM d')} – ${format(weekEnd, 'MMM d')}`,
             })
             setLoading(false)
