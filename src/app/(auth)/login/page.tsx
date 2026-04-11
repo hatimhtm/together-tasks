@@ -110,8 +110,8 @@ export default function LoginPage() {
                 router.refresh()
                 router.push("/")
             }
-        } catch (error: any) {
-            toast.error(error.message || "Something went wrong")
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Something went wrong")
         } finally {
             setLoading(false)
         }
