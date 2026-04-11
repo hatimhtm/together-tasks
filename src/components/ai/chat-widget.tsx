@@ -54,29 +54,12 @@ export function AIChatWidget({
         setLoading(true)
 
         try {
-            const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
-            if (!apiKey) {
-                setMessages(prev => [...prev, {
-                    role: "assistant",
-                    content: "Please configure your Gemini API key to use the chat assistant.",
-                    timestamp: new Date()
-                }])
-                return
-            }
-
-            const systemPrompt = `You are a warm, helpful AI assistant named Sage embedded in "Together Tasks" — a personal task app built for a couple.
-The user is ${userName || "there"} (${userRole || "partner"}).
-Personality:
-- Warm, supportive, like a trusted friend.
-- Help with tasks, productivity tips, or cute nudges for the partner.
-User says: "${textToSend}"`
-
             const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                `/api/chat`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+                    body: JSON.stringify({ userName, userRole, textToSend })
                 }
             )
             if (!res.ok) throw new Error(`API error ${res.status}`)
