@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
-import { detectLocationContext, stopWatchingLocation, type Location } from './geolocation.ts';
+import { detectLocationContext, stopWatchingLocation, watchLocation, type Location } from './geolocation';
 
 describe('Geolocation Context', () => {
     // Store original env
@@ -146,5 +146,126 @@ describe('stopWatchingLocation', () => {
         assert.doesNotThrow(() => {
             stopWatchingLocation(456);
         });
+    });
+});
+
+describe('watchLocation', () => {
+    let originalNavigator: any;
+
+    beforeEach(() => {
+        originalNavigator = global.navigator;
+    });
+
+    afterEach(() => {
+        if (originalNavigator === undefined) {
+            delete (global as any).navigator;
+        } else {
+            Object.defineProperty(global, 'navigator', {
+                value: originalNavigator,
+                writable: true,
+                configurable: true
+            });
+        }
+    });
+
+    it('should return null when geolocation is missing', () => {
+        Object.defineProperty(global, 'navigator', {
+            value: {},
+            writable: true,
+            configurable: true
+        });
+
+        const watchId = watchLocation(() => {});
+        assert.strictEqual(watchId, null);
+    });
+
+    it('should call watchPosition and invoke callback with location and context', () => {
+        const mockPosition = {
+            coords: {
+                latitude: 10.0,
+                longitude: 20.0,
+                accuracy: 10
+            },
+            timestamp: 1234567890
+        };
+
+        const mockWatchPosition = Object.assign(
+            function(successCb: Function, errorCb: Function, options: any) {
+                mockWatchPosition.calls.push({ successCb, errorCb, options });
+                successCb(mockPosition);
+                return 42;
+            },
+            { calls: [] as any[] }
+        );
+
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    watchPosition: mockWatchPosition
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        const callback = Object.assign(
+            function(loc: any, ctx: any) { callback.calls.push({ loc, ctx }); },
+            { calls: [] as any[] }
+        );
+
+        // Mock env vars for detectLocationContext
+        process.env.NEXT_PUBLIC_WORK_LAT = '10.0';
+        process.env.NEXT_PUBLIC_WORK_LNG = '20.0';
+        process.env.NEXT_PUBLIC_WORK_RADIUS = '200';
+
+        const watchId = watchLocation(callback);
+
+        assert.strictEqual(watchId, 42);
+        assert.strictEqual(mockWatchPosition.calls.length, 1);
+        assert.strictEqual(callback.calls.length, 1);
+
+        const { loc, ctx } = callback.calls[0];
+        assert.strictEqual(loc.latitude, 10.0);
+        assert.strictEqual(loc.longitude, 20.0);
+        assert.strictEqual(loc.accuracy, 10);
+        assert.strictEqual(loc.timestamp, 1234567890);
+
+        assert.strictEqual(ctx.isAtWork, true);
+        assert.strictEqual(ctx.currentPlace, 'work');
+    });
+
+    it('should handle location watch errors', () => {
+        const mockError = new Error('Test watch error');
+        const mockWatchPosition = Object.assign(
+            function(successCb: Function, errorCb: Function, options: any) {
+                errorCb(mockError);
+                return 43;
+            },
+            { calls: [] as any[] }
+        );
+
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    watchPosition: mockWatchPosition
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        const originalConsoleError = console.error;
+        const consoleErrors: any[] = [];
+        console.error = (...args) => consoleErrors.push(args);
+
+        try {
+            const watchId = watchLocation(() => {});
+            assert.strictEqual(watchId, 43);
+            assert.strictEqual(consoleErrors.length, 1);
+            assert.strictEqual(consoleErrors[0][0], 'Location watch error:');
+            assert.strictEqual(consoleErrors[0][1], mockError);
+        } finally {
+            console.error = originalConsoleError;
+        }
     });
 });
