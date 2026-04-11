@@ -1,0 +1,10 @@
+🎯 **What:** Removed the unused `Loader2` import from `lucide-react` in `src/components/dashboard/ai-nudge.tsx`.
+
+💡 **Why:** The `Loader2` component was imported but not used anywhere in the file. Removing unused imports improves code readability and maintainability, and slightly reduces the bundle size.
+
+✅ **Verification:**
+- Ran `bun install` to ensure all dependencies are correct.
+- Ran `npm run test` and confirmed all 37 tests passed.
+- (Lint is failing globally in the repo due to an ESLint configuration issue, but the code change itself is completely safe and trivial).
+
+✨ **Result:** A cleaner file without any dead code!
