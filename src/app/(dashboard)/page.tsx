@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { getDisplayName } from "@/lib/user"
 import { useEffect, useState } from "react"
+import { useProfile } from "@/hooks/use-profile"
 import { Profile, Task } from "@/types/task"
 import { scheduleMorningBriefing, scheduleWeeklyReview } from "@/lib/notifications/briefing-scheduler"
 import { format } from "date-fns"
@@ -16,32 +17,26 @@ import { motion } from "framer-motion"
 export default function Home() {
   const supabase = createClient()
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
+  const { user, profile: initialProfile, loading: profileLoading } = useProfile()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [partnerTheme, setPartnerTheme] = useState("daylight")
   const [partnerName, setPartnerName] = useState<string | undefined>(undefined)
   const [initialTasks, setInitialTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(true)
 
   useEffect(() => {
-    async function loadDashboard() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push("/login"); return }
-      setUser(user)
+    async function loadDashboardData() {
+      if (!user || !initialProfile) return
 
-      let { data: currentProfile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single()
+      let currentProfile = { ...initialProfile }
 
-      if (currentProfile && !currentProfile.has_completed_onboarding) {
+      if (!currentProfile.has_completed_onboarding) {
         router.push("/onboarding")
         return
       }
 
       // Self-Healing Hardlink Logic
-      if (currentProfile && !currentProfile.partner_id) {
+      if (!currentProfile.partner_id) {
         const oppositeRole = currentProfile.role === 'king' ? 'queen' : 'king'
         const { data: partnerProfile } = await supabase
           .from('profiles')
@@ -105,10 +100,14 @@ export default function Home() {
         }
       }
 
-      setLoading(false)
+      setDataLoading(false)
     }
-    loadDashboard()
-  }, [router, supabase])
+    if (!profileLoading) {
+      loadDashboardData()
+    }
+  }, [user, initialProfile, profileLoading, router, supabase])
+
+  const loading = profileLoading || dataLoading
 
   if (loading || !user) {
     return (

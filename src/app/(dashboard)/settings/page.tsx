@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useProfile } from "@/hooks/use-profile"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { ThemeSelector } from "@/components/settings/theme-selector"
@@ -12,30 +13,15 @@ const APP_VERSION = "2.4.0"
 export default function SettingsPage() {
     const supabase = createClient()
     const router = useRouter()
-    const [profile, setProfile] = useState<any>(null)
-    const [user, setUser] = useState<any>(null)
-    const [loading, setLoading] = useState(true)
+    const { user, profile, loading } = useProfile()
     const [briefingEnabled, setBriefingEnabled] = useState(true)
     const [savingNotifs, setSavingNotifs] = useState(false)
 
     useEffect(() => {
-        async function loadProfile() {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) { router.push("/login"); return }
-            setUser(user)
-
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .single()
-
-            setProfile(profile)
-            if (profile?.briefing_enabled != null) setBriefingEnabled(profile.briefing_enabled)
-            setLoading(false)
+        if (profile?.briefing_enabled != null) {
+            setBriefingEnabled(profile.briefing_enabled)
         }
-        loadProfile()
-    }, [router, supabase])
+    }, [profile])
 
     async function handleSignOut() {
         await supabase.auth.signOut()

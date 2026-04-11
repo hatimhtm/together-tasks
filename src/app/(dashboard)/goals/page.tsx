@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Sparkles, Save, Heart, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useProfile } from "@/hooks/use-profile"
 import { toast } from "sonner"
 import { Profile } from "@/types/task"
 
@@ -13,33 +14,15 @@ import { Profile } from "@/types/task"
 export default function GoalsPage() {
     const supabase = createClient()
     const router = useRouter()
-    const [profile, setProfile] = useState<Profile | null>(null)
-    const [user, setUser] = useState<any>(null)
-    const [loading, setLoading] = useState(true)
+    const { user, profile, loading } = useProfile()
     const [saving, setSaving] = useState(false)
     const [goals, setGoals] = useState("")
 
     useEffect(() => {
-        async function loadProfile() {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) {
-                router.push("/login")
-                return
-            }
-            setUser(user)
-
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .single()
-
-            setProfile(profile)
-            if (profile?.goals) setGoals(profile.goals)
-            setLoading(false)
+        if (profile?.goals) {
+            setGoals(profile.goals)
         }
-        loadProfile()
-    }, [router, supabase])
+    }, [profile])
 
     async function handleSaveGoals(e: React.FormEvent) {
         e.preventDefault()

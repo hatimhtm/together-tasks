@@ -1,0 +1,6 @@
+🧹 Extract Profile Loading Logic into useProfile hook
+
+🎯 What: Extracted repetitive user and profile fetching logic from `nudge`, `calendar`, `settings`, `goals`, and `page` (Home) components into a shared `useProfile` custom hook.
+💡 Why: Centralizes profile state logic, significantly reduces code duplication, and improves maintainability across dashboard components.
+✅ Verification: Ran full npm run test and bun run tsc --noEmit to ensure type safety and functionality are preserved. All 37 tests passed.
+✨ Result: Cleaner, more consistent components that depend on `useProfile` rather than redundant initialization boilerplate.

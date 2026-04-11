@@ -6,24 +6,19 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { format, isSameDay } from "date-fns"
 import { Calendar as CalendarIcon, Clock, CheckCircle2, Circle } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useProfile } from "@/hooks/use-profile"
 import { Task } from "@/types/task"
 
 export default function CalendarPage() {
     const supabase = createClient()
     const router = useRouter()
+    const { user, profile, loading: profileLoading } = useProfile()
     const [tasks, setTasks] = useState<Task[]>([])
-    const [loading, setLoading] = useState(true)
+    const [tasksLoading, setTasksLoading] = useState(true)
 
     useEffect(() => {
         async function loadCalendar() {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) {
-                router.push("/login")
-                return
-            }
-
-            // Fetch profile
-            const { data: profile } = await supabase.from("profiles").select("partner_id").eq("id", user.id).single()
+            if (!user) return
 
             // Fetch all tasks with due dates
             let query = supabase.from("tasks").select("*").not("due_date", "is", null).order("due_date", { ascending: true })
@@ -36,10 +31,15 @@ export default function CalendarPage() {
 
             const { data: fetchTasks } = await query
             if (fetchTasks) setTasks(fetchTasks)
-            setLoading(false)
+            setTasksLoading(false)
         }
-        loadCalendar()
-    }, [router, supabase])
+
+        if (!profileLoading) {
+            loadCalendar()
+        }
+    }, [profile, user, profileLoading, supabase])
+
+    const loading = profileLoading || tasksLoading
 
     if (loading) {
         return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading journey...</div>

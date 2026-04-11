@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useProfile } from "@/hooks/use-profile"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { format } from "date-fns"
@@ -19,28 +20,20 @@ interface Nudge {
 export default function NudgePage() {
     const supabase = createClient()
     const router = useRouter()
-    const [user, setUser] = useState<any>(null)
-    const [profile, setProfile] = useState<any>(null)
+    const { user, profile, loading: profileLoading } = useProfile()
     const [partner, setPartner] = useState<any>(null)
     const [nudges, setNudges] = useState<Nudge[]>([])
-    const [loading, setLoading] = useState(true)
+    const [loadingData, setLoadingData] = useState(true)
     const [sending, setSending] = useState(false)
 
     useEffect(() => {
-        async function loadData() {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) { router.push("/login"); return }
-            setUser(user)
+        async function loadAdditionalData() {
+            if (!profile || !user) {
+                setLoadingData(false)
+                return
+            }
 
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .single()
-
-            setProfile(profile)
-
-            if (profile?.partner_id) {
+            if (profile.partner_id) {
                 const { data: partnerProfile } = await supabase
                     .from("profiles")
                     .select("*")
@@ -62,11 +55,15 @@ export default function NudgePage() {
                     // Ignore if nudges table doesn't exist yet
                 }
             }
-
-            setLoading(false)
+            setLoadingData(false)
         }
-        loadData()
-    }, [router, supabase])
+
+        if (!profileLoading) {
+            loadAdditionalData()
+        }
+    }, [profile, user, profileLoading, supabase])
+
+    const loading = profileLoading || loadingData
 
     async function sendNudge(type: 'love' | 'sparkle' | 'mood', message: string) {
         if (!user || !partner) {
@@ -216,7 +213,7 @@ export default function NudgePage() {
                 
                 <div className="space-y-3">
                     {displayNudges.map((nudge, i) => {
-                        const isMine = nudge.sender_id === user.id
+                        const isMine = user && nudge.sender_id === user.id
                         
                         let icon = "favorite"
                         let colorClass = "text-secondary"

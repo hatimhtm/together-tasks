@@ -30,4 +30,7 @@ export interface Profile {
     theme?: string
     avatar_url?: string | null
     goals?: string | null
+    briefing_enabled?: boolean
+    briefing_time?: string
+    weekly_review_enabled?: boolean
 }
