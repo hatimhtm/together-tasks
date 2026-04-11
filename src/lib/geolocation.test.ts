@@ -148,3 +148,108 @@ describe('stopWatchingLocation', () => {
         });
     });
 });
+
+describe('getCurrentLocation', () => {
+    let originalNavigator: any;
+    let originalConsoleWarn: typeof console.warn;
+    let originalConsoleError: typeof console.error;
+    let warnCalls: any[][] = [];
+    let errorCalls: any[][] = [];
+
+    beforeEach(() => {
+        originalNavigator = global.navigator;
+        originalConsoleWarn = console.warn;
+        originalConsoleError = console.error;
+
+        warnCalls = [];
+        console.warn = (...args) => { warnCalls.push(args); };
+
+        errorCalls = [];
+        console.error = (...args) => { errorCalls.push(args); };
+    });
+
+    afterEach(() => {
+        if (originalNavigator === undefined) {
+            delete (global as any).navigator;
+        } else {
+            Object.defineProperty(global, 'navigator', {
+                value: originalNavigator,
+                writable: true,
+                configurable: true
+            });
+        }
+        console.warn = originalConsoleWarn;
+        console.error = originalConsoleError;
+    });
+
+    it('should return null and warn if geolocation is not supported', async () => {
+        Object.defineProperty(global, 'navigator', {
+            value: {},
+            writable: true,
+            configurable: true
+        });
+
+        const { getCurrentLocation } = await import('./geolocation.ts');
+        const location = await getCurrentLocation();
+
+        assert.strictEqual(location, null);
+        assert.strictEqual(warnCalls.length, 1);
+        assert.strictEqual(warnCalls[0][0], 'Geolocation not supported');
+    });
+
+    it('should resolve with Location object on success', async () => {
+        const dummyPosition = {
+            coords: {
+                latitude: 12.34,
+                longitude: 56.78,
+                accuracy: 5
+            },
+            timestamp: 1234567890
+        };
+
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    getCurrentPosition: (successCallback: any) => {
+                        successCallback(dummyPosition);
+                    }
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        const { getCurrentLocation } = await import('./geolocation.ts');
+        const location = await getCurrentLocation();
+
+        assert.notStrictEqual(location, null);
+        assert.strictEqual(location?.latitude, 12.34);
+        assert.strictEqual(location?.longitude, 56.78);
+        assert.strictEqual(location?.accuracy, 5);
+        assert.strictEqual(location?.timestamp, 1234567890);
+    });
+
+    it('should resolve with null and error log on failure', async () => {
+        const dummyError = new Error('Permission denied');
+
+        Object.defineProperty(global, 'navigator', {
+            value: {
+                geolocation: {
+                    getCurrentPosition: (successCallback: any, errorCallback: any) => {
+                        errorCallback(dummyError);
+                    }
+                }
+            },
+            writable: true,
+            configurable: true
+        });
+
+        const { getCurrentLocation } = await import('./geolocation.ts');
+        const location = await getCurrentLocation();
+
+        assert.strictEqual(location, null);
+        assert.strictEqual(errorCalls.length, 1);
+        assert.strictEqual(errorCalls[0][0], 'Geolocation error:');
+        assert.strictEqual(errorCalls[0][1], dummyError);
+    });
+});
