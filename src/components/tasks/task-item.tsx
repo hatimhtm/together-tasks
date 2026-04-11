@@ -23,6 +23,9 @@ interface TaskItemProps {
     onUpdate: (updates: Partial<Task>) => void
 }
 
+
+const HIDDEN_SELECT_CLASSES = "absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+
 const getPriorityBadgeStyles = (priority: string) => {
     switch (priority) {
         case "urgent": return "text-error bg-error/10"
@@ -210,7 +213,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                     {task.priority}
                                                 </span>
                                                 <select
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    className={HIDDEN_SELECT_CLASSES}
                                                     value={task.priority}
                                                     onChange={e => onUpdate({ priority: e.target.value as any })}
                                                 >
@@ -295,7 +298,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                     )} />
                                                     <span className="text-[11px] font-label font-bold text-on-surface uppercase tracking-wider">{task.priority} Prio</span>
                                                     <select
-                                                        className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                                                        className={HIDDEN_SELECT_CLASSES}
                                                         value={task.priority}
                                                         onChange={e => onUpdate({ priority: e.target.value as any })}
                                                     >
