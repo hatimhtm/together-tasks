@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 interface Message {
     role: "user" | "assistant"
