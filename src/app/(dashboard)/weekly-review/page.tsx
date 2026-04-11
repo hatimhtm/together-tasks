@@ -44,35 +44,31 @@ export default function WeeklyReviewPage() {
             const { data: weekTasks } = await tasksQuery
 
             const allTasks = weekTasks || []
-            let myCompleted = 0
-            let partnerCompleted = 0
-            const dayMap: Record<string, number> = {}
             const partnerId = myProfile?.partner_id
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-            for (let i = 0; i < allTasks.length; i++) {
-                const t = allTasks[i]
-                if (t.is_completed) {
-                    if (t.assignee_id === user.id) {
-                        myCompleted++
-                        if (t.completed_at) {
-                            const d = days[new Date(t.completed_at).getDay()]
-                            dayMap[d] = (dayMap[d] || 0) + 1
+            const { myCompleted, partnerCompleted, bestDayLabel } = allTasks.reduce(
+                (acc: any, t: any) => {
+                    if (t.is_completed) {
+                        if (t.assignee_id === user.id) {
+                            acc.myCompleted++
+                            if (t.completed_at) {
+                                const d = days[new Date(t.completed_at).getDay()]
+                                const count = (acc.dayMap[d] || 0) + 1
+                                acc.dayMap[d] = count
+                                if (count > acc.maxCount) {
+                                    acc.maxCount = count
+                                    acc.bestDayLabel = d
+                                }
+                            }
+                        } else if (partnerId && t.assignee_id === partnerId) {
+                            acc.partnerCompleted++
                         }
-                    } else if (partnerId && t.assignee_id === partnerId) {
-                        partnerCompleted++
                     }
-                }
-            }
-
-            let bestDay: [string, number] | undefined
-            let maxCount = 0
-            for (const d in dayMap) {
-                if (dayMap[d] > maxCount) {
-                    maxCount = dayMap[d]
-                    bestDay = [d, maxCount]
-                }
-            }
+                    return acc
+                },
+                { myCompleted: 0, partnerCompleted: 0, dayMap: {} as Record<string, number>, maxCount: 0, bestDayLabel: "—" }
+            )
 
             setReview({
                 myName: myProfile?.username || "You",
@@ -81,7 +77,7 @@ export default function WeeklyReviewPage() {
                 partnerCompleted,
                 totalTogether: myCompleted + partnerCompleted,
                 streak: myProfile?.streak || 0,
-                bestDayLabel: bestDay?.[0] || "—",
+                bestDayLabel,
                 weekLabel: `${format(weekStart, 'MMM d')} – ${format(weekEnd, 'MMM d')}`,
             })
             setLoading(false)
