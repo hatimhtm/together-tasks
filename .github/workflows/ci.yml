@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Stub env so the Next build doesn't choke on missing config in CI.
+  NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: stub
+  SUPABASE_SERVICE_ROLE_KEY: stub
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  GEMINI_API_KEY: stub
+  NEXT_PUBLIC_KING_EMAIL: king@example.com
+  NEXT_PUBLIC_QUEEN_EMAIL: queen@example.com
+
+jobs:
+  test:
+    name: Test + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Lint (non-blocking — ignoreDuringBuilds=true in next.config)
+        run: npx eslint . || true
+
+      - name: Build
+        run: npm run build
+
+      - name: Confirm artifacts
+        run: |
+          test -d .next
+          echo "Build artifact size: $(du -sh .next | cut -f1)"

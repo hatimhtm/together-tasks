@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="Together Tasks">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#FFFDF5" stroke-width="0.5" stroke-opacity="0.06"/>
+    </pattern>
+    <linearGradient id="r" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#FF6B9D"/>
+      <stop offset="1" stop-color="#FFB67D"/>
+    </linearGradient>
+    <style>
+      .heading { font-family: 'Helvetica Neue', 'Arial Black', Helvetica, Arial, sans-serif; font-weight: 900; }
+      .mono    { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, 'Courier New', monospace; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="400" fill="#1A1A1A"/>
+  <rect width="1280" height="400" fill="url(#grid)"/>
+
+  <rect x="0" y="0" width="1280" height="36" fill="#FF6B9D"/>
+  <line x1="0" y1="36" x2="1280" y2="36" stroke="#FFFDF5" stroke-width="3"/>
+  <text class="mono" x="640" y="24" text-anchor="middle" font-size="12" fill="#FFFDF5" letter-spacing="5">NEXT.JS 15 · SUPABASE · GEMINI 2.5 · CAPACITOR · PWA · REALTIME · WEB PUSH</text>
+
+  <text class="mono" x="60" y="100" font-size="13" fill="#FFFDF5" letter-spacing="6">COUPLE'S TASK OS / AI-NATIVE / TWO-SEAT CINEMA / V2 OVERHAUL</text>
+
+  <text class="heading" x="60" y="250" font-size="120" fill="#FFFDF5" letter-spacing="-4">TOGETHER<tspan fill="url(#r)">.</tspan></text>
+  <text class="heading" x="60" y="320" font-size="56" fill="#FFFDF5" letter-spacing="-2">TASKS</text>
+
+  <text class="mono" x="60" y="378" font-size="13" fill="#FFFDF5" letter-spacing="4">/// TASKS · ROUTINES · NUDGES · ANALYTICS · VOICE INPUT · GAMIFIED ///</text>
+
+  <rect x="1080" y="80" width="140" height="140" fill="#CCFF00" stroke="#FFFDF5" stroke-width="6"/>
+  <text class="mono" x="1150" y="128" text-anchor="middle" font-size="13" fill="#1A1A1A" letter-spacing="2">FOR</text>
+  <text class="mono" x="1150" y="148" text-anchor="middle" font-size="13" fill="#1A1A1A" letter-spacing="2">TWO</text>
+  <text class="mono" x="1150" y="178" text-anchor="middle" font-size="20" fill="#FF6B9D" letter-spacing="2">♥</text>
+</svg>

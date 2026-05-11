@@ -1,24 +1,17 @@
 import type { Database } from "../types/database.types"
+import { KING_LABEL, QUEEN_LABEL, KING_HANDLES } from "./constants"
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 export function getDisplayName(profile: any): string {
-  if (!profile) return 'Love'
+    if (!profile) return 'Love'
 
-  if (profile.role === 'king') {
-    return 'King Hatim'
-  }
+    if (profile.role === 'king')  return KING_LABEL
+    if (profile.role === 'queen') return QUEEN_LABEL
 
-  if (profile.role === 'queen') {
-    return 'Queen Pookie'
-  }
+    if (profile.username && KING_HANDLES.some(h => profile.username?.includes(h))) {
+        return 'Love'
+    }
 
-  if (
-    profile.username?.includes('hatimhtm2003') ||
-    profile.username?.includes('.official')
-  ) {
-    return 'Love'
-  }
-
-  return profile.username || 'Love'
+    return profile.username || 'Love'
 }

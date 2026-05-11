@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { motion, AnimatePresence } from "framer-motion"
+import { VoiceButton } from "@/components/tasks/voice-button"
 
 export function QuickAdd({
     onTaskCreated,
@@ -206,6 +207,15 @@ export function QuickAdd({
                     rows={1}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
+                />
+                <VoiceButton
+                    disabled={loading}
+                    onInterim={(text) => setInput(text)}
+                    onTranscript={(text) => {
+                        // Final transcript: drop it into the box for the user to
+                        // confirm + edit. They press Enter / Send to fire addTask().
+                        setInput(text)
+                    }}
                 />
                 <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-xl p-0 shadow-sm bg-primary text-primary-foreground">
                     {loading ? (

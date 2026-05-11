@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Heart, Crown } from "lucide-react"
+import { QUEEN_EMAIL } from "@/lib/constants"
 
 // Custom slider component to allow the "overflow" effect
 function LoveSlider({ value, onChange }: { value: number, onChange: (val: number) => void }) {
@@ -57,7 +58,7 @@ export default function LoveVerificationPage() {
     useEffect(() => {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
-            if (!user || user.email !== 'queen@example.com') {
+            if (!user || !QUEEN_EMAIL || user.email !== QUEEN_EMAIL) {
                 toast.error("You are not the Queen! Be gone!")
                 router.push("/")
                 return

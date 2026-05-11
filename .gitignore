@@ -26,5 +26,13 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# UI Prototypes
-"Together Tasks stitch/"
+# UI prototypes / design exports (removed in v2 cleanup)
+Together Tasks stitch/
+*.iml
+
+# Bun (project uses npm)
+bun.lock
+
+# IDE
+.vscode/
+.idea/

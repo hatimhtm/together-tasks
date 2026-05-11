@@ -13,6 +13,7 @@ export function BottomNav() {
 
     const tabs = [
         { name: "Home", href: "/", icon: "home" },
+        { name: "Routines", href: "/routines", icon: "repeat" },
         { name: "Nudge", href: "/nudge", icon: "favorite" },
         { name: "Stats", href: "/analytics", icon: "insights" },
         { name: "Settings", href: "/settings", icon: "settings" },

@@ -15,7 +15,7 @@ export async function sendWebPush(
     }
 
     webPushLib.setVapidDetails(
-        'mailto:king@example.com',
+        process.env.VAPID_CONTACT || 'mailto:admin@example.com',
         process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
         process.env.VAPID_PRIVATE_KEY
     )

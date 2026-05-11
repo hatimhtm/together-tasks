@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Crown, Sparkles, Scroll, ArrowRight, Check, Clock, User } from "lucide-react"
+import { QUEEN_EMAIL } from "@/lib/constants"
 
 const steps = [
     { id: "theme", title: "Royal Aesthetic", icon: Crown },
@@ -82,8 +83,8 @@ export default function OnboardingPage() {
 
                 toast.success("Welcome to your Kingdom!")
 
-                // Check user email for redirection
-                if (user.email === 'queen@example.com') {
+                // Queen routes through the love-verification gate; everyone else to the dashboard.
+                if (QUEEN_EMAIL && user.email === QUEEN_EMAIL) {
                     router.push("/love-verification")
                 } else {
                     router.push("/")

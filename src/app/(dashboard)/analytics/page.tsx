@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { format, subDays, startOfDay, endOfDay, isSameDay } from "date-fns"
+import { CoupleDonut } from "@/components/analytics/couple-donut"
+import { WeekdayHeatmap } from "@/components/analytics/weekday-heatmap"
+import { FairnessBar } from "@/components/analytics/fairness-bar"
 
 interface DayStats {
     date: Date
@@ -14,14 +17,21 @@ interface DayStats {
     total: number
 }
 
+interface HeatmapCell {
+    date: Date
+    count: number
+}
+
 interface Analytics {
     totalCompletedAllTime: number
     completedThisWeek: number
     partnerCompletedThisWeek: number
+    partnerCompletedAllTime: number
     completionRate: number
     streak: number
     bestDay: { label: string; count: number } | null
     weekData: DayStats[]
+    heatmap: HeatmapCell[]
     bestHour: number | null
     myName: string
     partnerName: string
@@ -61,8 +71,13 @@ export default function AnalyticsPage() {
             let totalCompletedAllTime = 0
             let completedThisWeek = 0
             let partnerCompletedThisWeek = 0
+            let partnerCompletedAllTime = 0
             let totalAll = 0
             const hourCounts: Record<number, number> = {}
+
+            // 12-week heatmap data — combined couple completions per day.
+            const heatmapStart = subDays(new Date(), 12 * 7).getTime()
+            const heatmapBuckets: Record<string, number> = {}
 
             const now = new Date()
             const weekData: DayStats[] = Array.from({ length: 7 }, (_, i) => {
@@ -107,11 +122,26 @@ export default function AnalyticsPage() {
                     }
                 } else if (isPartnerTask) {
                     if (t.is_completed && t.completed_at) {
+                        partnerCompletedAllTime++
                         const completedTime = new Date(t.completed_at).getTime()
                         if (completedTime >= weekAgoTime) partnerCompletedThisWeek++
                     }
                 }
+
+                // Heatmap: count couple-wide completions per day for the last 12 weeks.
+                if (t.is_completed && t.completed_at) {
+                    const completedTime = new Date(t.completed_at).getTime()
+                    if (completedTime >= heatmapStart) {
+                        const key = format(new Date(t.completed_at), 'yyyy-MM-dd')
+                        heatmapBuckets[key] = (heatmapBuckets[key] || 0) + 1
+                    }
+                }
             }
+
+            const heatmap: HeatmapCell[] = Object.entries(heatmapBuckets).map(([k, count]) => ({
+                date: new Date(k + 'T00:00:00'),
+                count,
+            }))
 
             const bestHour = Object.keys(hourCounts).length > 0
                 ? parseInt(Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0][0])
@@ -128,10 +158,12 @@ export default function AnalyticsPage() {
                 totalCompletedAllTime,
                 completedThisWeek,
                 partnerCompletedThisWeek,
+                partnerCompletedAllTime,
                 completionRate: rate,
                 streak: profile?.streak || 0,
                 bestDay: bestDay?.count ? bestDay : null,
                 weekData,
+                heatmap,
                 bestHour,
                 myName: profile?.username || "You",
                 partnerName: partnerRes?.data?.username || "Partner",
@@ -308,6 +340,30 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* ─────── v2 Couple Insights ─────── */}
+            <section className="space-y-4 pt-2">
+                <h3 className="font-headline font-bold text-xl px-2 text-on-surface">Couple Insights</h3>
+
+                <CoupleDonut
+                    me={analytics.totalCompletedAllTime}
+                    partner={analytics.partnerCompletedAllTime}
+                    myLabel={analytics.myName}
+                    partnerLabel={analytics.partnerName}
+                    title="Lifetime completions"
+                />
+
+                <FairnessBar
+                    me={analytics.completedThisWeek}
+                    partner={analytics.partnerCompletedThisWeek}
+                    myLabel={analytics.myName}
+                    partnerLabel={analytics.partnerName}
+                    title="This week's split"
+                    period={`Last 7 days · ${analytics.completedThisWeek + analytics.partnerCompletedThisWeek} tasks`}
+                />
+
+                <WeekdayHeatmap cells={analytics.heatmap} weeks={12} title="Couple activity · last 12 weeks" />
+            </section>
 
             {/* Romantic Milestones */}
             <section className="space-y-4 pt-2">

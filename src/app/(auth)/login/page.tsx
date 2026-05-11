@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion"
-import { KING_EMAIL, QUEEN_EMAIL } from "@/lib/constants"
+import { KING_EMAIL, QUEEN_EMAIL, QUEEN_LABEL } from "@/lib/constants"
 import { triggerHaptic, triggerHapticSuccess } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
 import { cn } from "@/lib/utils"
@@ -145,7 +145,7 @@ export default function LoginPage() {
                         {isVerified && showForm ? (
                             isSignUp ? "Prove your identity to start" : "Welcome back, my love."
                         ) : (
-                            <>Prove your love, <span className="text-secondary font-semibold italic">Enarcylyn!</span></>
+                            <>Prove your love, <span className="text-secondary font-semibold italic">{QUEEN_LABEL}!</span></>
                         )}
                     </p>
                 </motion.header>
