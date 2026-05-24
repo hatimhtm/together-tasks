@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Mic, MicOff } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 type SpeechAPI = typeof window extends { SpeechRecognition: infer T } ? T : any
@@ -102,33 +101,16 @@ export function VoiceButton({ onTranscript, onInterim, disabled }: Props) {
             disabled={disabled}
             onClick={listening ? stop : start}
             className={cn(
-                "relative h-10 w-10 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+                "h-11 w-11 shrink-0 rounded-full flex items-center justify-center transition-colors active:scale-[0.98]",
                 listening
-                    ? "bg-error text-on-error shadow-[0_0_0_4px_color-mix(in_srgb,var(--error,#ef4444)_15%,transparent)]"
-                    : "bg-muted/40 text-on-surface hover:bg-muted/60",
+                    ? "bg-error/10 text-error border border-error/40"
+                    : "bg-surface-container-high text-on-surface border border-outline-variant/60 hover:bg-surface-container-highest",
                 disabled && "opacity-50 pointer-events-none",
             )}
             title={listening ? "Stop listening" : "Voice → task"}
             aria-label={listening ? "Stop voice capture" : "Start voice capture"}
         >
-            <AnimatePresence mode="wait">
-                {listening ? (
-                    <motion.span key="on" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.6, opacity: 0 }}>
-                        <MicOff className="h-4 w-4" />
-                    </motion.span>
-                ) : (
-                    <motion.span key="off" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.6, opacity: 0 }}>
-                        <Mic className="h-4 w-4" />
-                    </motion.span>
-                )}
-            </AnimatePresence>
-            {listening && (
-                <motion.span
-                    className="absolute inset-0 rounded-xl border-2 border-error"
-                    animate={{ opacity: [0.4, 1, 0.4] }}
-                    transition={{ duration: 1.4, repeat: Infinity }}
-                />
-            )}
+            {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
         </button>
     )
 }

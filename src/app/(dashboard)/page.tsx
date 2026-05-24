@@ -11,7 +11,6 @@ import { useEffect, useState } from "react"
 import { Profile, Task } from "@/types/task"
 import { scheduleMorningBriefing, scheduleWeeklyReview } from "@/lib/notifications/briefing-scheduler"
 import { format } from "date-fns"
-import { motion } from "framer-motion"
 
 export default function Home() {
   const supabase = createClient()
@@ -108,32 +107,29 @@ export default function Home() {
 
   if (loading || !user) {
     return (
-      <div className="space-y-8 pb-10">
+      <div className="space-y-6 lg:space-y-8 pb-10 animate-in fade-in duration-200">
         {/* Greeting skeleton */}
         <div className="space-y-3">
-          <div className="h-3.5 w-36 bg-muted/40 rounded-full animate-pulse" />
-          <div className="h-10 w-72 bg-muted/40 rounded-xl animate-pulse" />
-          <div className="h-4 w-52 bg-muted/30 rounded-lg animate-pulse" />
+          <div className="h-3.5 w-36 rounded-full bg-surface-container-high animate-pulse" />
+          <div className="h-9 w-72 rounded-xl bg-surface-container-high animate-pulse" />
         </div>
-        {/* Task container skeleton */}
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-[350px] space-y-4">
-            <div className="h-32 rounded-2xl bg-card border border-border/40 animate-pulse" />
-            <div className="h-12 rounded-xl bg-muted/30 animate-pulse" />
-            <div className="h-28 rounded-2xl bg-card border border-border/40 animate-pulse" />
+        {/* Two-column skeleton */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="w-full lg:w-[380px] shrink-0 space-y-4">
+            <div className="h-32 rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse" />
+            <div className="h-[88px] rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse" />
           </div>
-          <div className="flex-1 space-y-3">
-            {[1, 2, 3].map((i) => (
+          <div className="flex-1 grid gap-4 grid-cols-1 xl:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="h-20 rounded-2xl bg-card border border-border/40 animate-pulse"
-                style={{ opacity: 1 - (i - 1) * 0.25 }}
+                className="h-24 rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse"
               >
                 <div className="flex items-center gap-4 h-full px-5">
-                  <div className="w-5 h-5 rounded-md bg-muted/40" />
+                  <div className="w-6 h-6 rounded-full bg-surface-container-high" />
                   <div className="flex-1 space-y-3">
-                    <div className="h-3.5 w-1/2 bg-muted/40 rounded-full" />
-                    <div className="h-2.5 w-1/4 bg-muted/30 rounded-full" />
+                    <div className="h-3.5 w-1/2 rounded-full bg-surface-container-high" />
+                    <div className="h-2.5 w-1/4 rounded-full bg-surface-container-high" />
                   </div>
                 </div>
               </div>
@@ -147,40 +143,31 @@ export default function Home() {
   const displayName = getDisplayName(profile)
   const hour = new Date().getHours()
   let greeting = "Good evening"
-  let icon = "🌙"
-  if (hour < 12) { greeting = "Good morning"; icon = "☀️" }
-  else if (hour < 18) { greeting = "Good afternoon"; icon = "🌤️" }
+  if (hour < 12) greeting = "Good morning"
+  else if (hour < 18) greeting = "Good afternoon"
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-6 lg:space-y-8 pb-10 animate-in fade-in duration-200">
       {/* ── Greeting ── */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98, filter: "blur(4px)" }}
-        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="space-y-4 pt-2 pb-2"
-      >
-        <div className="flex items-center justify-between">
-            <div className="space-y-1">
-                <p className="font-label text-tertiary-fixed-dim text-sm font-medium uppercase tracking-wider">
-                    {format(new Date(), "EEEE, MMM d")}
-                </p>
-                <h1 className="font-headline font-extrabold text-3xl sm:text-4xl text-on-surface flex items-center gap-2">
-                    {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">{displayName}</span>
-                </h1>
-            </div>
-            
-            {/* The right-aligned stat element */}
-            <div className="shrink-0 flex items-center gap-3">
-               {profile?.partner_id && (
-                    <ThinkingOfYouButton partnerId={profile.partner_id} />
-               )}
-               {user && (
-                    <TasksTodayCounter userId={user.id} partnerId={profile?.partner_id} />
-               )}
-            </div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1.5 min-w-0">
+          <p className="font-label text-on-surface-variant text-xs font-medium uppercase tracking-[0.12em]">
+            {format(new Date(), "EEEE, MMM d")}
+          </p>
+          <h1 className="font-headline font-extrabold text-2xl lg:text-3xl text-on-surface">
+            {greeting}, <span className="text-primary">{displayName}</span>
+          </h1>
         </div>
-      </motion.div>
+
+        <div className="shrink-0 flex items-center gap-2">
+          {profile?.partner_id && (
+            <ThinkingOfYouButton partnerId={profile.partner_id} />
+          )}
+          {user && (
+            <TasksTodayCounter userId={user.id} partnerId={profile?.partner_id} />
+          )}
+        </div>
+      </div>
 
       {/* ── Main Tasks Container ── */}
       <div id="tasks">

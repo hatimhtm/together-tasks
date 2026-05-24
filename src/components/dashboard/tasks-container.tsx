@@ -5,8 +5,7 @@ import { QuickAdd } from "@/components/tasks/quick-add"
 import { TaskList } from "@/components/tasks/task-list"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronDown, ChevronUp, Calendar } from "lucide-react"
+import { ChevronDown, Calendar } from "lucide-react"
 import { format } from "date-fns"
 
 type Tab = "my" | "partner" | "shared"
@@ -64,42 +63,38 @@ export function TasksContainer({
     const { todayTasks, upcomingTasks } = getDateBuckets(tasks, userId, partnerId, activeTab)
 
     return (
-        <div className="w-full pb-10 pt-2 flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-            {/* Left Sidebar */}
-            <div className="w-full lg:w-[380px] shrink-0 space-y-4 lg:sticky lg:top-28 z-10 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* Left rail */}
+            <div className="w-full lg:w-[380px] shrink-0 space-y-4 lg:sticky lg:top-24">
                 {sidebarSlot}
+
+                {/* Quick Add Task */}
+                <QuickAdd onAddTask={addTask} hasPartner={!!partnerId} userId={userId} partnerId={partnerId} />
 
                 {/* Focus Tabs */}
                 {partnerId && (
-                    <div className="w-full">
-                        <nav className="flex gap-2 overflow-x-auto pb-2 no-scrollbar px-1">
-                            {(['my', 'partner', 'shared'] as Tab[]).map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={cn(
-                                        "px-6 py-2.5 rounded-full font-label text-sm transition-colors whitespace-nowrap",
-                                        activeTab === tab
-                                            ? "bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/10"
-                                            : "bg-surface-container text-on-surface-variant font-medium hover:bg-surface-container-high"
-                                    )}
-                                >
-                                    {tab === 'my' ? 'Mine' : tab === 'partner' ? 'Partner' : 'Shared'}
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
+                    <nav className="flex gap-2">
+                        {(['my', 'partner', 'shared'] as Tab[]).map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={cn(
+                                    "flex-1 px-4 py-2 rounded-full font-label text-sm transition-colors active:scale-[0.98] whitespace-nowrap",
+                                    activeTab === tab
+                                        ? "bg-primary text-on-primary font-semibold"
+                                        : "bg-surface-container border border-outline-variant/60 text-on-surface-variant font-medium hover:bg-surface-container-high"
+                                )}
+                            >
+                                {tab === 'my' ? 'Mine' : tab === 'partner' ? 'Partner' : 'Shared'}
+                            </button>
+                        ))}
+                    </nav>
                 )}
-
-                {/* Quick Add Task */}
-                <div className="space-y-2 relative z-10 w-full">
-                    <QuickAdd onAddTask={addTask} hasPartner={!!partnerId} userId={userId} partnerId={partnerId} />
-                </div>
             </div>
 
-            {/* Task List (Right Column) */}
-            <div className="flex-1 w-full min-w-0 rounded-t-3xl lg:rounded-none space-y-6">
-                {/* Today's Tasks */}
+            {/* Task list */}
+            <div className="flex-1 w-full min-w-0 space-y-6">
+                {/* Today / overdue / undated */}
                 <TaskList
                     userId={userId}
                     partnerId={partnerId}
@@ -109,47 +104,38 @@ export function TasksContainer({
                     propDeleteTask={deleteTask}
                 />
 
-                {/* Upcoming Tasks */}
+                {/* Upcoming */}
                 {upcomingTasks.length > 0 && (
-                    <div className="space-y-2 pt-2 border-t border-border/20">
+                    <div className="space-y-3">
                         <button
                             onClick={() => setIsUpcomingExpanded(!isUpcomingExpanded)}
-                            className="flex items-center gap-2 px-1 hover:opacity-80 transition-opacity w-full"
+                            className="flex items-center gap-2 px-1 text-on-surface-variant hover:text-on-surface transition-colors w-full active:scale-[0.98]"
                         >
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex-1 text-left">
+                            <Calendar className="h-4 w-4" />
+                            <h3 className="text-xs font-semibold uppercase tracking-[0.12em] flex-1 text-left">
                                 Upcoming ({upcomingTasks.length})
                             </h3>
-                            {isUpcomingExpanded
-                                ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                                : <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            }
+                            <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isUpcomingExpanded && "rotate-180")} />
                         </button>
 
-                        <AnimatePresence>
-                            {isUpcomingExpanded && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="overflow-hidden"
-                                >
-                                    <div className="bg-card border border-border/40 rounded-2xl overflow-hidden divide-y divide-border/20 opacity-80">
-                                        {upcomingTasks.map(task => (
-                                            <div key={task.id} className="flex items-center gap-3 px-4 py-3">
-                                                <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                                <span className="flex-1 text-sm text-foreground/80 font-medium truncate">{task.title}</span>
-                                                {task.due_date && (
-                                                    <span className="text-xs text-muted-foreground shrink-0 bg-muted/40 px-2 py-0.5 rounded-full">
-                                                        {format(new Date(task.due_date), 'MMM d')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        ))}
+                        {isUpcomingExpanded && (
+                            <div className="grid gap-2 grid-cols-1 xl:grid-cols-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                {upcomingTasks.map(task => (
+                                    <div
+                                        key={task.id}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/60"
+                                    >
+                                        <Calendar className="h-4 w-4 text-on-surface-variant shrink-0" />
+                                        <span className="flex-1 text-sm text-on-surface font-medium truncate">{task.title}</span>
+                                        {task.due_date && (
+                                            <span className="text-xs text-on-surface-variant shrink-0 bg-surface-container-high px-2 py-0.5 rounded-full">
+                                                {format(new Date(task.due_date), 'MMM d')}
+                                            </span>
+                                        )}
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
