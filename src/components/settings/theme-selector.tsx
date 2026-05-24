@@ -6,7 +6,6 @@ import { Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
-import { motion } from "framer-motion"
 
 const themes = [
     { id: 'obsidian', name: 'Obsidian', icon: 'dark_mode', bg: 'bg-surface-container border-primary ring-2 ring-primary bg-gradient-to-br from-primary/10 to-transparent', iconBg: 'bg-surface-container-highest text-primary shadow-xl', text: 'text-on-surface' },
@@ -49,10 +48,10 @@ export function ThemeSelector({ userId, currentDbTheme }: { userId: string, curr
         }
     }
 
-    if (!mounted) return <div className="animate-pulse h-[180px] bg-surface-container-low rounded-xl w-full" />
+    if (!mounted) return <div className="animate-pulse h-[180px] bg-surface-container rounded-2xl w-full" />
 
     return (
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-6 px-6 snap-x">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {themes.map((t) => {
                 const isActive = theme === t.id
                 return (
@@ -61,36 +60,31 @@ export function ThemeSelector({ userId, currentDbTheme }: { userId: string, curr
                         onClick={() => handleThemeChange(t.id)}
                         disabled={saving === t.id}
                         className={cn(
-                            "snap-start shrink-0 w-[140px] aspect-[3/4] rounded-[1.25rem] p-5 flex flex-col justify-between relative overflow-hidden transition-all duration-300 text-left cursor-pointer",
-                            isActive ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background bg-surface-container shadow-[0_0_20px_rgba(255,183,125,0.15)]" : "border ring-0 ring-transparent shadow-sm",
-                            isActive ? "bg-gradient-to-br from-primary/10 to-transparent border-transparent" : t.bg,
-                            !isActive && !t.bg.includes('border') && "border-outline-variant/10"
+                            "aspect-[4/3] rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden transition-colors duration-200 text-left cursor-pointer border active:scale-[0.98]",
+                            isActive ? "border-primary ring-2 ring-primary" : "border-outline-variant/60",
+                            t.bg
                         )}
                     >
                         <div className={cn(
-                            "z-10 w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shrink-0",
-                            isActive ? "bg-surface-container-highest text-primary shadow-xl" : t.iconBg
+                            "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                            t.iconBg
                         )}>
                             {saving === t.id ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
-                                <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>{t.icon}</span>
+                                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>{t.icon}</span>
                             )}
                         </div>
-                        
-                        <div className="z-10 mt-auto">
-                            {isActive && (
-                                <motion.p 
-                                    initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} 
-                                    className="text-primary text-[10px] font-bold mb-1 tracking-widest uppercase"
-                                >
-                                    Selected
-                                </motion.p>
-                            )}
-                            <h4 className={cn("font-headline font-bold text-[15px] tracking-wide", isActive ? "text-on-surface" : t.text)}>
+
+                        <div className="mt-auto">
+                            <h4 className={cn("font-headline font-bold text-[14px] tracking-wide", t.text)}>
                                 {t.name}
                             </h4>
                         </div>
+
+                        {isActive && (
+                            <span className="absolute top-3 right-3 material-symbols-outlined text-primary text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                        )}
                     </button>
                 )
             })}

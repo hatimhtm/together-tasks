@@ -42,15 +42,15 @@ export function WeekdayHeatmap({ cells, weeks = 12, title = "Activity heatmap" }
         }
     }
 
-    const colors = ["bg-muted/20", "bg-primary/25", "bg-primary/50", "bg-primary/75", "bg-primary"]
+    const colors = ["bg-surface-container-high/40", "bg-primary/25", "bg-primary/50", "bg-primary/75", "bg-primary"]
 
     return (
-        <div className="bg-surface-container p-6 rounded-2xl border border-outline-variant/5 space-y-4 overflow-x-auto">
+        <div className="bg-surface-container p-6 rounded-2xl border border-outline-variant/60 space-y-4 overflow-x-auto">
             <div className="flex items-center justify-between">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-tertiary-fixed-dim">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
                     {title}
                 </h3>
-                <div className="flex items-center gap-1 text-[10px] text-tertiary-fixed-dim">
+                <div className="flex items-center gap-1 text-[10px] text-on-surface-variant">
                     <span>Less</span>
                     {colors.map((c, i) => (
                         <span key={i} className={`w-2.5 h-2.5 rounded-sm ${c}`} />
@@ -63,7 +63,7 @@ export function WeekdayHeatmap({ cells, weeks = 12, title = "Activity heatmap" }
                 {/* Day labels column */}
                 <div className="flex flex-col gap-1 pt-0">
                     {DAY_LABELS.map((d, i) => (
-                        <span key={i} className="h-3.5 text-[9px] font-mono text-tertiary-fixed-dim/60 leading-3">
+                        <span key={i} className="h-3.5 text-[9px] font-mono text-on-surface-variant/60 leading-3">
                             {i % 2 === 1 ? d : ""}
                         </span>
                     ))}
@@ -76,9 +76,9 @@ export function WeekdayHeatmap({ cells, weeks = 12, title = "Activity heatmap" }
                             {week.map((cell, di) => (
                                 <motion.div
                                     key={di}
-                                    initial={{ opacity: 0, scale: 0.5 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: (wi * 7 + di) * 0.004, duration: 0.18 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: (wi * 7 + di) * 0.003, duration: 0.18 }}
                                     title={`${cell.date.toLocaleDateString()} — ${cell.count} done`}
                                     className={`w-3.5 h-3.5 rounded-sm ${colors[intensity(cell.count)]}`}
                                 />

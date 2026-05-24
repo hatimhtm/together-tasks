@@ -187,14 +187,14 @@ export default function AnalyticsPage() {
 
     if (loading || !analytics) {
         return (
-            <div className="max-w-4xl mx-auto space-y-8 animate-pulse text-center">
-                <div className="h-10 w-48 bg-surface-container-high rounded-lg mx-auto mb-2" />
-                <div className="h-32 bg-surface-container-low rounded-xl" />
+            <div className="space-y-8 animate-pulse">
+                <div className="h-10 w-48 bg-surface-container-high rounded-lg mb-2" />
+                <div className="h-32 bg-surface-container-low rounded-2xl" />
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="aspect-square bg-surface-container rounded-xl" />
-                    <div className="aspect-square bg-surface-container rounded-xl" />
+                    <div className="aspect-square bg-surface-container rounded-2xl" />
+                    <div className="aspect-square bg-surface-container rounded-2xl" />
                 </div>
-                <div className="h-64 bg-surface-container-low rounded-xl" />
+                <div className="h-64 bg-surface-container-low rounded-2xl" />
             </div>
         )
     }
@@ -215,20 +215,15 @@ export default function AnalyticsPage() {
     const maxChartComplete = Math.max(...weekData.map(d => d.completed), 1)
 
     return (
-        <motion.main 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="max-w-4xl mx-auto space-y-8"
-        >
+        <div className="space-y-6 lg:space-y-8">
             {/* Hero Section */}
-            <section className="space-y-2">
-                <h1 className="text-[32px] font-headline font-extrabold tracking-tight text-on-surface">Our Progress</h1>
-                <p className="text-on-surface-variant font-label text-sm tracking-wide">Building a legacy, one task at a time.</p>
+            <section className="space-y-1.5">
+                <h1 className="text-2xl lg:text-3xl font-headline font-extrabold tracking-tight text-on-surface">Our Progress</h1>
+                <p className="text-on-surface-variant text-sm">Building a legacy, one task at a time.</p>
             </section>
 
             {/* XP Progress Bar */}
-            <section className="bg-surface-container-low p-7 rounded-2xl space-y-4 shadow-[0_0_40px_rgba(255,140,0,0.08)] border border-outline-variant/10">
+            <section className="bg-surface-container p-6 rounded-2xl space-y-4 border border-outline-variant/60">
                 <div className="flex justify-between items-end">
                     <div>
                         <span className="text-primary font-label text-xs uppercase tracking-widest font-bold">Current Level</span>
@@ -240,11 +235,11 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
                 <div className="relative w-full h-3.5 bg-surface-container-highest rounded-full overflow-hidden">
-                    <motion.div 
+                    <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${levelProgress}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-container to-primary rounded-full shadow-[0_0_15px_rgba(255,183,125,0.4)]"
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="absolute top-0 left-0 h-full bg-primary rounded-full"
                     />
                 </div>
                 <div className="flex justify-between items-center text-xs font-label text-on-surface-variant">
@@ -258,44 +253,34 @@ export default function AnalyticsPage() {
 
             {/* Bento Grid */}
             <div className="grid grid-cols-2 gap-4">
-                {/* Royal Streaks */}
-                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square sm:aspect-auto sm:min-h-[200px] border border-outline-variant/5">
-                    <div className="bg-primary-container/10 w-12 h-12 rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-primary-container text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                {/* Streak */}
+                <div className="bg-surface-container p-6 rounded-2xl flex flex-col justify-between min-h-[160px] border border-outline-variant/60">
+                    <div className="bg-primary/12 w-11 h-11 rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
                     </div>
                     <div className="space-y-0.5 mt-4">
                         <p className="text-4xl font-headline font-black text-on-surface">{streak}</p>
-                        <p className="text-[13px] font-label font-medium text-on-surface-variant">Days Streak</p>
+                        <p className="text-[13px] font-label font-medium text-on-surface-variant">Days streak</p>
                     </div>
                 </div>
 
-                {/* Love Pulse Harmony */}
-                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square sm:aspect-auto sm:min-h-[200px] overflow-hidden relative border border-outline-variant/5 group">
-                    <div className="relative z-10">
-                        <span className="material-symbols-outlined text-secondary text-[28px] group-hover:scale-110 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-                        <p className="text-[13px] font-label font-medium text-on-surface-variant mt-1.5">Task Rate</p>
+                {/* Task Rate */}
+                <div className="bg-surface-container p-6 rounded-2xl flex flex-col justify-between min-h-[160px] border border-outline-variant/60">
+                    <div className="bg-secondary/15 w-11 h-11 rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-secondary text-[26px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
                     </div>
-                    <div className="relative z-10 mt-2">
-                        <p className="text-3xl font-headline font-bold text-on-surface">{completionRate}%</p>
-                        <p className="text-xs font-label font-medium text-secondary">In Harmony</p>
-                    </div>
-                    {/* Abstract Heart Rate Visualizer */}
-                    <div className="absolute bottom-0 left-0 w-full h-[55%] opacity-30 flex items-center justify-center">
-                        <svg className="w-full h-full text-secondary stroke-current fill-none stroke-2" viewBox="0 0 100 40">
-                            <path 
-                                style={{ WebkitMaskImage: "linear-gradient(to right, transparent, black, transparent)", maskImage: "linear-gradient(to right, transparent, black, transparent)" }} 
-                                d="M0 20 L20 20 L25 5 L35 35 L40 20 L60 20 L65 10 L75 30 L80 20 L100 20" 
-                            />
-                        </svg>
+                    <div className="space-y-0.5 mt-4">
+                        <p className="text-4xl font-headline font-black text-on-surface">{completionRate}%</p>
+                        <p className="text-[13px] font-label font-medium text-on-surface-variant">Task rate</p>
                     </div>
                 </div>
             </div>
 
             {/* Productivity Analytics: Bar Chart */}
-            <section className="bg-surface-container-low p-7 rounded-2xl space-y-8 border border-outline-variant/10">
+            <section className="bg-surface-container p-6 rounded-2xl space-y-6 border border-outline-variant/60">
                 <div className="flex justify-between items-center">
-                    <h3 className="font-headline font-bold text-xl text-on-surface">Task Output</h3>
-                    <span className="text-[10px] uppercase font-bold font-label text-tertiary-fixed-dim bg-tertiary-fixed/10 px-3 py-1.5 rounded-full tracking-wider">
+                    <h3 className="font-headline font-bold text-lg text-on-surface">Task Output</h3>
+                    <span className="text-[10px] uppercase font-bold font-label text-on-surface-variant bg-surface-container-high px-3 py-1.5 rounded-full tracking-wider">
                         Last 7 Days
                     </span>
                 </div>
@@ -312,8 +297,8 @@ export default function AnalyticsPage() {
                                         animate={{ height: `${heightPct}%` }}
                                         transition={{ duration: 0.8, delay: i * 0.05 }}
                                         className={cn(
-                                            "w-full rounded-t-[10px] transition-colors duration-300",
-                                            isToday ? "bg-primary shadow-[0_0_15px_rgba(255,183,125,0.4)]" : 
+                                            "w-full rounded-t-[10px] transition-colors duration-200",
+                                            isToday ? "bg-primary" :
                                             day.completed > 0 ? "bg-surface-container-highest group-hover:bg-primary/40" : "bg-transparent"
                                         )}
                                         style={{ minHeight: day.completed > 0 ? "4px" : "0px" }}
@@ -333,29 +318,29 @@ export default function AnalyticsPage() {
 
             {/* Insights Bento Section */}
             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-surface-container p-6 rounded-2xl flex items-center gap-4 border border-outline-variant/5">
-                    <div className="p-3 bg-tertiary-fixed/10 rounded-full shrink-0">
-                        <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                <div className="bg-surface-container p-5 rounded-2xl flex items-center gap-4 border border-outline-variant/60">
+                    <div className="p-3 bg-primary/12 rounded-full shrink-0">
+                        <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider overflow-hidden text-ellipsis whitespace-nowrap">Most Prod.</p>
+                        <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider truncate">Most Prod.</p>
                         <p className="text-lg font-headline font-bold text-on-surface truncate">{bestDay?.label || "—"}</p>
                     </div>
                 </div>
-                <div className="bg-surface-container p-6 rounded-2xl flex items-center gap-4 border border-outline-variant/5">
-                    <div className="p-3 bg-tertiary-fixed/10 rounded-full shrink-0">
-                        <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
+                <div className="bg-surface-container p-5 rounded-2xl flex items-center gap-4 border border-outline-variant/60">
+                    <div className="p-3 bg-primary/12 rounded-full shrink-0">
+                        <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider overflow-hidden text-ellipsis whitespace-nowrap">Best Hour</p>
+                        <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider truncate">Best Hour</p>
                         <p className="text-lg font-headline font-bold text-on-surface truncate">{bestHourLabel}</p>
                     </div>
                 </div>
             </div>
 
             {/* ─────── v2 Couple Insights ─────── */}
-            <section className="space-y-4 pt-2">
-                <h3 className="font-headline font-bold text-xl px-2 text-on-surface">Couple Insights</h3>
+            <section className="space-y-4">
+                <h3 className="font-headline font-bold text-lg text-on-surface">Couple Insights</h3>
 
                 <CoupleDonut
                     me={analytics.totalCompletedAllTime}
@@ -378,25 +363,25 @@ export default function AnalyticsPage() {
             </section>
 
             {/* Romantic Milestones */}
-            <section className="space-y-4 pt-2">
-                <h3 className="font-headline font-bold text-xl px-2 text-on-surface">Romantic Milestones</h3>
-                <div className="bg-surface-container-low divide-y divide-outline-variant/10 rounded-2xl overflow-hidden border border-outline-variant/10">
-                    <div className="flex items-center justify-between p-6 hover:bg-surface-container-low/50 transition-colors">
+            <section className="space-y-4">
+                <h3 className="font-headline font-bold text-lg text-on-surface">Romantic Milestones</h3>
+                <div className="bg-surface-container divide-y divide-outline-variant/60 rounded-2xl overflow-hidden border border-outline-variant/60">
+                    <div className="flex items-center justify-between p-5">
                         <div className="flex items-center gap-4">
                             <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>quick_phrases</span>
                             <span className="font-label font-medium text-on-surface">Nudges Sent</span>
                         </div>
-                        <span className="text-xl font-headline font-bold text-secondary">{analytics.nudgesSent}</span>
+                        <span className="text-xl font-headline font-bold text-on-surface">{analytics.nudgesSent}</span>
                     </div>
-                    <div className="flex items-center justify-between p-6 hover:bg-surface-container-low/50 transition-colors">
+                    <div className="flex items-center justify-between p-5">
                         <div className="flex items-center gap-4">
                             <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
                             <span className="font-label font-medium text-on-surface">Tasks Completed Together</span>
                         </div>
-                        <span className="text-xl font-headline font-bold text-secondary">{analytics.totalCompletedAllTime + analytics.partnerCompletedAllTime}</span>
+                        <span className="text-xl font-headline font-bold text-on-surface">{analytics.totalCompletedAllTime + analytics.partnerCompletedAllTime}</span>
                     </div>
                 </div>
             </section>
-        </motion.main>
+        </div>
     )
 }

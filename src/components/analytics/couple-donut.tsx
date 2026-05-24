@@ -24,9 +24,9 @@ export function CoupleDonut({ me, partner, myLabel = "You", partnerLabel = "Part
     const partnerSegment = partnerShare * circumference
 
     return (
-        <div className="bg-surface-container p-6 rounded-2xl border border-outline-variant/5 space-y-4">
+        <div className="bg-surface-container p-6 rounded-2xl border border-outline-variant/60 space-y-4">
             {title && (
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-tertiary-fixed-dim">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
                     {title}
                 </h3>
             )}
@@ -82,7 +82,7 @@ export function CoupleDonut({ me, partner, myLabel = "You", partnerLabel = "Part
                     <text
                         x="80" y="98"
                         textAnchor="middle"
-                        className="fill-tertiary-fixed-dim"
+                        className="fill-on-surface-variant"
                         style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}
                     >
                         total
@@ -107,7 +107,7 @@ function Row({ label, value, pct, color }: { label: string; value: number; pct: 
                 />
                 <span className="truncate">{label}</span>
             </span>
-            <span className="font-mono tabular-nums text-tertiary-fixed-dim shrink-0">
+            <span className="font-mono tabular-nums text-on-surface-variant shrink-0">
                 {value} <span className="text-on-surface/40">· {pct}%</span>
             </span>
         </div>
