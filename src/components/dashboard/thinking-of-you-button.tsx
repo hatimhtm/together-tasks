@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { Heart } from "lucide-react"
 import { toast } from "sonner"
-import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
+import { cn } from "@/lib/utils"
 
 export function ThinkingOfYouButton({ partnerId }: { partnerId: string }) {
     const [loading, setLoading] = useState(false)
@@ -46,33 +46,18 @@ export function ThinkingOfYouButton({ partnerId }: { partnerId: string }) {
     }
 
     return (
-        <motion.button
+        <button
             onClick={handleNudge}
             disabled={loading || sent}
-            whileTap={{ scale: 0.88 }}
             title="Send some love"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-500/10 hover:bg-pink-500/18 border border-pink-500/20 text-pink-500 transition-all duration-200 disabled:cursor-not-allowed"
+            className={cn(
+                "flex items-center gap-1.5 h-9 px-3 rounded-full border text-sm font-medium transition-colors active:scale-[0.98] disabled:cursor-not-allowed",
+                "border-outline-variant/60 bg-surface-container text-on-surface-variant hover:bg-surface-container-high",
+                loading && "opacity-60"
+            )}
         >
-            <AnimatePresence mode="wait">
-                {sent ? (
-                    <motion.span
-                        key="sent"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        className="text-sm"
-                    >
-                        ❤️
-                    </motion.span>
-                ) : (
-                    <motion.div key="icon" initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
-                        <Heart className={`h-4 w-4 transition-all ${loading ? 'opacity-50' : 'hover:fill-pink-500'}`} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            <span className="text-xs font-semibold hidden sm:block">
-                {sent ? "Sent!" : "Thinking of you"}
-            </span>
-        </motion.button>
+            <Heart className={cn("h-4 w-4 text-pink-500 transition-all", sent && "fill-pink-500")} />
+            <span className="hidden sm:inline">{sent ? "Sent!" : "Thinking of you"}</span>
+        </button>
     )
 }

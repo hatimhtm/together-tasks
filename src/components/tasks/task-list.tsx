@@ -1,11 +1,11 @@
 "use client"
 
-import { Check, Trash2 } from "lucide-react"
+import { Check, Trash2, CheckCircle2, ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 import confetti from "canvas-confetti"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
-import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
+import { cn } from "@/lib/utils"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,7 +16,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ChevronDown, ChevronUp } from "lucide-react"
 import { Task } from "@/types/task"
 import { TaskItem } from "./task-item"
 
@@ -113,7 +112,6 @@ export function TaskList({
 
             toast.success("Task completed!", {
                 description: "Keep up the great work!",
-                className: "bg-background/80 backdrop-blur-md border-border/50",
             })
         }
     }
@@ -121,26 +119,23 @@ export function TaskList({
     const confirmDelete = async () => {
         if (!taskToDelete) return
         deleteTask(taskToDelete)
-        toast.success("Task deleted.", {
-            className: "bg-background/80 backdrop-blur-md border-border/50",
-        })
+        toast.success("Task deleted.")
         setTaskToDelete(null)
     }
 
     if (loading) {
         return (
-            <div className="space-y-3 pt-2">
-                {[1, 2, 3].map((i, index) => (
+            <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
+                {[1, 2, 3, 4].map((i) => (
                     <div
                         key={i}
-                        className="h-20 rounded-2xl bg-card border border-border/40 relative overflow-hidden"
-                        style={{ opacity: 1 - (index * 0.25) }}
+                        className="h-24 rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse"
                     >
                         <div className="flex items-center gap-4 h-full px-5">
-                            <div className="w-5 h-5 rounded-md bg-muted/40 animate-pulse" />
+                            <div className="w-6 h-6 rounded-full bg-surface-container-high" />
                             <div className="flex-1 space-y-3">
-                                <div className="h-3.5 w-1/2 bg-muted/40 rounded-full animate-pulse" />
-                                <div className="h-2.5 w-1/4 bg-muted/30 rounded-full animate-pulse" />
+                                <div className="h-3.5 w-1/2 rounded-full bg-surface-container-high" />
+                                <div className="h-2.5 w-1/4 rounded-full bg-surface-container-high" />
                             </div>
                         </div>
                     </div>
@@ -154,7 +149,7 @@ export function TaskList({
     const completedTasks = tasks.filter(t => t.is_completed)
 
     return (
-        <div className="space-y-6 pb-16">
+        <div className="space-y-6">
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
@@ -172,99 +167,82 @@ export function TaskList({
             </AlertDialog>
 
             {/* Active Tasks */}
-            <AnimatePresence mode="popLayout">
-                {activeTasks.length > 0 ? (
-                    <div className="space-y-2">
-                        {activeTasks.map((task, i) => (
-                                <TaskItem
-                                    key={task.id}
-                                    task={task}
-                                    index={i}
-                                    userId={userId}
-                                    isExpanded={expandedTasks.has(task.id)}
-                                    isEditing={editingTaskId === task.id}
-                                    onToggleExpand={() => toggleExpand(task.id)}
-                                    onStartEditing={(e) => startEditing(task, e)}
-                                    onCancelEditing={() => setEditingTaskId(null)}
-                                    onComplete={(isCompleted) => handleComplete(task.id, isCompleted)}
-                                    onDelete={() => setTaskToDelete(task.id)}
-                                    onUpdate={(updates) => {
-                                        updateTask(task.id, updates)
-                                        if (editingTaskId === task.id) {
-                                            setEditingTaskId(null)
-                                        }
-                                    }}
-                                />
-                        ))}
+            {activeTasks.length > 0 ? (
+                <div className="grid gap-4 grid-cols-1 xl:grid-cols-2 items-start">
+                    {activeTasks.map((task, i) => (
+                        <TaskItem
+                            key={task.id}
+                            task={task}
+                            index={i}
+                            userId={userId}
+                            isExpanded={expandedTasks.has(task.id)}
+                            isEditing={editingTaskId === task.id}
+                            onToggleExpand={() => toggleExpand(task.id)}
+                            onStartEditing={(e) => startEditing(task, e)}
+                            onCancelEditing={() => setEditingTaskId(null)}
+                            onComplete={(isCompleted) => handleComplete(task.id, isCompleted)}
+                            onDelete={() => setTaskToDelete(task.id)}
+                            onUpdate={(updates) => {
+                                updateTask(task.id, updates)
+                                if (editingTaskId === task.id) {
+                                    setEditingTaskId(null)
+                                }
+                            }}
+                        />
+                    ))}
+                </div>
+            ) : (
+                tasks.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-16 px-6 text-center rounded-2xl bg-surface-container border border-outline-variant/60 animate-in fade-in duration-200">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-5">
+                            <CheckCircle2 className="h-8 w-8 text-primary" strokeWidth={2} />
+                        </div>
+                        <h3 className="font-headline font-bold text-lg text-on-surface mb-1.5">All clear</h3>
+                        <p className="text-on-surface-variant text-sm max-w-[280px] leading-relaxed">
+                            {partnerId
+                                ? "You and your partner are all caught up. Add a task to keep the momentum going."
+                                : "You're all caught up. Add a task to keep the momentum going."}
+                        </p>
                     </div>
-                ) : (
-                    tasks.length === 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="flex flex-col items-center justify-center py-16 text-center bg-card border border-border/40 rounded-2xl relative overflow-hidden"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-                            <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6 shadow-inner relative">
-                                <Check className="h-10 w-10 text-primary drop-shadow-sm relative z-10" strokeWidth={2.5} />
-                            </div>
-                            <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">All Clear!</h3>
-                            <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed relative z-10">
-                                {partnerId ? "You and your partner are all caught up. Take a break or add a new goal!" : "You're all caught up. Add a task to keep the momentum going!"}
-                            </p>
-                        </motion.div>
-                    )
-                )}
-            </AnimatePresence>
+                )
+            )}
 
             {/* Completed Tasks (Collapsible) */}
             {completedTasks.length > 0 && (
-                <div className="pt-2 border-t border-border/15">
+                <div className="space-y-3">
                     <button
                         onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
-                        className="flex items-center gap-1.5 px-1 py-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors w-full"
+                        className="flex items-center gap-2 px-1 text-on-surface-variant hover:text-on-surface transition-colors w-full active:scale-[0.98]"
                     >
-                        {isCompletedExpanded
-                            ? <ChevronUp className="h-3.5 w-3.5" />
-                            : <ChevronDown className="h-3.5 w-3.5" />
-                        }
-                        <span className="text-xs font-medium">
+                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isCompletedExpanded && "rotate-180")} />
+                        <span className="text-xs font-semibold uppercase tracking-[0.12em]">
                             {completedTasks.length} completed
                         </span>
                     </button>
 
-                    <AnimatePresence>
-                        {isCompletedExpanded && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden space-y-1 mt-1"
-                            >
-                                {completedTasks.map(task => (
-                                    <motion.div layout key={task.id} className="group flex items-center gap-3 px-1 py-2 rounded-xl hover:bg-muted/20 transition-colors">
-                                        <button
-                                            onClick={() => handleComplete(task.id, task.is_completed)}
-                                            className="h-[22px] w-[22px] rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center shrink-0 transition-all hover:bg-primary/30"
-                                        >
-                                            <Check className="h-2.5 w-2.5 text-primary" strokeWidth={3} />
-                                        </button>
-                                        <span className="flex-1 text-sm text-muted-foreground/50 line-through">
-                                            {task.title}
-                                        </span>
-                                        <button
-                                            onClick={() => setTaskToDelete(task.id)}
-                                            className="opacity-0 group-hover:opacity-100 p-1.5 hover:text-destructive transition-all"
-                                        >
-                                            <Trash2 className="h-3 w-3" />
-                                        </button>
-                                    </motion.div>
-                                ))}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    {isCompletedExpanded && (
+                        <div className="rounded-2xl bg-surface-container border border-outline-variant/60 divide-y divide-outline-variant/40 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+                            {completedTasks.map(task => (
+                                <div key={task.id} className="group flex items-center gap-3 px-4 py-3">
+                                    <button
+                                        onClick={() => handleComplete(task.id, task.is_completed)}
+                                        className="h-6 w-6 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center shrink-0 transition-colors hover:bg-primary/25 active:scale-[0.98]"
+                                    >
+                                        <Check className="h-3 w-3 text-primary" strokeWidth={3} />
+                                    </button>
+                                    <span className="flex-1 text-sm text-on-surface-variant line-through truncate">
+                                        {task.title}
+                                    </span>
+                                    <button
+                                        onClick={() => setTaskToDelete(task.id)}
+                                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-full text-on-surface-variant hover:text-error transition-all shrink-0"
+                                    >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>

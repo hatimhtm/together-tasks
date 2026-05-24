@@ -1,12 +1,10 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Loader2, Sparkles } from "lucide-react"
+import { Loader2, Send } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
-import { motion, AnimatePresence } from "framer-motion"
 import { VoiceButton } from "@/components/tasks/voice-button"
 
 export function QuickAdd({
@@ -31,6 +29,13 @@ export function QuickAdd({
     // Typing indicator refs
     const channelRef = useRef<any>(null)
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const autoGrow = (el: HTMLTextAreaElement | null) => {
+        if (!el) return
+        el.style.height = 'auto'
+        el.style.height = el.scrollHeight + 'px'
+    }
 
     useEffect(() => {
         if (!userId || !partnerId) return;
@@ -68,8 +73,7 @@ export function QuickAdd({
     const handleInput = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const val = e.target.value
         setInput(val)
-        e.target.style.height = 'auto'
-        e.target.style.height = (e.target.scrollHeight) + 'px'
+        autoGrow(e.target)
 
         // Broadcast typing status
         if (channelRef.current) {
@@ -127,6 +131,9 @@ export function QuickAdd({
 
             setInput("")
             setAssignMode("me") // reset toggle
+            if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto'
+            }
 
             // Reset typing status immediately
             if (channelRef.current) {
@@ -144,56 +151,29 @@ export function QuickAdd({
         }
     }
 
-    return (
-        <div className={cn(
-            "bg-card/60 backdrop-blur-xl border rounded-2xl px-4 py-3 relative mt-6 transition-all duration-200",
-            focused
-                ? "border-primary/40 shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]"
-                : "border-border/60"
-        )}>
-            <AnimatePresence>
-                {isPartnerTyping && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                        className="absolute -top-8 left-4 flex items-center gap-2 text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 backdrop-blur-md shadow-sm z-20"
-                    >
-                        <span className="flex gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
-                        </span>
-                        <span>Partner is typing...</span>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+    const assignLabel = assignMode === 'partner' ? 'Partner 💕' : assignMode === 'shared' ? 'Shared 🤝' : 'Mine 👤'
 
-            <form onSubmit={handleSubmit} className="flex gap-2 items-end">
-                {hasPartner && (
-                    <Button
-                        type="button"
-                        variant={assignMode === "me" ? "secondary" : "default"}
-                        onClick={() => {
-                            if (assignMode === "me") setAssignMode("partner")
-                            else if (assignMode === "partner") setAssignMode("shared")
-                            else setAssignMode("me")
-                        }}
-                        className={cn(
-                            "shrink-0 px-3 h-10 w-10 md:w-auto md:px-4 rounded-xl transition-all duration-300 group",
-                            assignMode === "shared" && "bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
-                        )}
-                        title={`Currently assigning to: ${assignMode}`}
-                    >
-                        <span className="md:hidden">
-                            {assignMode === 'partner' ? '💕' : assignMode === 'shared' ? '🤝' : '👤'}
-                        </span>
-                        <span className="hidden md:inline text-xs font-semibold">
-                            {assignMode === 'partner' ? 'Partner 💕' : assignMode === 'shared' ? 'Shared 🤝' : 'Mine 👤'}
-                        </span>
-                    </Button>
-                )}
+    return (
+        <div
+            className={cn(
+                "rounded-2xl bg-surface-container border p-3 transition-colors relative",
+                focused ? "border-primary/60" : "border-outline-variant/60"
+            )}
+        >
+            {isPartnerTyping && (
+                <div className="absolute -top-3 left-4 flex items-center gap-2 text-xs font-semibold text-primary bg-surface-container-high border border-outline-variant/60 px-3 py-1 rounded-full z-20 animate-in fade-in duration-200">
+                    <span className="flex gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
+                    </span>
+                    <span>Partner is typing…</span>
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-3">
                 <textarea
+                    ref={textareaRef}
                     value={input}
                     onChange={handleInput}
                     onKeyDown={(e) => {
@@ -202,29 +182,51 @@ export function QuickAdd({
                             handleSubmit(e);
                         }
                     }}
-                    placeholder="What needs to be done? ✨"
-                    className="flex-1 min-h-[40px] max-h-[160px] py-2 px-3 rounded-xl bg-transparent border-0 focus-visible:ring-0 resize-none outline-none overflow-hidden w-full text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/40"
+                    placeholder="What needs to be done?"
+                    className="w-full min-h-[44px] max-h-[200px] py-2.5 px-3 rounded-xl bg-surface-container-high border border-outline-variant/60 resize-none outline-none focus:border-primary/60 transition-colors text-[15px] leading-relaxed text-on-surface placeholder:text-on-surface-variant/60"
                     disabled={loading}
                     rows={1}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                 />
-                <VoiceButton
-                    disabled={loading}
-                    onInterim={(text) => setInput(text)}
-                    onTranscript={(text) => {
-                        // Final transcript: drop it into the box for the user to
-                        // confirm + edit. They press Enter / Send to fire addTask().
-                        setInput(text)
-                    }}
-                />
-                <Button type="submit" disabled={loading || !input.trim()} className="h-10 w-10 shrink-0 rounded-xl p-0 shadow-sm bg-primary text-primary-foreground">
-                    {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Sparkles className="h-4 w-4" />
+
+                <div className="flex items-center gap-2">
+                    {hasPartner && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (assignMode === "me") setAssignMode("partner")
+                                else if (assignMode === "partner") setAssignMode("shared")
+                                else setAssignMode("me")
+                            }}
+                            title={`Assigning to: ${assignMode}`}
+                            className="shrink-0 h-11 px-4 rounded-full bg-surface-container-high border border-outline-variant/60 text-on-surface text-sm font-medium hover:bg-surface-container-highest transition-colors active:scale-[0.98]"
+                        >
+                            {assignLabel}
+                        </button>
                     )}
-                </Button>
+
+                    <div className="flex-1" />
+
+                    <VoiceButton
+                        disabled={loading}
+                        onInterim={(text) => { setInput(text); autoGrow(textareaRef.current) }}
+                        onTranscript={(text) => { setInput(text); autoGrow(textareaRef.current) }}
+                    />
+
+                    <button
+                        type="submit"
+                        disabled={loading || !input.trim()}
+                        className="h-11 px-5 shrink-0 rounded-full bg-primary text-on-primary font-semibold flex items-center gap-2 transition-colors active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+                    >
+                        {loading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Send className="h-4 w-4" />
+                        )}
+                        <span className="hidden sm:inline">Add</span>
+                    </button>
+                </div>
             </form>
         </div>
     )
