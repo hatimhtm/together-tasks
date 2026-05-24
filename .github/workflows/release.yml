@@ -38,7 +38,15 @@ jobs:
           CAPACITOR_BUILD: 'true'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          # Gemini key is hardcoded in source — do NOT pass here or it overrides the correct key
+          # Static export inlines only NEXT_PUBLIC_* at build time — every runtime key must be passed here.
+          NEXT_PUBLIC_GEMINI_API_KEY: ${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
+          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+          NEXT_PUBLIC_KING_LABEL: ${{ vars.NEXT_PUBLIC_KING_LABEL }}
+          NEXT_PUBLIC_QUEEN_LABEL: ${{ vars.NEXT_PUBLIC_QUEEN_LABEL }}
+          NEXT_PUBLIC_KING_HANDLES: ${{ vars.NEXT_PUBLIC_KING_HANDLES }}
 
       - name: Sync Capacitor
         run: |
@@ -58,13 +66,13 @@ jobs:
           mkdir -p artifacts/android
           # arm64-v8a (64-bit)
           cp android/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk \
-             artifacts/android/TogetherTasks-v${{ github.ref_name }}-arm64.apk || true
+             artifacts/android/TogetherTasks-${{ github.ref_name }}-arm64.apk || true
           # armeabi-v7a (32-bit)
           cp android/app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk \
-             artifacts/android/TogetherTasks-v${{ github.ref_name }}-armeabi.apk || true
+             artifacts/android/TogetherTasks-${{ github.ref_name }}-armeabi.apk || true
           # Universal APK (all architectures)
           cp android/app/build/outputs/apk/debug/app-universal-debug.apk \
-             artifacts/android/TogetherTasks-v${{ github.ref_name }}-universal.apk || true
+             artifacts/android/TogetherTasks-${{ github.ref_name }}-universal.apk || true
           ls artifacts/android/
 
       - name: Upload Android artifacts
@@ -108,7 +116,15 @@ jobs:
           CAPACITOR_BUILD: 'true'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          # Gemini key is hardcoded in source — do NOT pass here or it overrides the correct key
+          # Static export inlines only NEXT_PUBLIC_* at build time — every runtime key must be passed here.
+          NEXT_PUBLIC_GEMINI_API_KEY: ${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
+          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+          NEXT_PUBLIC_KING_LABEL: ${{ vars.NEXT_PUBLIC_KING_LABEL }}
+          NEXT_PUBLIC_QUEEN_LABEL: ${{ vars.NEXT_PUBLIC_QUEEN_LABEL }}
+          NEXT_PUBLIC_KING_HANDLES: ${{ vars.NEXT_PUBLIC_KING_HANDLES }}
 
       - name: Generate Tauri icons from source
         run: npx @tauri-apps/cli icon public/icon.png
@@ -122,7 +138,7 @@ jobs:
       - name: Locate and rename macOS artifacts
         run: |
           mkdir -p artifacts/mac
-          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -exec cp {} artifacts/mac/TogetherTasks-v${{ github.ref_name }}-universal.dmg \;
+          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -exec cp {} artifacts/mac/TogetherTasks-${{ github.ref_name }}-universal.dmg \;
           ls artifacts/mac/
 
       - name: Upload macOS artifacts
@@ -156,7 +172,15 @@ jobs:
           CAPACITOR_BUILD: 'true'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          # Gemini key is hardcoded in source — do NOT pass here or it overrides the correct key
+          # Static export inlines only NEXT_PUBLIC_* at build time — every runtime key must be passed here.
+          NEXT_PUBLIC_GEMINI_API_KEY: ${{ secrets.NEXT_PUBLIC_GEMINI_API_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+          NEXT_PUBLIC_KING_EMAIL: ${{ secrets.NEXT_PUBLIC_KING_EMAIL }}
+          NEXT_PUBLIC_QUEEN_EMAIL: ${{ secrets.NEXT_PUBLIC_QUEEN_EMAIL }}
+          NEXT_PUBLIC_KING_LABEL: ${{ vars.NEXT_PUBLIC_KING_LABEL }}
+          NEXT_PUBLIC_QUEEN_LABEL: ${{ vars.NEXT_PUBLIC_QUEEN_LABEL }}
+          NEXT_PUBLIC_KING_HANDLES: ${{ vars.NEXT_PUBLIC_KING_HANDLES }}
 
       - name: Create bundle.zip for OTA distribution
         run: |

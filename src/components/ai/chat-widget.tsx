@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Loader2 } from "lucide-react"
+import { GEMINI_MODEL, geminiGenerateUrl, resolveGeminiKey } from "@/lib/ai/config"
 
 interface Message {
     role: "user" | "assistant"
@@ -54,7 +55,7 @@ export function AIChatWidget({
         setLoading(true)
 
         try {
-            const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
+            const apiKey = resolveGeminiKey()
             if (!apiKey) {
                 setMessages(prev => [...prev, {
                     role: "assistant",
@@ -72,7 +73,7 @@ Personality:
 User says: "${textToSend}"`
 
             const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                `${geminiGenerateUrl(GEMINI_MODEL)}?key=${apiKey}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -106,7 +107,9 @@ User says: "${textToSend}"`
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed bottom-[110px] right-5 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0_8px_32px_rgba(255,183,125,0.4)] flex items-center justify-center active:scale-90 transition-transform duration-200"
+                        aria-label="Open AI assistant"
+                        style={{ bottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+                        className="fixed right-5 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0_8px_32px_rgba(255,183,125,0.4)] flex items-center justify-center active:scale-90 transition-transform duration-200"
                     >
                         <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                     </motion.button>
@@ -124,16 +127,12 @@ User says: "${textToSend}"`
                         className="fixed inset-0 z-[100] bg-background flex flex-col"
                     >
                         {/* Header */}
-                        <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-3xl flex items-center justify-between px-6 py-4 border-b border-outline-variant/10">
+                        <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-3xl flex items-center justify-between px-6 py-4 pt-safe border-b border-outline-variant/10">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
-                                    <img 
-                                        alt="AI Assistant Sage" 
-                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDBd-u_nbALzMqYN23ffRbGWjdAGW0PAoJtruN3sNbXZtgkv5l-Qh5xKA1taMzL0U3zkcYFIHvnCRLke8wkePuVVhyQJwSCYubf41FFnTLOg3fCiPrb4z0CDWzRyy8qDywYH163gkBgasrARbO-nuUrP_Tk19vClt1DISyblm0edpgfJVTF-3GLwuDnGyOjvv-3Bi-RPIrhfgMRgkk9fTL3Lthfp6G0UoND4ZsFDwUFP88qsmx8pNBNKj8Dk-5GP0gteaAgSP4uwAO" 
-                                        className="w-full h-full object-cover"
-                                    />
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container flex items-center justify-center border border-outline-variant/15">
+                                    <span className="material-symbols-outlined text-primary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                                 </div>
-                                <span className="text-primary font-headline font-bold tracking-tight text-xl drop-shadow-[0_0_8px_rgba(255,183,125,0.3)]">Sparkles</span>
+                                <span className="text-primary font-headline font-bold tracking-tight text-xl drop-shadow-[0_0_8px_rgba(255,183,125,0.3)]">Sage</span>
                             </div>
                             <button 
                                 onClick={() => setIsOpen(false)}
@@ -202,7 +201,7 @@ User says: "${textToSend}"`
                         </div>
 
                         {/* Fixed Interaction Layer */}
-                        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-8 pt-4 bg-gradient-to-t from-background via-background to-transparent">
+                        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background to-transparent">
                             {/* Floating Suggestions */}
                             <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
                                 {["Give me a tip", "What's on my schedule?", "Send a nudge"].map((sug) => (
@@ -218,11 +217,8 @@ User says: "${textToSend}"`
                             </div>
                             
                             {/* Chat Input Area */}
-                            <div className="bg-surface-container/90 backdrop-blur-2xl rounded-full p-1.5 flex items-center shadow-2xl border border-outline-variant/20">
-                                <button className="p-2 text-on-surface-variant hover:text-primary transition-colors shrink-0">
-                                    <span className="material-symbols-outlined text-[24px]">add_circle</span>
-                                </button>
-                                <input 
+                            <div className="bg-surface-container/90 backdrop-blur-2xl rounded-full p-1.5 pl-5 flex items-center shadow-2xl border border-outline-variant/20">
+                                <input
                                     className="flex-1 bg-transparent border-none focus:ring-0 text-[15px] text-on-surface placeholder:text-on-surface-variant/50 px-2 font-body outline-none" 
                                     placeholder="Whisper something to Sage..." 
                                     type="text"

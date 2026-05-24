@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/header"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { AIChatWidget } from "@/components/ai/chat-widget"
 import { NotificationPrompt } from "@/components/settings/notification-prompt"
+import { UpdateChecker } from "@/components/pwa/update-checker"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -32,7 +33,7 @@ export default function DashboardLayout({
 
             const { data: profile } = await supabase
                 .from("profiles")
-                .select("username, role, has_completed_onboarding, partner_id, notification_prefs_set")
+                .select("username, role, has_completed_onboarding, partner_id, notification_prefs_set, avatar_url")
                 .eq("id", user.id)
                 .single()
 
@@ -66,11 +67,14 @@ export default function DashboardLayout({
 
     return (
         <div className="min-h-screen bg-background pb-32">
-            <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} />
+            <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} userName={profile?.username} avatarUrl={profile?.avatar_url} />
             <main className="px-6 pt-4 max-w-2xl mx-auto space-y-8">
                 {children}
             </main>
             <BottomNav />
+
+            {/* In-app updater — checks GitHub Releases on launch and on manual request */}
+            <UpdateChecker />
 
             {/* AI Chat Widget - Available on all dashboard pages */}
             <AIChatWidget

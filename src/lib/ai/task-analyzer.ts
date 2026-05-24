@@ -1,3 +1,5 @@
+import { GEMINI_MODEL, geminiGenerateUrl, resolveGeminiKey } from "@/lib/ai/config"
+
 interface TaskAnalysis {
     shouldNotifyPartner: boolean
     notificationType: "reminder" | "support" | "urgent" | "celebrate" | null
@@ -10,7 +12,7 @@ interface TaskAnalysis {
 async function callGemini(
     messages: { role: string, content: string }[]
 ) {
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = resolveGeminiKey()
     if (!apiKey) return null
 
     const systemMessage = messages.find(m => m.role === "system")?.content || ""
@@ -22,7 +24,7 @@ async function callGemini(
     }))
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`${geminiGenerateUrl(GEMINI_MODEL)}?key=${apiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

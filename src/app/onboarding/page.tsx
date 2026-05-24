@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,8 +24,9 @@ const steps = [
 export default function OnboardingPage() {
     const [currentStep, setCurrentStep] = useState(0)
     const [loading, setLoading] = useState(false)
+    const { setTheme } = useTheme()
     const [formData, setFormData] = useState({
-        theme: "light",
+        theme: "obsidian",
         goals: "",
         habits: "",
         personality: "sage",
@@ -153,15 +155,17 @@ export default function OnboardingPage() {
                                     <div className="grid grid-cols-1 gap-4">
                                         {
                                             [
-                                                { id: 'light', name: 'Glass (Light)', desc: 'Clean, bright, professional', gradient: 'from-zinc-100 to-zinc-300', tint: 'bg-zinc-500' },
-                                                { id: 'dark', name: 'Midnight', desc: 'Sleek, deep greys, glowing accents', gradient: 'from-zinc-700 to-zinc-900', tint: 'bg-black' },
-                                                { id: 'floral', name: 'Floral Blush', desc: 'Soft pinks, floating petals', gradient: 'from-pink-300 to-rose-400', tint: 'bg-pink-500' },
-                                                { id: 'creamy', name: 'Vintage Cream', desc: 'Warm sepia, elegant, minimalist', gradient: 'from-[#fdfbf7] to-[#eaddcf]', tint: 'bg-amber-700' },
-                                                { id: 'burgundy', name: 'Royal Burgundy', desc: 'Deep luscious red, gold accents', gradient: 'from-[#651028] to-[#2b0b14]', tint: 'bg-rose-900' }
+                                                { id: 'obsidian', name: 'Obsidian', desc: 'Deep black, glowing amber accents', gradient: 'from-[#1a1a1a] to-[#ff9800]', tint: 'bg-amber-500' },
+                                                { id: 'daylight', name: 'Daylight', desc: 'Clean, bright, warm orange', gradient: 'from-[#f5f6f8] to-[#ff8c00]', tint: 'bg-orange-400' },
+                                                { id: 'midnight', name: 'Midnight', desc: 'Sleek navy, electric blue glow', gradient: 'from-[#0d1117] to-[#4f8ef7]', tint: 'bg-blue-500' },
+                                                { id: 'rose', name: 'Rose', desc: 'Soft pinks, romantic blush', gradient: 'from-[#170d12] to-[#f06292]', tint: 'bg-pink-500' },
+                                                { id: 'aurora', name: 'Aurora', desc: 'Violet & cyan, dreamy glow', gradient: 'from-[#7b68ee] to-[#00bcd4]', tint: 'bg-violet-500' },
+                                                { id: 'ocean', name: 'Ocean', desc: 'Deep teal, cyan currents', gradient: 'from-[#071323] to-[#00e5ff]', tint: 'bg-cyan-500' },
+                                                { id: 'burgundy', name: 'Burgundy', desc: 'Deep luscious red, gold accents', gradient: 'from-[#651028] to-[#e8b84b]', tint: 'bg-rose-900' }
                                             ].map((theme) => (
                                                 <button
                                                     key={theme.id}
-                                                    onClick={() => setFormData({ ...formData, theme: theme.id })}
+                                                    onClick={() => { setFormData({ ...formData, theme: theme.id }); setTheme(theme.id) }}
                                                     className={`
                                                       p-4 rounded-xl border-2 transition-all flex items-center gap-4 group relative overflow-hidden text-left
                                                       ${formData.theme === theme.id ? "border-primary bg-primary/5 shadow-[0_0_15px_rgba(var(--primary),0.2)]" : "border-transparent bg-muted/30 hover:bg-muted/50"}

@@ -18,7 +18,6 @@ export default function Home() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [partnerTheme, setPartnerTheme] = useState("daylight")
   const [partnerName, setPartnerName] = useState<string | undefined>(undefined)
   const [initialTasks, setInitialTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
@@ -55,17 +54,14 @@ export default function Home() {
       }
       setProfile(currentProfile)
 
-      let pTheme = "daylight"
       if (currentProfile?.partner_id) {
         const { data: partnerProfile } = await supabase
           .from("profiles")
           .select("theme, username, briefing_time, briefing_enabled, weekly_review_enabled")
           .eq("id", currentProfile.partner_id)
           .single()
-        if (partnerProfile?.theme) pTheme = partnerProfile.theme
         if (partnerProfile?.username) setPartnerName(partnerProfile.username)
       }
-      setPartnerTheme(pTheme)
 
       let tasksQuery = supabase.from("tasks").select("*")
       if (currentProfile?.partner_id) {
@@ -176,6 +172,9 @@ export default function Home() {
             
             {/* The right-aligned stat element */}
             <div className="shrink-0 flex items-center gap-3">
+               {profile?.partner_id && (
+                    <ThinkingOfYouButton partnerId={profile.partner_id} />
+               )}
                {user && (
                     <TasksTodayCounter userId={user.id} partnerId={profile?.partner_id} />
                )}
@@ -190,8 +189,6 @@ export default function Home() {
           partnerId={profile?.partner_id}
           partnerName={partnerName}
           initialTasks={initialTasks}
-          userTheme={profile?.theme || 'daylight'}
-          partnerTheme={partnerTheme}
           sidebarSlot={<AiNudge />}
         />
       </div>

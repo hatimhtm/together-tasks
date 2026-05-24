@@ -5,7 +5,6 @@ import { QuickAdd } from "@/components/tasks/quick-add"
 import { TaskList } from "@/components/tasks/task-list"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown, ChevronUp, Calendar } from "lucide-react"
 import { format } from "date-fns"
@@ -50,22 +49,17 @@ export function TasksContainer({
     partnerId,
     partnerName,
     initialTasks,
-    userTheme = 'light',
-    partnerTheme = 'light',
     sidebarSlot
 }: {
     userId: string,
     partnerId?: string | null,
     partnerName?: string,
     initialTasks?: any[],
-    userTheme?: string,
-    partnerTheme?: string,
     sidebarSlot?: React.ReactNode
 }) {
     const { tasks, loading, addTask, updateTask, deleteTask } = useRealtimeTasks(userId, partnerId, initialTasks, partnerName)
     const [activeTab, setActiveTab] = useState<Tab>("my")
     const [isUpcomingExpanded, setIsUpcomingExpanded] = useState(false)
-    const { setTheme } = useTheme()
 
     const { todayTasks, upcomingTasks } = getDateBuckets(tasks, userId, partnerId, activeTab)
 
@@ -82,14 +76,7 @@ export function TasksContainer({
                             {(['my', 'partner', 'shared'] as Tab[]).map((tab) => (
                                 <button
                                     key={tab}
-                                    onClick={() => {
-                                        setActiveTab(tab)
-                                        if (tab === 'partner') {
-                                            setTheme(partnerTheme)
-                                        } else {
-                                            setTheme(userTheme)
-                                        }
-                                    }}
+                                    onClick={() => setActiveTab(tab)}
                                     className={cn(
                                         "px-6 py-2.5 rounded-full font-label text-sm transition-colors whitespace-nowrap",
                                         activeTab === tab

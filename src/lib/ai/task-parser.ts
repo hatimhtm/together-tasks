@@ -29,8 +29,10 @@ Time-of-day mapping (use these EXACT times when user uses vague time expressions
 - "early" / "first thing" → 07:00
 CRITICAL: NEVER default to 08:00 unless the user explicitly said "8am" or "8:00". If no time is specified at all, set dueTime to null.`
 
+import { GEMINI_MODEL, geminiGenerateUrl, resolveGeminiKey } from "@/lib/ai/config"
+
 export async function parseTaskInput(input: string) {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY
+    const apiKey = resolveGeminiKey()
     if (!apiKey) {
         throw new Error('Gemini API key is not configured');
     }
@@ -46,13 +48,8 @@ Current time is: ${currentTime}
 Current day of week: ${dayOfWeek}`
 
     try {
-        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ""
-        if (!apiKey) {
-            throw new Error('Gemini API key is not configured')
-        }
-
         const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+            `${geminiGenerateUrl(GEMINI_MODEL)}?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

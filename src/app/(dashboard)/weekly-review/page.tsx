@@ -40,8 +40,14 @@ export default function WeeklyReviewPage() {
             const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
             const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 })
 
-            let tasksQuery = supabase.from('tasks').select('*').gte('completed_at', weekStart.toISOString()).lte('completed_at', weekEnd.toISOString())
-            const { data: weekTasks } = await tasksQuery
+            const orFilter = myProfile?.partner_id
+                ? `creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${myProfile.partner_id},assignee_id.eq.${myProfile.partner_id}`
+                : `creator_id.eq.${user.id},assignee_id.eq.${user.id}`
+
+            const { data: weekTasks } = await supabase.from('tasks').select('*')
+                .gte('completed_at', weekStart.toISOString())
+                .lte('completed_at', weekEnd.toISOString())
+                .or(orFilter)
 
             const allTasks = weekTasks || []
             let myCompleted = 0

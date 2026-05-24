@@ -30,7 +30,7 @@ export function QuickAdd({
 
     // Typing indicator refs
     const channelRef = useRef<any>(null)
-    const typingTimeoutRef = useRef<NodeJS.Timeout>()
+    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
     useEffect(() => {
         if (!userId || !partnerId) return;
@@ -60,6 +60,7 @@ export function QuickAdd({
         channelRef.current = channel
 
         return () => {
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
             channel.unsubscribe()
         }
     }, [userId, partnerId])

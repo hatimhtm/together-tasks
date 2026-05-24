@@ -122,12 +122,7 @@ export default function NudgePage() {
     const myName = profile?.username || "You"
     const partnerName = partner?.username || "Your Partner"
 
-    // Mock data if empty
-    const displayNudges = nudges.length > 0 ? nudges : [
-        { id: '1', sender_id: partner?.id || 'partner', receiver_id: user?.id, message: "Thinking of you", type: "love", created_at: new Date(Date.now() - 7200000).toISOString() },
-        { id: '2', sender_id: user?.id, receiver_id: partner?.id || 'partner', message: "Shared Sparkle", type: "sparkle", created_at: new Date(Date.now() - 18000000).toISOString() },
-        { id: '3', sender_id: partner?.id || 'partner', receiver_id: user?.id, message: "Feeling Grateful", type: "mood", created_at: new Date(Date.now() - 86400000).toISOString() },
-    ] as Nudge[]
+    const displayNudges = nudges
 
     return (
         <motion.main 
@@ -215,6 +210,13 @@ export default function NudgePage() {
                 </div>
                 
                 <div className="space-y-3">
+                    {displayNudges.length === 0 && (
+                        <div className="bg-surface-container-low p-8 rounded-2xl flex flex-col items-center gap-3 text-center border border-outline-variant/5">
+                            <span className="material-symbols-outlined text-on-surface-variant/50 text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                            <p className="text-on-surface font-semibold text-[15px]">No nudges yet</p>
+                            <p className="text-on-surface-variant text-[13px] max-w-[240px]">Send {partnerName} a little love above — your history will show up here.</p>
+                        </div>
+                    )}
                     {displayNudges.map((nudge, i) => {
                         const isMine = nudge.sender_id === user.id
                         

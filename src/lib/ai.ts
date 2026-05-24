@@ -1,3 +1,5 @@
+import { GEMINI_MODEL, geminiGenerateUrl, resolveGeminiKey } from "@/lib/ai/config"
+
 export interface GenerateWelcomeParams {
     usersName: string
     partnerName: string
@@ -8,7 +10,7 @@ export interface GenerateWelcomeParams {
 }
 
 export async function generateRoyalWelcome(params: GenerateWelcomeParams) {
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = resolveGeminiKey()
 
     if (!apiKey) {
         throw new Error("GEMINI_API_KEY is not set")
@@ -28,7 +30,7 @@ export async function generateRoyalWelcome(params: GenerateWelcomeParams) {
 
     try {
         // Attempt to call Gemini API
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`${geminiGenerateUrl(GEMINI_MODEL)}?key=${apiKey}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

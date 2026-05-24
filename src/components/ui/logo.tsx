@@ -1,0 +1,35 @@
+// The Together Tasks mark — orange squircle, white heart, orange check.
+// Single source for the in-app logo so it stays in sync with the app icon.
+export function Logo({ size = 28, className }: { size?: number; className?: string }) {
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 512 512"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            aria-hidden="true"
+        >
+            <defs>
+                <linearGradient id="tt-logo-g" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ffb24d" />
+                    <stop offset="100%" stopColor="#ff6a1f" />
+                </linearGradient>
+            </defs>
+            <rect width="512" height="512" rx="116" fill="url(#tt-logo-g)" />
+            <path
+                d="M256 366C150 291 118 219 118 177C118 139 148 110 186 110C212 110 238 126 256 151C274 126 300 110 326 110C364 110 394 139 394 177C394 219 362 291 256 366Z"
+                fill="#ffffff"
+            />
+            <path
+                d="M201 228L240 268L317 188"
+                stroke="#ff6a1f"
+                strokeWidth="34"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    )
+}

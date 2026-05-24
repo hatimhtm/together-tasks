@@ -199,11 +199,12 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
     }
 
     const addTask = async (input: string) => {
-        // 1. Optimistic Update
+        // 1. Optimistic Update — strip @partner/@shared prefixes so the title reads cleanly
         const tempId = crypto.randomUUID()
+        const optimisticTitle = input.replace(/@partner/gi, "").replace(/@shared/gi, "").trim()
         const optimisticTask: Task = {
             id: tempId,
-            title: input, // We don't have the parsed AI title yet, so we use input as title for now
+            title: optimisticTitle,
             description: null,
             due_date: null,
             priority: "medium",

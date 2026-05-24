@@ -35,6 +35,7 @@ interface Analytics {
     bestHour: number | null
     myName: string
     partnerName: string
+    nudgesSent: number
 }
 
 export default function AnalyticsPage() {
@@ -58,12 +59,22 @@ export default function AnalyticsPage() {
                 ? `creator_id.eq.${user.id},assignee_id.eq.${user.id},creator_id.eq.${profile.partner_id},assignee_id.eq.${profile.partner_id}`
                 : `creator_id.eq.${user.id},assignee_id.eq.${user.id}`
 
-            const [{ data: tasks }, partnerRes] = await Promise.all([
+            const nudgeTargets = profile?.partner_id
+                ? [user.id, profile.partner_id]
+                : [user.id]
+
+            const [{ data: tasks }, partnerRes, nudgeRes] = await Promise.all([
                 supabase.from('tasks').select('*').or(orFilter),
                 profile?.partner_id
                     ? supabase.from('profiles').select('username').eq('id', profile.partner_id).single()
                     : Promise.resolve({ data: null }),
+                supabase
+                    .from('partner_notifications')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('notification_type', 'nudge')
+                    .in('partner_id', nudgeTargets),
             ])
+            const nudgesSent = nudgeRes?.count ?? 0
 
             const allTasks = tasks || []
             const weekAgoTime = subDays(new Date(), 7).getTime()
@@ -167,6 +178,7 @@ export default function AnalyticsPage() {
                 bestHour,
                 myName: profile?.username || "You",
                 partnerName: partnerRes?.data?.username || "Partner",
+                nudgesSent,
             })
             setLoading(false)
         }
@@ -374,14 +386,14 @@ export default function AnalyticsPage() {
                             <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>quick_phrases</span>
                             <span className="font-label font-medium text-on-surface">Nudges Sent</span>
                         </div>
-                        <span className="text-xl font-headline font-bold text-secondary">312</span>
+                        <span className="text-xl font-headline font-bold text-secondary">{analytics.nudgesSent}</span>
                     </div>
                     <div className="flex items-center justify-between p-6 hover:bg-surface-container-low/50 transition-colors">
                         <div className="flex items-center gap-4">
-                            <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>photo_library</span>
-                            <span className="font-label font-medium text-on-surface">Memories Saved</span>
+                            <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
+                            <span className="font-label font-medium text-on-surface">Tasks Completed Together</span>
                         </div>
-                        <span className="text-xl font-headline font-bold text-secondary">84</span>
+                        <span className="text-xl font-headline font-bold text-secondary">{analytics.totalCompletedAllTime + analytics.partnerCompletedAllTime}</span>
                     </div>
                 </div>
             </section>

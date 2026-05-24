@@ -36,3 +36,6 @@ bun.lock
 # IDE
 .vscode/
 .idea/
+
+# TypeScript incremental build info
+tsconfig.tsbuildinfo

@@ -6,8 +6,8 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { ThemeSelector } from "@/components/settings/theme-selector"
-
-const APP_VERSION = "2.4.0"
+import { APP_VERSION } from "@/lib/version"
+import { requestUpdateCheck } from "@/lib/updater"
 
 export default function SettingsPage() {
     const supabase = createClient()
@@ -111,35 +111,6 @@ export default function SettingsPage() {
                 </div>
             </section>
 
-            {/* Quick Links Bento */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-surface-container-low p-5 rounded-2xl flex items-center justify-between group cursor-pointer hover:bg-surface-container transition-colors border border-outline-variant/5 hover:border-outline-variant/10">
-                    <div className="flex items-center gap-4">
-                        <div className="w-[46px] h-[46px] rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
-                            <span className="material-symbols-outlined text-[24px]">person</span>
-                        </div>
-                        <div>
-                            <h3 className="font-headline font-bold text-on-surface text-[15px]">Account</h3>
-                            <p className="text-[13px] text-on-surface-variant">Personal info & keys</p>
-                        </div>
-                    </div>
-                    <span className="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform opacity-50 group-hover:opacity-100">chevron_right</span>
-                </div>
-                
-                <div className="bg-surface-container-low p-5 rounded-2xl flex items-center justify-between group cursor-pointer hover:bg-surface-container transition-colors border border-outline-variant/5 hover:border-outline-variant/10">
-                    <div className="flex items-center gap-4">
-                        <div className="w-[46px] h-[46px] rounded-full bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary/20 transition-colors">
-                            <span className="material-symbols-outlined text-[24px]">verified_user</span>
-                        </div>
-                        <div>
-                            <h3 className="font-headline font-bold text-on-surface text-[15px]">Privacy & Security</h3>
-                            <p className="text-[13px] text-on-surface-variant">Shared vault settings</p>
-                        </div>
-                    </div>
-                    <span className="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform opacity-50 group-hover:opacity-100">chevron_right</span>
-                </div>
-            </section>
-
             {/* Aesthetic Theme Picker */}
             <section className="space-y-5">
                 <div className="flex items-center justify-between">
@@ -148,7 +119,7 @@ export default function SettingsPage() {
                         Theme Picker
                     </span>
                 </div>
-                <ThemeSelector userId={user.id} currentDbTheme={profile?.theme || 'light'} />
+                <ThemeSelector userId={user.id} currentDbTheme={profile?.theme || 'obsidian'} />
             </section>
 
             {/* Notifications Section */}
@@ -165,18 +136,42 @@ export default function SettingsPage() {
                         </div>
                     </div>
                     
-                    {/* Custom Toggle Switch */}
-                    <label className="relative inline-flex items-center cursor-pointer active:scale-95 transition-transform" onClick={(e) => { e.preventDefault(); toggleBriefing(); }}>
-                        <input type="checkbox" className="sr-only peer" checked={briefingEnabled} readOnly />
+                    {/* Toggle Switch */}
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={briefingEnabled}
+                        aria-label="Morning AI Briefing"
+                        onClick={() => toggleBriefing()}
+                        className="relative inline-flex items-center active:scale-95 transition-transform"
+                    >
                         <div className={`w-14 h-8 rounded-full transition-colors duration-300 ${briefingEnabled ? 'bg-primary shadow-[0_0_15px_rgba(255,183,125,0.4)]' : 'bg-surface-container-highest border border-outline-variant/10'}`}>
-                            <motion.div 
-                                className="absolute top-[4px] left-[4px] bg-auto bg-white rounded-full h-6 w-6 shadow-sm"
+                            <motion.div
+                                className="absolute top-[4px] left-[4px] bg-white rounded-full h-6 w-6 shadow-sm"
                                 animate={{ x: briefingEnabled ? 24 : 0 }}
                                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
                             />
                         </div>
-                    </label>
+                    </button>
                 </div>
+            </section>
+
+            {/* App updates */}
+            <section className="pt-2">
+                <button
+                    type="button"
+                    onClick={() => requestUpdateCheck()}
+                    className="w-full flex items-center justify-between gap-3 p-4 rounded-[1rem] bg-surface-container-low border border-outline-variant/10 hover:bg-surface-container transition-colors active:scale-[0.99] text-left"
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-primary text-[22px]">system_update</span>
+                        <div>
+                            <p className="font-headline font-bold text-[15px] text-on-surface">Check for updates</p>
+                            <p className="text-[12px] text-on-surface-variant">You're on v{APP_VERSION}</p>
+                        </div>
+                    </div>
+                    <span className="material-symbols-outlined text-on-surface-variant/60 text-[20px]">chevron_right</span>
+                </button>
             </section>
 
             {/* Logout / Danger Zone */}

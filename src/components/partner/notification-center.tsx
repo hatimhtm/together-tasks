@@ -167,7 +167,7 @@ export function PartnerNotificationCenter() {
             )
 
             if (action === "called") {
-                toast.success("Great! She'll appreciate the call 📞")
+                toast.success("Great! They'll appreciate the call 📞")
             } else if (action === "messaged") {
                 toast.success("Message sent! 💬")
             }

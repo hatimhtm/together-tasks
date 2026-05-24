@@ -110,7 +110,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.5}
                 onDragEnd={(_, info) => {
-                    if (info.offset.x > 80 || info.velocity.x > 500) {
+                    if ((info.offset.x > 80 || info.velocity.x > 500) && !task.is_completed) {
                         triggerHapticSuccess()
                         onComplete(task.is_completed)
                     } else if (info.offset.x < -80 || info.velocity.x < -500) {

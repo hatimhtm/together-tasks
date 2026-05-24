@@ -8,19 +8,23 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { PartnerNotificationCenter } from "@/components/partner/notification-center"
+import { Logo } from "@/components/ui/logo"
 
 interface HeaderProps {
     partnerId?: string | null
     userRole?: "king" | "queen" | null
     userId: string
+    userName?: string | null
+    avatarUrl?: string | null
 }
 
-export function Header({ partnerId, userRole, userId }: HeaderProps) {
+export function Header({ partnerId, userRole, userId, userName, avatarUrl }: HeaderProps) {
     const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+    const initial = (userName?.trim()?.[0] || (userRole === "queen" ? "Q" : "K")).toUpperCase()
 
     return (
         <header
-            className="fixed top-0 left-0 right-0 z-50 h-[72px] flex items-center justify-between px-6 bg-background/70 backdrop-blur-md pointer-events-auto"
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 pt-safe bg-background/70 backdrop-blur-md pointer-events-auto min-h-[72px]"
             {...(isTauri ? { 'data-tauri-drag-region': 'true' } : {})}
         >
             <div
@@ -30,12 +34,17 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
                 {/* User Avatar + Title */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-outline-variant/15">
-                        <img 
-                            alt="Avatar" 
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAg-lqUdq3AOZf3fBlfI9qo1vHGqGca5fePYirotlCL8i39sO95lj2OndnXo2LYeTYAO1qAIrD7mCZ7P3p-oh9a9Fjdwo_G0vq841Z2XPTbAf7bfsAlWkAgDNFWvmeIsx1jOdDS49GDJU49_axEX0ILdtxyUP4CDedRcaspQbZQsLqS65UsXIgtjysfcxZzvPwIzO0J1Bxx4Dft-lJBabtABiceO9uh1VtIeIzu31-9Kbb8WqONHLJtD-T304fCGQtMOlb3j6wgELRL" 
-                            className="w-full h-full object-cover"
-                        />
+                        {avatarUrl ? (
+                            <img
+                                alt="Avatar"
+                                src={avatarUrl}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <span className="font-headline font-bold text-primary text-base">{initial}</span>
+                        )}
                     </div>
+                    <Logo size={24} className="shrink-0" />
                     <span className="text-primary font-headline font-bold text-xl drop-shadow-[0_0_8px_rgba(255,183,125,0.4)]">
                         Together Tasks
                     </span>
@@ -47,7 +56,8 @@ export function Header({ partnerId, userRole, userId }: HeaderProps) {
                         <SheetTrigger asChild>
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
-                                className="hover:opacity-80 transition-opacity duration-200"
+                                aria-label="Notifications"
+                                className="hover:opacity-80 transition-opacity duration-200 h-11 w-11 flex items-center justify-center -mr-2"
                             >
                                 <span className="material-symbols-outlined text-primary text-[28px]">favorite</span>
                             </motion.button>

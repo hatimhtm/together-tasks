@@ -12,13 +12,19 @@ const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-ja
 export const metadata: Metadata = {
   title: "Together Tasks",
   description: "A premium shared task manager for couples",
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
 }
 
 export const viewport: Viewport = {
-  themeColor: "#161311",
+  themeColor: "#0a0a0a",
   colorScheme: "dark",
+  // Required for env(safe-area-inset-*) to report non-zero on notched devices.
+  viewportFit: "cover",
 }
+
+const VALID_THEMES = ['daylight', 'midnight', 'burgundy', 'aurora', 'obsidian', 'ocean', 'rose']
+// Map ids from older builds onto the current set so a saved theme never falls through to bare :root.
+const LEGACY_THEME_MAP: Record<string, string> = { light: 'daylight', dark: 'midnight', floral: 'rose', creamy: 'daylight' }
 
 export default async function RootLayout({
   children,
@@ -28,15 +34,16 @@ export default async function RootLayout({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let dbTheme = "daylight"
+  let dbTheme = "obsidian"
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("theme")
       .eq("id", user.id)
       .single()
-    if (profile?.theme && profile.theme !== 'system') {
-      dbTheme = profile.theme
+    const saved = profile?.theme
+    if (saved && saved !== 'system') {
+      dbTheme = VALID_THEMES.includes(saved) ? saved : (LEGACY_THEME_MAP[saved] || 'obsidian')
     }
   }
 

@@ -11,6 +11,7 @@ import { KING_EMAIL, QUEEN_EMAIL, QUEEN_LABEL } from "@/lib/constants"
 import { triggerHaptic, triggerHapticSuccess } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/ui/logo"
 
 export default function LoginPage() {
     // Auth State
@@ -170,9 +171,9 @@ export default function LoginPage() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
                                 transition={{ duration: 0.5 }}
-                                className="w-full flex justify-center items-center flex-col h-full mt-4"
+                                className="w-full flex justify-center items-center flex-col h-full gap-4"
                             >
-                                <div className="relative w-48 h-48 mb-6">
+                                <div className="relative w-40 h-40 shrink-0">
                                     <svg className="w-full h-full drop-shadow-[0_0_15px_rgba(255,177,199,0.3)]" viewBox="0 0 100 100">
                                         <defs>
                                             <linearGradient id="roseGradient" x1="0%" x2="100%" y1="0%" y2="100%">
@@ -203,7 +204,7 @@ export default function LoginPage() {
                                     </svg>
                                 </div>
 
-                                <motion.div className="text-center relative -mt-4 mb-10 w-full h-[60px] flex items-center justify-center">
+                                <motion.div className="text-center relative w-full h-[56px] flex items-center justify-center shrink-0">
                                     <AnimatePresence mode="wait">
                                         {isVerified ? (
                                             <motion.div
@@ -231,7 +232,7 @@ export default function LoginPage() {
                                 </motion.div>
 
                                 {/* Drag Interface */}
-                                <div className="absolute bottom-8 left-8 right-8 h-12 bg-surface-container-high rounded-full overflow-hidden border border-outline-variant/10 shadow-inner">
+                                <div className="relative w-full max-w-[280px] h-12 bg-surface-container-high rounded-full overflow-hidden border border-outline-variant/10 shadow-inner shrink-0">
                                     <div className="absolute inset-0 flex items-center justify-center text-[10px] font-label font-bold text-on-surface-variant/40 tracking-widest uppercase pointer-events-none">
                                         {isVerified ? "Love Confirmed" : "Slide to unlock"}
                                     </div>
@@ -399,24 +400,15 @@ export default function LoginPage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-                
-                <AnimatePresence>
-                    {!showForm && (
-                        <motion.button 
-                            initial={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="w-full mt-4 text-on-surface-variant/70 font-label text-xs font-medium hover:text-secondary transition-colors py-2 text-center"
-                        >
-                            Need a hint?
-                        </motion.button>
-                    )}
-                </AnimatePresence>
             </div>
 
             {/* Footer Identity Anchor */}
             <div className="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-8 pb-10 pointer-events-none">
-                <div className="text-primary font-headline font-extrabold tracking-tighter text-lg opacity-80">
-                    Together Tasks
+                <div className="flex items-center gap-2 opacity-80">
+                    <Logo size={22} className="shrink-0" />
+                    <span className="text-primary font-headline font-extrabold tracking-tighter text-lg">
+                        Together Tasks
+                    </span>
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-secondary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
