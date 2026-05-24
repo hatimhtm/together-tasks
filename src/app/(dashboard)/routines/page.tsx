@@ -81,7 +81,7 @@ export default function RoutinesPage() {
                 .single()
             if (error) { toast.error("Could not log"); return }
             setCompletions(prev => [...prev, data as RoutineCompletion])
-            toast.success(`+${routine.xp_reward} XP — keep the streak going.`)
+            toast.success("Done for today.")
         }
     }
 
@@ -145,7 +145,7 @@ export default function RoutinesPage() {
                         Routines
                     </h1>
                     <p className="text-on-surface-variant text-sm max-w-prose">
-                        Shared habits that earn XP every time you keep them. Streaks live here, not in tasks.
+                        Shared habits you keep together. Streaks live here, not in tasks — miss a day and a grace day keeps the chain alive.
                     </p>
                 </div>
                 <button
@@ -162,7 +162,7 @@ export default function RoutinesPage() {
                     <h2 className="text-xl font-headline font-bold text-on-surface">No routines yet</h2>
                     <p className="text-on-surface-variant max-w-md mx-auto text-sm">
                         Start with something small you both want to do together — a morning walk,
-                        a 9pm phone-down, a Sunday review. Each completion earns XP.
+                        a 9pm phone-down, a Sunday review. Keep the chain going.
                     </p>
                     <button
                         onClick={() => setShowNew(true)}

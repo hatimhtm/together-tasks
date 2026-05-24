@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { Check, Flame, Trash2, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Routine, RoutineCompletion, CADENCE_LABELS, isRoutineDueOn, isRoutineDueToday, routineStreak } from "@/types/routine"
@@ -17,6 +17,7 @@ interface Props {
 const WEEK = ["S", "M", "T", "W", "T", "F", "S"]
 
 export function RoutineCard({ routine, completions, userId, partnerId, onToggleToday, onArchive }: Props) {
+    const reduceMotion = useReducedMotion()
     const today = new Date()
     const todayKey = today.toISOString().slice(0, 10)
     const dueToday = isRoutineDueToday(routine)
@@ -47,7 +48,7 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 space-y-4 group"
@@ -67,16 +68,16 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
                         )}
                         <div className="flex items-center gap-3 mt-2 text-xs text-on-surface-variant">
                             <span>{CADENCE_LABELS[routine.cadence]}</span>
-                            <span>·</span>
-                            <span>+{routine.xp_reward} XP</span>
                             {streak > 0 && (
                                 <>
                                     <span>·</span>
-                                    <span className="inline-flex items-center gap-1 text-primary">
+                                    <span className="inline-flex items-center gap-1 text-primary font-medium">
                                         <Flame className="w-3.5 h-3.5" /> {streak} day{streak === 1 ? "" : "s"}
                                     </span>
                                 </>
                             )}
+                            <span>·</span>
+                            <span className="text-on-surface-variant/60">+{routine.xp_reward} XP</span>
                         </div>
                     </div>
                     <button
