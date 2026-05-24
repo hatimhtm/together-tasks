@@ -187,7 +187,7 @@ export default function AnalyticsPage() {
 
     if (loading || !analytics) {
         return (
-            <div className="pt-8 px-6 max-w-2xl mx-auto space-y-8 animate-pulse text-center">
+            <div className="max-w-4xl mx-auto space-y-8 animate-pulse text-center">
                 <div className="h-10 w-48 bg-surface-container-high rounded-lg mx-auto mb-2" />
                 <div className="h-32 bg-surface-container-low rounded-xl" />
                 <div className="grid grid-cols-2 gap-4">
@@ -219,7 +219,7 @@ export default function AnalyticsPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="pt-8 px-6 max-w-2xl mx-auto space-y-8 pb-32"
+            className="max-w-4xl mx-auto space-y-8"
         >
             {/* Hero Section */}
             <section className="space-y-2">
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
             {/* Bento Grid */}
             <div className="grid grid-cols-2 gap-4">
                 {/* Royal Streaks */}
-                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square border border-outline-variant/5">
+                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square sm:aspect-auto sm:min-h-[200px] border border-outline-variant/5">
                     <div className="bg-primary-container/10 w-12 h-12 rounded-full flex items-center justify-center">
                         <span className="material-symbols-outlined text-primary-container text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
                     </div>
@@ -270,7 +270,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 {/* Love Pulse Harmony */}
-                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square overflow-hidden relative border border-outline-variant/5 group">
+                <div className="col-span-1 bg-surface-container p-6 rounded-2xl flex flex-col justify-between aspect-square sm:aspect-auto sm:min-h-[200px] overflow-hidden relative border border-outline-variant/5 group">
                     <div className="relative z-10">
                         <span className="material-symbols-outlined text-secondary text-[28px] group-hover:scale-110 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
                         <p className="text-[13px] font-label font-medium text-on-surface-variant mt-1.5">Task Rate</p>

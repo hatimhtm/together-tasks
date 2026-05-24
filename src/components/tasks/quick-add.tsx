@@ -31,6 +31,19 @@ export function QuickAdd({
     // Typing indicator refs
     const channelRef = useRef<any>(null)
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const autoGrow = (el: HTMLTextAreaElement | null) => {
+        if (!el) return
+        el.style.height = "auto"
+        el.style.height = Math.min(el.scrollHeight, 160) + "px"
+    }
+
+    // Keep height correct on mount and whenever the value changes externally
+    // (voice input, reset after submit, etc.)
+    useEffect(() => {
+        autoGrow(textareaRef.current)
+    }, [input])
 
     useEffect(() => {
         if (!userId || !partnerId) return;
@@ -68,8 +81,7 @@ export function QuickAdd({
     const handleInput = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const val = e.target.value
         setInput(val)
-        e.target.style.height = 'auto'
-        e.target.style.height = (e.target.scrollHeight) + 'px'
+        autoGrow(e.target)
 
         // Broadcast typing status
         if (channelRef.current) {
@@ -169,7 +181,7 @@ export function QuickAdd({
                 )}
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+            <form onSubmit={handleSubmit} className="flex gap-2 items-center">
                 {hasPartner && (
                     <Button
                         type="button"
@@ -194,6 +206,7 @@ export function QuickAdd({
                     </Button>
                 )}
                 <textarea
+                    ref={textareaRef}
                     value={input}
                     onChange={handleInput}
                     onKeyDown={(e) => {
@@ -203,7 +216,7 @@ export function QuickAdd({
                         }
                     }}
                     placeholder="What needs to be done? ✨"
-                    className="flex-1 min-h-[40px] max-h-[160px] py-2 px-3 rounded-xl bg-transparent border-0 focus-visible:ring-0 resize-none outline-none overflow-hidden w-full text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/40"
+                    className="flex-1 min-w-0 block h-10 min-h-[2.5rem] max-h-40 py-2 px-3 rounded-xl bg-transparent border-0 focus-visible:ring-0 resize-none outline-none overflow-y-auto w-full text-sm leading-6 text-foreground placeholder:text-muted-foreground/40"
                     disabled={loading}
                     rows={1}
                     onFocus={() => setFocused(true)}

@@ -113,7 +113,7 @@ export default function WeeklyReviewPage() {
     }
 
     return (
-        <div className="max-w-lg mx-auto pb-24 space-y-6">
+        <div className="max-w-lg mx-auto space-y-6">
             {/* Hero Header */}
             <motion.div
                 initial={{ opacity: 0, y: -16 }}

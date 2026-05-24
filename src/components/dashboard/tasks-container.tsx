@@ -64,9 +64,9 @@ export function TasksContainer({
     const { todayTasks, upcomingTasks } = getDateBuckets(tasks, userId, partnerId, activeTab)
 
     return (
-        <div className="w-full max-w-5xl mx-auto pb-10 pt-2 px-2 sm:px-0 flex flex-col md:flex-row gap-6 items-start">
+        <div className="w-full pb-10 pt-2 flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
             {/* Left Sidebar */}
-            <div className="w-full md:w-[320px] shrink-0 space-y-4 md:sticky md:top-28 z-10 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="w-full lg:w-[380px] shrink-0 space-y-4 lg:sticky lg:top-28 z-10 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {sidebarSlot}
 
                 {/* Focus Tabs */}
@@ -98,7 +98,7 @@ export function TasksContainer({
             </div>
 
             {/* Task List (Right Column) */}
-            <div className="flex-1 w-full min-w-0 md:bg-transparent rounded-t-3xl md:rounded-none space-y-6">
+            <div className="flex-1 w-full min-w-0 rounded-t-3xl lg:rounded-none space-y-6">
                 {/* Today's Tasks */}
                 <TaskList
                     userId={userId}

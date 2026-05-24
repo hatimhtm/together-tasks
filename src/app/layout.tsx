@@ -65,12 +65,8 @@ export default async function RootLayout({
           enableSystem={false}
           themes={['daylight', 'midnight', 'burgundy', 'aurora', 'obsidian', 'ocean', 'rose']}
         >
-          {/* Ambient background — uses theme CSS variables so it shifts with every theme */}
-          <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-background transition-colors duration-700">
-            <div className="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] rounded-full bg-primary/8 blur-[140px] animate-blob" />
-            <div className="absolute top-[25%] right-[-15%] w-[50%] h-[50%] rounded-full bg-secondary/8 blur-[140px] animate-blob animation-delay-2000" />
-            <div className="absolute bottom-[-20%] left-[15%] w-[55%] h-[55%] rounded-full bg-accent/6 blur-[160px] animate-blob animation-delay-4000" />
-          </div>
+          {/* Fixed full-viewport ambient layer — never crops, no animation. */}
+          <div className="app-bg" aria-hidden="true" />
 
           <Providers>
             <div className="min-h-screen text-foreground relative z-0">

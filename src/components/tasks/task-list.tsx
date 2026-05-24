@@ -174,7 +174,7 @@ export function TaskList({
             {/* Active Tasks */}
             <AnimatePresence mode="popLayout">
                 {activeTasks.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-start">
                         {activeTasks.map((task, i) => (
                                 <TaskItem
                                     key={task.id}

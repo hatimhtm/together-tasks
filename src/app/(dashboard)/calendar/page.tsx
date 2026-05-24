@@ -46,7 +46,7 @@ export default function CalendarPage() {
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8 max-w-3xl mx-auto">
             <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-sm flex items-center gap-3">
                     <CalendarIcon className="h-8 w-8 text-primary" />

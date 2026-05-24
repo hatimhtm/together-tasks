@@ -110,7 +110,7 @@ export default function NudgePage() {
 
     if (loading) {
         return (
-            <div className="pt-12 px-6 max-w-2xl mx-auto space-y-12 animate-pulse text-center">
+            <div className="max-w-2xl mx-auto space-y-12 animate-pulse text-center">
                 <div className="w-28 h-28 rounded-full bg-surface-container-high mx-auto" />
                 <div className="h-8 w-48 bg-surface-container-low mx-auto rounded" />
                 <div className="w-64 h-64 rounded-full bg-surface-container mx-auto" />
@@ -128,7 +128,7 @@ export default function NudgePage() {
         <motion.main 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 flex flex-col pt-8 px-6 pb-32 max-w-2xl mx-auto w-full relative overflow-hidden"
+            className="flex-1 flex flex-col max-w-2xl mx-auto w-full relative overflow-hidden"
         >
             {/* Header Section */}
             <section className="mt-4 mb-8 text-center">

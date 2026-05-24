@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/layout/header"
 import { BottomNav } from "@/components/layout/bottom-nav"
+import { SideNav } from "@/components/layout/side-nav"
 import { AIChatWidget } from "@/components/ai/chat-widget"
 import { NotificationPrompt } from "@/components/settings/notification-prompt"
 import { UpdateChecker } from "@/components/pwa/update-checker"
@@ -66,11 +67,14 @@ export default function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen bg-background pb-32">
-            <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} userName={profile?.username} avatarUrl={profile?.avatar_url} />
-            <main className="px-6 pt-4 max-w-2xl mx-auto space-y-8">
-                {children}
-            </main>
+        <div className="min-h-screen bg-background">
+            <SideNav />
+            <div className="lg:pl-64">
+                <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} userName={profile?.username} avatarUrl={profile?.avatar_url} />
+                <main className="px-5 sm:px-6 lg:px-10 pt-[calc(env(safe-area-inset-top)+5.5rem)] lg:pt-24 pb-32 lg:pb-16 max-w-5xl mx-auto space-y-8">
+                    {children}
+                </main>
+            </div>
             <BottomNav />
 
             {/* In-app updater — checks GitHub Releases on launch and on manual request */}

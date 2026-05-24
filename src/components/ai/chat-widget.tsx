@@ -108,8 +108,7 @@ User says: "${textToSend}"`
                         exit={{ scale: 0, opacity: 0 }}
                         onClick={() => setIsOpen(true)}
                         aria-label="Open AI assistant"
-                        style={{ bottom: "calc(7rem + env(safe-area-inset-bottom))" }}
-                        className="fixed right-5 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0_8px_32px_rgba(255,183,125,0.4)] flex items-center justify-center active:scale-90 transition-transform duration-200"
+                        className="fixed right-5 lg:right-8 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0_8px_32px_rgba(255,183,125,0.4)] flex items-center justify-center active:scale-90 transition-transform duration-200 bottom-[calc(7rem+env(safe-area-inset-bottom))] lg:bottom-6"
                     >
                         <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                     </motion.button>

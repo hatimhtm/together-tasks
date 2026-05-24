@@ -141,7 +141,7 @@ export default function RoutinesPage() {
     }
 
     return (
-        <div className="space-y-6 pb-24">
+        <div className="space-y-6">
             <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2">
                     <h1 className="text-3xl font-bold text-foreground drop-shadow-sm flex items-center gap-3">

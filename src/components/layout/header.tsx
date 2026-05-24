@@ -24,12 +24,11 @@ export function Header({ partnerId, userRole, userId, userName, avatarUrl }: Hea
 
     return (
         <header
-            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 pt-safe bg-background/70 backdrop-blur-md pointer-events-auto min-h-[72px]"
+            className="fixed top-0 left-0 right-0 lg:left-64 z-40 flex items-center justify-between px-5 sm:px-6 lg:px-10 pt-safe lg:pt-0 bg-background/70 backdrop-blur-md pointer-events-auto min-h-[72px] lg:min-h-[88px]"
             {...(isTauri ? { 'data-tauri-drag-region': 'true' } : {})}
         >
             <div
-                className="relative z-10 w-full flex items-center justify-between"
-                style={isTauri ? { paddingLeft: '80px' } : undefined}
+                className={`relative z-10 w-full flex items-center justify-between ${isTauri ? "pl-20 lg:pl-0" : ""}`}
             >
                 {/* User Avatar + Title */}
                 <div className="flex items-center gap-3">
@@ -44,8 +43,8 @@ export function Header({ partnerId, userRole, userId, userName, avatarUrl }: Hea
                             <span className="font-headline font-bold text-primary text-base">{initial}</span>
                         )}
                     </div>
-                    <Logo size={24} className="shrink-0" />
-                    <span className="text-primary font-headline font-bold text-xl drop-shadow-[0_0_8px_rgba(255,183,125,0.4)]">
+                    <Logo size={24} className="shrink-0 lg:hidden" />
+                    <span className="text-primary font-headline font-bold text-xl drop-shadow-[0_0_8px_rgba(255,183,125,0.4)] lg:hidden">
                         Together Tasks
                     </span>
                 </div>

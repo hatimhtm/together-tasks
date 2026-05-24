@@ -59,7 +59,7 @@ export default function SettingsPage() {
 
     if (loading || !user) {
         return (
-            <div className="pt-4 px-6 max-w-2xl mx-auto space-y-10 animate-pulse text-center">
+            <div className="max-w-2xl mx-auto space-y-10 animate-pulse text-center">
                 <div className="w-32 h-32 rounded-full bg-surface-container-high mx-auto mb-4" />
                 <div className="h-8 w-48 bg-surface-container-low mx-auto rounded" />
                 <div className="grid grid-cols-2 gap-4">
@@ -76,7 +76,7 @@ export default function SettingsPage() {
         <motion.main 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="pt-4 px-6 max-w-2xl mx-auto space-y-10 pb-32"
+            className="max-w-2xl mx-auto space-y-10"
         >
             {/* Header / Identity Anchor could go to root layout, omitting it since Next layout is universal */}
             

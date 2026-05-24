@@ -545,4 +545,28 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
+
+  /* Single fixed, full-viewport ambient layer. Positioned in viewport units so it
+     covers any screen size and never crops. background-color stays valid even if
+     color-mix (the gradient image) is unsupported on old engines. */
+  .app-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    pointer-events: none;
+    background-color: var(--background);
+    background-image:
+      radial-gradient(70vw 70vh at 12% -10%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 60%),
+      radial-gradient(60vw 60vh at 108% 18%, color-mix(in srgb, var(--secondary) 13%, transparent), transparent 60%),
+      radial-gradient(60vw 55vh at 50% 118%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 58%);
+  }
+}
+
+/* Calm motion: no infinite background animation; respect user preference. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

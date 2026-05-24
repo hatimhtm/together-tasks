@@ -20,7 +20,7 @@ export function BottomNav() {
     ]
 
     return (
-        <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pointer-events-none">
+        <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pointer-events-none">
             <div className="fixed left-1/2 -translate-x-1/2 w-[90%] rounded-full bg-surface-container/70 backdrop-blur-3xl shadow-[0_20px_50px_rgba(255,183,125,0.1)] flex justify-around items-center py-3 pointer-events-auto border border-outline-variant/10" style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}>
                 {tabs.map((tab) => {
                     const isActive = pathname === tab.href
