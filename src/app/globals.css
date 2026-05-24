@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+/* Plus Jakarta Sans + Inter are self-hosted via next/font (see layout.tsx) —
+   no render-blocking @import. Material Symbols still loaded from Google. */
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -54,9 +55,9 @@
   --color-on-primary: var(--on-primary);
   --color-outline-variant: var(--outline-variant);
   --color-secondary: var(--secondary);
-  --font-headline: 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-label: 'Inter', sans-serif;
+  --font-headline: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+  --font-body: var(--font-inter), 'Inter', sans-serif;
+  --font-label: var(--font-inter), 'Inter', sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -473,7 +474,6 @@
   * {
     @apply border-border;
     touch-action: manipulation;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 
   /* Fluid base size — every rem-based size (text, spacing, max-widths) scales
