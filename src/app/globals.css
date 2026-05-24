@@ -476,6 +476,13 @@
     transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 
+  /* Fluid base size — every rem-based size (text, spacing, max-widths) scales
+     smoothly with the viewport so readability holds from a 360px phone to a
+     2560px desktop, without per-breakpoint jumps. */
+  html {
+    font-size: clamp(15px, 14px + 0.32vw, 19px);
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     -webkit-overflow-scrolling: touch;

@@ -71,7 +71,7 @@ export default function DashboardLayout({
             <SideNav />
             <div className="lg:pl-64">
                 <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} userName={profile?.username} avatarUrl={profile?.avatar_url} />
-                <main className="px-5 sm:px-6 lg:px-10 pt-[calc(env(safe-area-inset-top)+5.5rem)] lg:pt-24 pb-32 lg:pb-16 max-w-5xl mx-auto space-y-8">
+                <main className="px-5 sm:px-6 lg:px-10 pt-[calc(env(safe-area-inset-top)+5.5rem)] lg:pt-24 pb-32 lg:pb-16 max-w-6xl mx-auto space-y-8">
                     {children}
                 </main>
             </div>
