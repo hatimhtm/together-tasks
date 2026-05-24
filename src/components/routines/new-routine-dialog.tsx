@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Cadence } from "@/types/routine"
-import { Button } from "@/components/ui/button"
 
 const CADENCES: Array<{ value: Cadence; label: string }> = [
     { value: "daily",    label: "Every day" },
@@ -86,52 +85,52 @@ export function NewRoutineDialog({ open, onClose, onCreate, defaultPartnered }: 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
+                    className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
                     onClick={onClose}
                 >
                     <motion.div
-                        initial={{ opacity: 0, y: 30, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.97 }}
-                        transition={{ type: "spring", stiffness: 280, damping: 28 }}
-                        className="w-full max-w-md bg-surface-container border border-outline-variant/10 rounded-3xl shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="w-full max-w-md bg-surface-container border border-outline-variant/60 rounded-2xl shadow-xl p-6 space-y-5 max-h-[90vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between">
-                            <h2 className="font-headline font-extrabold text-xl">New routine</h2>
+                            <h2 className="font-headline font-extrabold text-xl text-on-surface">New routine</h2>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-1.5 rounded-lg text-tertiary-fixed-dim hover:text-on-surface hover:bg-muted/30"
+                                className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-tertiary-fixed-dim">Title</label>
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">Title</label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="Morning walk together"
-                                className="w-full px-3 py-2.5 rounded-xl bg-muted/30 border border-outline-variant/20 focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-tertiary-fixed-dim/60"
+                                className="w-full px-3 py-2.5 rounded-xl bg-surface-container-high border border-outline-variant/60 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-on-surface-variant/60"
                             />
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-tertiary-fixed-dim">Notes (optional)</label>
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">Notes (optional)</label>
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={2}
                                 placeholder="What does success look like? When does it happen?"
-                                className="w-full px-3 py-2.5 rounded-xl bg-muted/30 border border-outline-variant/20 focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-tertiary-fixed-dim/60 resize-none"
+                                className="w-full px-3 py-2.5 rounded-xl bg-surface-container-high border border-outline-variant/60 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-on-surface-variant/60 resize-none"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-tertiary-fixed-dim">Cadence</label>
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">Cadence</label>
                             <div className="grid grid-cols-2 gap-2">
                                 {CADENCES.map((c) => (
                                     <button
@@ -139,10 +138,10 @@ export function NewRoutineDialog({ open, onClose, onCreate, defaultPartnered }: 
                                         type="button"
                                         onClick={() => setCadence(c.value)}
                                         className={cn(
-                                            "px-3 py-2 rounded-xl text-sm font-medium transition-all border",
+                                            "px-3 py-2 rounded-xl text-sm font-medium transition-colors border",
                                             cadence === c.value
-                                                ? "bg-primary text-primary-foreground border-primary"
-                                                : "bg-muted/30 text-on-surface border-outline-variant/20 hover:bg-muted/50",
+                                                ? "bg-primary text-on-primary border-primary"
+                                                : "bg-surface-container-high text-on-surface border-outline-variant/60 hover:bg-surface-container-highest",
                                         )}
                                     >
                                         {c.label}
@@ -157,10 +156,10 @@ export function NewRoutineDialog({ open, onClose, onCreate, defaultPartnered }: 
                                             type="button"
                                             onClick={() => toggleDay(i)}
                                             className={cn(
-                                                "flex-1 py-2 rounded-lg text-xs font-semibold transition-all border",
+                                                "flex-1 py-2 rounded-lg text-xs font-semibold transition-colors border",
                                                 days.includes(i)
-                                                    ? "bg-primary text-primary-foreground border-primary"
-                                                    : "bg-muted/30 text-on-surface border-outline-variant/20",
+                                                    ? "bg-primary text-on-primary border-primary"
+                                                    : "bg-surface-container-high text-on-surface border-outline-variant/60",
                                             )}
                                         >
                                             {label}
@@ -171,7 +170,7 @@ export function NewRoutineDialog({ open, onClose, onCreate, defaultPartnered }: 
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[11px] font-semibold uppercase tracking-wider text-tertiary-fixed-dim">XP per completion</label>
+                            <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">XP per completion</label>
                             <div className="flex items-center gap-3">
                                 <input
                                     type="range"
@@ -182,14 +181,14 @@ export function NewRoutineDialog({ open, onClose, onCreate, defaultPartnered }: 
                                     onChange={(e) => setXp(parseInt(e.target.value))}
                                     className="flex-1 accent-primary"
                                 />
-                                <span className="font-mono text-sm w-12 text-right">+{xp} XP</span>
+                                <span className="font-mono text-sm w-12 text-right text-on-surface">+{xp} XP</span>
                             </div>
                         </div>
 
                         {defaultPartnered && (
-                            <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-muted/30 border border-outline-variant/20 cursor-pointer">
-                                <span className="flex items-center gap-2 text-sm">
-                                    <Users className="w-4 h-4 text-tertiary-fixed-dim" />
+                            <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-surface-container-high border border-outline-variant/60 cursor-pointer">
+                                <span className="flex items-center gap-2 text-sm text-on-surface">
+                                    <Users className="w-4 h-4 text-on-surface-variant" />
                                     Share with partner
                                 </span>
                                 <input
@@ -202,23 +201,22 @@ export function NewRoutineDialog({ open, onClose, onCreate, defaultPartnered }: 
                         )}
 
                         <div className="flex gap-2 pt-2">
-                            <Button
+                            <button
                                 type="button"
-                                variant="ghost"
-                                className="flex-1 rounded-xl"
+                                className="flex-1 h-11 rounded-full font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors active:scale-[0.98] disabled:opacity-50"
                                 onClick={onClose}
                                 disabled={saving}
                             >
                                 Cancel
-                            </Button>
-                            <Button
+                            </button>
+                            <button
                                 type="button"
-                                className="flex-1 rounded-xl"
+                                className="flex-1 h-11 rounded-full bg-primary text-on-primary font-semibold active:scale-[0.98] transition-transform disabled:opacity-50"
                                 onClick={handleSubmit}
                                 disabled={!title.trim() || saving}
                             >
                                 {saving ? "Creating…" : "Create routine"}
-                            </Button>
+                            </button>
                         </div>
                     </motion.div>
                 </motion.div>

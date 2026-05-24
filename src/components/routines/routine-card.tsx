@@ -3,7 +3,6 @@
 import { motion } from "framer-motion"
 import { Check, Flame, Trash2, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { GlassCard } from "@/components/ui/glass-card"
 import { Routine, RoutineCompletion, CADENCE_LABELS, isRoutineDueOn, isRoutineDueToday, routineStreak } from "@/types/routine"
 
 interface Props {
@@ -48,13 +47,11 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 280, damping: 26 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 space-y-4 group"
         >
-            <GlassCard className="p-5 space-y-4 group">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -66,16 +63,16 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
                             )}
                         </div>
                         {routine.description && (
-                            <p className="text-sm text-tertiary-fixed-dim line-clamp-2">{routine.description}</p>
+                            <p className="text-sm text-on-surface-variant line-clamp-2">{routine.description}</p>
                         )}
-                        <div className="flex items-center gap-3 mt-2 text-xs text-tertiary-fixed-dim">
+                        <div className="flex items-center gap-3 mt-2 text-xs text-on-surface-variant">
                             <span>{CADENCE_LABELS[routine.cadence]}</span>
                             <span>·</span>
                             <span>+{routine.xp_reward} XP</span>
                             {streak > 0 && (
                                 <>
                                     <span>·</span>
-                                    <span className="inline-flex items-center gap-1 text-amber-500">
+                                    <span className="inline-flex items-center gap-1 text-primary">
                                         <Flame className="w-3.5 h-3.5" /> {streak} day{streak === 1 ? "" : "s"}
                                     </span>
                                 </>
@@ -85,7 +82,7 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
                     <button
                         type="button"
                         onClick={onArchive}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-tertiary-fixed-dim hover:text-error hover:bg-error/10"
+                        className="opacity-0 group-hover:opacity-100 lg:opacity-0 transition-opacity p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10"
                         aria-label="Archive routine"
                     >
                         <Trash2 className="w-4 h-4" />
@@ -96,15 +93,15 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
                 <div className="flex items-center justify-between gap-1">
                     {week.map((day, i) => (
                         <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                            <span className="text-[10px] font-mono uppercase text-tertiary-fixed-dim/60">
+                            <span className="text-[10px] font-mono uppercase text-on-surface-variant/60">
                                 {day.label}
                             </span>
                             <div
                                 className={cn(
-                                    "w-7 h-7 rounded-md flex items-center justify-center transition-all",
-                                    !day.due && "bg-muted/20",
-                                    day.due && !day.userDone && "bg-muted/30 border border-outline-variant/20",
-                                    day.due && day.userDone && "bg-primary text-primary-foreground shadow-md",
+                                    "w-7 h-7 rounded-md flex items-center justify-center transition-colors",
+                                    !day.due && "bg-surface-container-high/40",
+                                    day.due && !day.userDone && "bg-surface-container-high border border-outline-variant/60",
+                                    day.due && day.userDone && "bg-primary text-on-primary",
                                 )}
                                 title={day.due ? (day.userDone ? "You ✓" : "Missed") : "Off day"}
                             >
@@ -113,8 +110,8 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
                             {partnerId && (
                                 <span
                                     className={cn(
-                                        "h-1 w-5 rounded-full transition-all",
-                                        day.partnerDone ? "bg-secondary" : "bg-muted/20",
+                                        "h-1 w-5 rounded-full transition-colors",
+                                        day.partnerDone ? "bg-secondary" : "bg-surface-container-high",
                                     )}
                                     title={day.partnerDone ? "Partner ✓" : ""}
                                 />
@@ -129,10 +126,10 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
                     onClick={onToggleToday}
                     disabled={!dueToday}
                     className={cn(
-                        "w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2",
-                        !dueToday && "bg-muted/20 text-tertiary-fixed-dim cursor-not-allowed",
-                        dueToday && !isDoneToday && "bg-primary text-primary-foreground hover:opacity-90 shadow-md",
-                        dueToday && isDoneToday && "bg-emerald-500/15 text-emerald-500",
+                        "w-full h-11 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 active:scale-[0.98]",
+                        !dueToday && "bg-surface-container-high text-on-surface-variant cursor-not-allowed",
+                        dueToday && !isDoneToday && "bg-primary text-on-primary hover:opacity-90",
+                        dueToday && isDoneToday && "bg-primary/12 text-primary",
                     )}
                 >
                     {!dueToday ? (
@@ -146,7 +143,6 @@ export function RoutineCard({ routine, completions, userId, partnerId, onToggleT
                         <>Mark complete</>
                     )}
                 </button>
-            </GlassCard>
         </motion.div>
     )
 }

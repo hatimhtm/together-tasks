@@ -103,12 +103,13 @@ User says: "${textToSend}"`
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
                         onClick={() => setIsOpen(true)}
                         aria-label="Open AI assistant"
-                        className="fixed right-5 lg:right-8 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-[0_8px_32px_rgba(255,183,125,0.4)] flex items-center justify-center active:scale-90 transition-transform duration-200 bottom-[calc(7rem+env(safe-area-inset-bottom))] lg:bottom-6"
+                        className="fixed right-5 lg:right-8 z-50 h-14 w-14 rounded-full bg-primary text-on-primary shadow-lg flex items-center justify-center active:scale-[0.96] transition-transform duration-200 bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:bottom-6"
                     >
                         <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                     </motion.button>
@@ -119,60 +120,57 @@ User says: "${textToSend}"`
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: "100%" }}
+                        initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: "100%" }}
-                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[100] bg-background flex flex-col"
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="fixed inset-0 z-[100] bg-background flex flex-col lg:items-center lg:justify-center lg:p-8"
                     >
+                      <div className="relative flex flex-col w-full h-full lg:max-w-2xl lg:h-[min(80vh,720px)] lg:rounded-2xl lg:border lg:border-outline-variant/60 lg:bg-surface-container lg:overflow-hidden lg:shadow-xl">
                         {/* Header */}
-                        <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-3xl flex items-center justify-between px-6 py-4 pt-safe border-b border-outline-variant/10">
+                        <header className="absolute top-0 left-0 right-0 z-50 bg-background/90 lg:bg-surface-container/90 backdrop-blur-md flex items-center justify-between px-6 py-4 pt-safe lg:pt-4 border-b border-outline-variant/60">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container flex items-center justify-center border border-outline-variant/15">
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high flex items-center justify-center border border-outline-variant/60">
                                     <span className="material-symbols-outlined text-primary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                                 </div>
-                                <span className="text-primary font-headline font-bold tracking-tight text-xl drop-shadow-[0_0_8px_rgba(255,183,125,0.3)]">Sage</span>
+                                <span className="text-on-surface font-headline font-extrabold tracking-tight text-lg">Sage</span>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsOpen(false)}
-                                className="text-primary hover:bg-surface-bright/50 transition-colors p-2 rounded-full active:scale-95"
+                                aria-label="Close assistant"
+                                className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors p-2 rounded-full active:scale-[0.96]"
                             >
-                                <span className="material-symbols-outlined text-[28px]">stat_minus_1</span>
+                                <span className="material-symbols-outlined text-[24px]">close</span>
                             </button>
                         </header>
 
-                        <div className="flex-1 overflow-y-auto px-4 pt-24 pb-48 no-scrollbar bg-surface/30">
+                        <div className="flex-1 overflow-y-auto px-4 pt-24 pb-48 lg:pb-40 no-scrollbar">
                             
                             {/* AI Personality Header Section */}
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                                className="mb-8 px-2"
-                            >
-                                <div className="bg-surface-container-low rounded-xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(255,183,125,0.05)] border border-outline-variant/5">
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-primary/20 blur-md rounded-full"></div>
-                                        <span className="material-symbols-outlined text-primary relative z-10 text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                                    </div>
+                            <div className="mb-6 px-1">
+                                <div className="bg-surface-container border border-outline-variant/60 rounded-2xl p-4 flex items-center gap-4">
+                                    <span className="material-symbols-outlined text-primary text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                                     <div>
                                         <h2 className="font-headline font-bold text-on-surface text-sm tracking-wide">AI Sage</h2>
-                                        <p className="text-tertiary-fixed-dim text-xs italic">{loading ? "Thinking..." : "Always here to help."}</p>
+                                        <p className="text-on-surface-variant text-xs">{loading ? "Thinking…" : "Always here to help."}</p>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
 
                             {/* Chat History */}
                             <div className="space-y-6 flex flex-col">
                                 {messages.map((msg, idx) => (
-                                    <motion.div 
+                                    <motion.div
                                         key={idx}
-                                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.2, ease: "easeOut" }}
                                         className={`flex flex-col gap-1 max-w-[85%] ${msg.role === "user" ? "self-end items-end" : "self-start items-start"}`}
                                     >
-                                        <div className={`p-4 shadow-sm ${
-                                            msg.role === "user" 
-                                                ? "bg-gradient-to-br from-primary to-primary-container text-on-primary-container rounded-tl-2xl rounded-bl-2xl rounded-br-2xl shadow-[0_4px_20px_rgba(255,140,0,0.15)]" 
-                                                : "bg-surface-container/80 backdrop-blur-xl text-on-surface rounded-tr-2xl rounded-br-2xl rounded-bl-2xl border border-outline-variant/10"
+                                        <div className={`p-4 ${
+                                            msg.role === "user"
+                                                ? "bg-primary text-on-primary rounded-tl-2xl rounded-bl-2xl rounded-br-2xl"
+                                                : "bg-surface-container text-on-surface rounded-tr-2xl rounded-br-2xl rounded-bl-2xl border border-outline-variant/60"
                                         }`}>
                                             <p className="font-body text-[14.5px] leading-relaxed whitespace-pre-wrap font-medium">
                                                 {msg.content}
@@ -186,7 +184,7 @@ User says: "${textToSend}"`
                                 
                                 {loading && (
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-1 max-w-[85%] self-start">
-                                        <div className="bg-surface-container/60 backdrop-blur-xl p-4 rounded-tr-2xl rounded-br-2xl rounded-bl-2xl border border-outline-variant/10">
+                                        <div className="bg-surface-container p-4 rounded-tr-2xl rounded-br-2xl rounded-bl-2xl border border-outline-variant/60">
                                             <div className="flex gap-1.5 items-center justify-center py-1">
                                                 <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.3s]" />
                                                 <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.15s]" />
@@ -200,26 +198,26 @@ User says: "${textToSend}"`
                         </div>
 
                         {/* Fixed Interaction Layer */}
-                        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background to-transparent">
-                            {/* Floating Suggestions */}
-                            <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
+                        <div className="absolute bottom-0 left-0 right-0 z-40 px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:pb-5 bg-gradient-to-t from-background lg:from-surface-container via-background lg:via-surface-container to-transparent">
+                            {/* Suggestions */}
+                            <div className="flex gap-2 overflow-x-auto pb-3 no-scrollbar">
                                 {["Give me a tip", "What's on my schedule?", "Send a nudge"].map((sug) => (
-                                    <button 
+                                    <button
                                         key={sug}
                                         onClick={() => handleSend(sug)}
                                         disabled={loading}
-                                        className="whitespace-nowrap shrink-0 bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-label font-bold px-5 py-2.5 rounded-full border border-outline-variant/15 transition-all active:scale-95 disabled:opacity-50"
+                                        className="whitespace-nowrap shrink-0 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-label font-semibold px-4 py-2 rounded-full border border-outline-variant/60 transition-colors active:scale-[0.96] disabled:opacity-50"
                                     >
                                         {sug}
                                     </button>
                                 ))}
                             </div>
-                            
+
                             {/* Chat Input Area */}
-                            <div className="bg-surface-container/90 backdrop-blur-2xl rounded-full p-1.5 pl-5 flex items-center shadow-2xl border border-outline-variant/20">
+                            <div className="bg-surface-container-high rounded-full p-1.5 pl-5 flex items-center border border-outline-variant/60">
                                 <input
-                                    className="flex-1 bg-transparent border-none focus:ring-0 text-[15px] text-on-surface placeholder:text-on-surface-variant/50 px-2 font-body outline-none" 
-                                    placeholder="Whisper something to Sage..." 
+                                    className="flex-1 bg-transparent border-none focus:ring-0 text-[15px] text-on-surface placeholder:text-on-surface-variant/60 px-2 font-body outline-none"
+                                    placeholder="Whisper something to Sage…"
                                     type="text"
                                     value={input}
                                     onChange={e => setInput(e.target.value)}
@@ -228,19 +226,21 @@ User says: "${textToSend}"`
                                     onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
                                     disabled={loading}
                                 />
-                                <button 
+                                <button
                                     onClick={() => handleSend()}
                                     disabled={!input.trim() || loading}
-                                    className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container p-2.5 rounded-full shadow-[0_0_15px_rgba(255,183,125,0.4)] active:scale-90 transition-all disabled:opacity-50 disabled:active:scale-100 shrink-0"
+                                    aria-label="Send message"
+                                    className="bg-primary text-on-primary p-2.5 rounded-full active:scale-[0.96] transition-transform disabled:opacity-50 disabled:active:scale-100 shrink-0"
                                 >
                                     {loading ? (
-                                        <Loader2 className="h-[20px] w-[20px] animate-spin text-on-primary" />
+                                        <Loader2 className="h-[20px] w-[20px] animate-spin" />
                                     ) : (
-                                        <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                                        <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
                                     )}
                                 </button>
                             </div>
                         </div>
+                      </div>
                     </motion.div>
                 )}
             </AnimatePresence>

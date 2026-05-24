@@ -110,10 +110,10 @@ export default function NudgePage() {
 
     if (loading) {
         return (
-            <div className="max-w-2xl mx-auto space-y-12 animate-pulse text-center">
-                <div className="w-28 h-28 rounded-full bg-surface-container-high mx-auto" />
+            <div className="space-y-8 animate-pulse text-center">
+                <div className="w-24 h-24 rounded-full bg-surface-container-high mx-auto" />
                 <div className="h-8 w-48 bg-surface-container-low mx-auto rounded" />
-                <div className="w-64 h-64 rounded-full bg-surface-container mx-auto" />
+                <div className="w-44 h-44 rounded-full bg-surface-container mx-auto" />
             </div>
         )
     }
@@ -125,144 +125,104 @@ export default function NudgePage() {
     const displayNudges = nudges
 
     return (
-        <motion.main 
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 flex flex-col max-w-2xl mx-auto w-full relative overflow-hidden"
-        >
-            {/* Header Section */}
-            <section className="mt-4 mb-8 text-center">
-                <div className="inline-block relative mb-6">
-                    <div className="absolute inset-0 bg-primary/20 blur-[40px] rounded-full" />
-                    <div className="relative w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-primary to-secondary shadow-[0_10px_30px_rgba(255,140,0,0.3)]">
-                        <div className="w-full h-full rounded-full overflow-hidden border-4 border-surface flex items-center justify-center bg-surface-container-high">
+        <div className="space-y-6 lg:space-y-8">
+            <h1 className="text-2xl lg:text-3xl font-headline font-extrabold text-on-surface">Nudge</h1>
+
+            <div className="grid gap-6 lg:gap-8 xl:grid-cols-2 items-start">
+                {/* Send card */}
+                <section className="rounded-2xl bg-surface-container border border-outline-variant/60 p-6 flex flex-col items-center text-center gap-5">
+                    <div className="relative">
+                        <div className="w-24 h-24 rounded-full overflow-hidden border border-outline-variant/60 flex items-center justify-center bg-surface-container-high">
                             {partner?.avatar_url ? (
                                 <img src={partner.avatar_url} alt="Partner" className="w-full h-full object-cover" />
                             ) : (
                                 <span className="text-3xl font-headline font-bold text-on-surface-variant">{fallBackInitial}</span>
                             )}
                         </div>
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 bg-secondary text-on-secondary rounded-full p-2.5 shadow-xl border-2 border-surface">
-                        <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-                    </div>
-                </div>
-                <h2 className="font-headline text-[28px] font-extrabold tracking-tight mb-1.5 text-on-surface">
-                    {partnerName}
-                </h2>
-                <p className="text-on-surface-variant font-medium text-[15px]">
-                    Remind them you're thinking of them.
-                </p>
-            </section>
-
-            {/* Main Interaction Area */}
-            <section className="flex-1 flex flex-col items-center justify-center relative min-h-[340px]">
-                {/* Simulated Particles */}
-                <motion.span 
-                    animate={{ y: [0, -20, 0], opacity: [0.3, 0.8, 0.3] }} 
-                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                    className="material-symbols-outlined absolute text-primary text-xl top-4 left-[20%] pointer-events-none" style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                    favorite
-                </motion.span>
-                <motion.span 
-                    animate={{ y: [0, -30, 0], opacity: [0.2, 0.6, 0.2] }} 
-                    transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
-                    className="material-symbols-outlined absolute text-secondary text-[28px] top-12 right-[15%] pointer-events-none" style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                    favorite
-                </motion.span>
-
-                {/* Central Interactive Button */}
-                <button 
-                    onClick={() => sendNudge('love', 'Thinking of you')}
-                    disabled={sending}
-                    className="group relative flex flex-col items-center justify-center transition-all duration-300 active:scale-95 disabled:opacity-80"
-                >
-                    <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full group-hover:bg-primary/30 transition-colors duration-500" />
-                    
-                    <div className="relative w-[240px] h-[240px] rounded-full bg-surface-container flex items-center justify-center border border-outline-variant/10 shadow-[0_0_60px_10px_rgba(255,140,0,0.15)] group-hover:shadow-[0_0_80px_20px_rgba(255,140,0,0.25)] transition-all duration-500">
-                        <div className="absolute inset-4 rounded-full border border-primary/20 animate-pulse" />
-                        
-                        <div className="w-[180px] h-[180px] rounded-full bg-gradient-to-br from-primary to-primary-container flex flex-col items-center justify-center shadow-[0_0_40px_rgba(255,140,0,0.4)] transition-transform duration-500 group-hover:scale-105">
-                            <span className="material-symbols-outlined text-[64px] text-on-primary mb-2 drop-shadow-md" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                {sending ? 'hourglass_empty' : 'auto_awesome'}
-                            </span>
-                            <span className="font-headline font-bold text-on-primary tracking-widest text-[16px] drop-shadow-sm">
-                                {sending ? 'SENDING...' : 'SEND LOVE'}
-                            </span>
+                        <div className="absolute -bottom-1 -right-1 bg-secondary text-on-secondary rounded-full p-1.5">
+                            <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
                         </div>
                     </div>
-                </button>
-                
-                <div className="mt-8 bg-surface-container/50 backdrop-blur-md px-6 py-2.5 rounded-full border border-outline-variant/10 shadow-sm">
-                    <span className="text-primary font-bold text-[11px] tracking-widest uppercase">Tap to Nudge</span>
-                </div>
-            </section>
+                    <div>
+                        <h2 className="font-headline text-xl font-extrabold tracking-tight text-on-surface">{partnerName}</h2>
+                        <p className="text-on-surface-variant text-sm mt-1">Remind them you're thinking of them.</p>
+                    </div>
 
-            {/* Recent Nudges List */}
-            <section className="mt-6">
-                <div className="flex items-center justify-between mb-5 px-1">
-                    <h3 className="font-headline text-[20px] font-bold text-on-surface">Recent Nudges</h3>
-                    <span className="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase bg-surface-container px-3 py-1.5 rounded-full">
-                        History
-                    </span>
-                </div>
-                
-                <div className="space-y-3">
-                    {displayNudges.length === 0 && (
-                        <div className="bg-surface-container-low p-8 rounded-2xl flex flex-col items-center gap-3 text-center border border-outline-variant/5">
-                            <span className="material-symbols-outlined text-on-surface-variant/50 text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-                            <p className="text-on-surface font-semibold text-[15px]">No nudges yet</p>
-                            <p className="text-on-surface-variant text-[13px] max-w-[240px]">Send {partnerName} a little love above — your history will show up here.</p>
-                        </div>
-                    )}
-                    {displayNudges.map((nudge, i) => {
-                        const isMine = nudge.sender_id === user.id
-                        
-                        let icon = "favorite"
-                        let colorClass = "text-secondary"
-                        let bgClass = "bg-secondary-container/20"
-                        
-                        if (nudge.type === 'sparkle') {
-                            icon = "colors_spark"
-                            colorClass = "text-primary"
-                            bgClass = "bg-primary-container/20"
-                        } else if (nudge.type === 'mood') {
-                            icon = "mood"
-                            colorClass = "text-tertiary"
-                            bgClass = "bg-tertiary/20"
-                        }
+                    <button
+                        onClick={() => sendNudge('love', 'Thinking of you')}
+                        disabled={sending}
+                        className="group relative w-44 h-44 rounded-full bg-primary text-on-primary flex flex-col items-center justify-center active:scale-[0.98] transition-transform disabled:opacity-70"
+                    >
+                        <span className="material-symbols-outlined text-[56px] mb-1" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {sending ? 'hourglass_empty' : 'favorite'}
+                        </span>
+                        <span className="font-headline font-bold tracking-widest text-[14px]">
+                            {sending ? 'SENDING…' : 'SEND LOVE'}
+                        </span>
+                    </button>
 
-                        return (
-                            <motion.div 
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                key={nudge.id} 
-                                className="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4 transition-colors hover:bg-surface-container border border-outline-variant/5"
-                            >
-                                <div className={`w-12 h-12 rounded-full ${bgClass} flex items-center justify-center shrink-0`}>
-                                    <span className={`material-symbols-outlined ${colorClass} text-[24px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                                        {icon}
-                                    </span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-on-surface font-semibold text-[15px] truncate">
-                                        {isMine ? "You nudged back" : `${partnerName} sent a 💖`}
-                                    </p>
-                                    <p className="text-on-surface-variant text-[13px] truncate mt-0.5">
-                                        {nudge.message}
-                                    </p>
-                                </div>
-                                <div className="text-[11px] text-on-surface-variant font-medium shrink-0 pt-1 border border-outline-variant/10 px-2 py-1 bg-surface-container rounded-md">
-                                    {format(new Date(nudge.created_at), 'HH:mm')}
-                                </div>
-                            </motion.div>
-                        )
-                    })}
-                </div>
-            </section>
-        </motion.main>
+                    <span className="text-on-surface-variant font-semibold text-[11px] tracking-widest uppercase">Tap to nudge</span>
+                </section>
+
+                {/* Recent Nudges List */}
+                <section className="space-y-4">
+                    <h3 className="font-headline text-lg font-bold text-on-surface">Recent nudges</h3>
+
+                    <div className="space-y-3">
+                        {displayNudges.length === 0 && (
+                            <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-8 flex flex-col items-center gap-3 text-center">
+                                <span className="material-symbols-outlined text-on-surface-variant/60 text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                                <p className="text-on-surface font-semibold text-[15px]">No nudges yet</p>
+                                <p className="text-on-surface-variant text-[13px] max-w-[240px]">Send {partnerName} a little love — your history will show up here.</p>
+                            </div>
+                        )}
+                        {displayNudges.map((nudge, i) => {
+                            const isMine = nudge.sender_id === user.id
+
+                            let icon = "favorite"
+                            let colorClass = "text-secondary"
+                            let bgClass = "bg-secondary/15"
+
+                            if (nudge.type === 'sparkle') {
+                                icon = "auto_awesome"
+                                colorClass = "text-primary"
+                                bgClass = "bg-primary/12"
+                            } else if (nudge.type === 'mood') {
+                                icon = "mood"
+                                colorClass = "text-tertiary"
+                                bgClass = "bg-tertiary/15"
+                            }
+
+                            return (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.2, ease: "easeOut", delay: Math.min(i, 6) * 0.03 }}
+                                    key={nudge.id}
+                                    className="rounded-2xl bg-surface-container border border-outline-variant/60 p-4 flex items-center gap-4"
+                                >
+                                    <div className={`w-11 h-11 rounded-full ${bgClass} flex items-center justify-center shrink-0`}>
+                                        <span className={`material-symbols-outlined ${colorClass} text-[22px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                                            {icon}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-on-surface font-semibold text-[15px] truncate">
+                                            {isMine ? "You nudged back" : `${partnerName} sent a 💖`}
+                                        </p>
+                                        <p className="text-on-surface-variant text-[13px] truncate mt-0.5">
+                                            {nudge.message}
+                                        </p>
+                                    </div>
+                                    <div className="text-[11px] text-on-surface-variant font-medium shrink-0">
+                                        {format(new Date(nudge.created_at), 'HH:mm')}
+                                    </div>
+                                </motion.div>
+                            )
+                        })}
+                    </div>
+                </section>
+            </div>
+        </div>
     )
 }

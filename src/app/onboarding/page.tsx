@@ -3,10 +3,8 @@
 import { useState } from "react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { GlassCard } from "@/components/ui/glass-card"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -104,33 +102,30 @@ export default function OnboardingPage() {
     }
 
     const stepVariants = {
-        initial: { opacity: 0, x: 20 },
+        initial: { opacity: 0, x: 8 },
         animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0, x: -20 },
+        exit: { opacity: 0, x: -8 },
     }
 
     return (
-        <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-lg space-y-8">
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5">
+            <div className="app-bg" />
+            <div className="relative z-10 w-full max-w-lg space-y-6">
                 {/* Progress */}
-                <div className="flex justify-between px-4 sm:px-8 overflow-x-auto">
+                <div className="flex justify-between gap-1">
                     {steps.map((step, idx) => {
                         const Icon = step.icon
                         const isActive = idx === currentStep
                         const isCompleted = idx < currentStep
 
                         return (
-                            <div key={step.id} className="flex flex-col items-center gap-2 min-w-[60px]">
+                            <div key={step.id} className="flex flex-col items-center gap-2 min-w-0 flex-1">
                                 <div
-                                    className={`
-                    w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-500
-                    ${isActive ? "bg-primary text-primary-foreground scale-110 shadow-glow" :
-                                            isCompleted ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}
-                  `}
+                                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200 ${isActive ? "bg-primary text-on-primary" : isCompleted ? "bg-primary/20 text-primary" : "bg-surface-container-high text-on-surface-variant"}`}
                                 >
                                     <Icon size={16} />
                                 </div>
-                                <span className={`text-[10px] sm:text-xs font-medium transition-colors duration-300 ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                                <span className={`text-[10px] font-medium text-center truncate w-full transition-colors duration-200 ${isActive ? "text-primary" : "text-on-surface-variant"}`}>
                                     {step.title}
                                 </span>
                             </div>
@@ -138,7 +133,7 @@ export default function OnboardingPage() {
                     })}
                 </div>
 
-                <GlassCard className="p-8 min-h-[450px] flex flex-col relative overflow-hidden">
+                <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-6 sm:p-8 min-h-[420px] flex flex-col">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={currentStep}
@@ -146,13 +141,13 @@ export default function OnboardingPage() {
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
                             className="flex-1 space-y-6"
                         >
                             {currentStep === 0 && (
                                 <div className="space-y-6">
-                                    <h2 className="text-2xl font-bold text-center">Establish Your Aesthetic</h2>
-                                    <div className="grid grid-cols-1 gap-4">
+                                    <h2 className="text-xl font-headline font-bold text-center text-on-surface">Establish Your Aesthetic</h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {
                                             [
                                                 { id: 'obsidian', name: 'Obsidian', desc: 'Deep black, glowing amber accents', gradient: 'from-[#1a1a1a] to-[#ff9800]', tint: 'bg-amber-500' },
@@ -166,18 +161,14 @@ export default function OnboardingPage() {
                                                 <button
                                                     key={theme.id}
                                                     onClick={() => { setFormData({ ...formData, theme: theme.id }); setTheme(theme.id) }}
-                                                    className={`
-                                                      p-4 rounded-xl border-2 transition-all flex items-center gap-4 group relative overflow-hidden text-left
-                                                      ${formData.theme === theme.id ? "border-primary bg-primary/5 shadow-[0_0_15px_rgba(var(--primary),0.2)]" : "border-transparent bg-muted/30 hover:bg-muted/50"}
-                                                    `}
+                                                    className={`p-4 rounded-xl border transition-colors flex items-center gap-4 text-left active:scale-[0.98] ${formData.theme === theme.id ? "border-primary bg-primary/10" : "border-outline-variant/60 bg-surface-container-high hover:bg-surface-container-highest"}`}
                                                 >
-                                                    <div className={`absolute inset-0 opacity-10 ${theme.tint}`} />
-                                                    <div className={`w-12 h-12 rounded-full shadow-lg z-10 shrink-0 border border-white/20 bg-gradient-to-br ${theme.gradient}`} />
-                                                    <div className="text-left z-10 flex-1">
-                                                        <h3 className="font-semibold text-[15px]">{theme.name}</h3>
-                                                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{theme.desc}</p>
+                                                    <div className={`w-12 h-12 rounded-full z-10 shrink-0 border border-outline-variant/60 bg-gradient-to-br ${theme.gradient}`} />
+                                                    <div className="text-left z-10 flex-1 min-w-0">
+                                                        <h3 className="font-semibold text-[15px] text-on-surface">{theme.name}</h3>
+                                                        <p className="text-[11px] text-on-surface-variant mt-0.5 leading-tight">{theme.desc}</p>
                                                     </div>
-                                                    {formData.theme === theme.id && <Check className="ml-auto text-primary z-10 shrink-0" />}
+                                                    {formData.theme === theme.id && <Check className="ml-auto text-primary z-10 shrink-0" size={18} />}
                                                 </button>
                                             ))
                                         }
@@ -187,12 +178,12 @@ export default function OnboardingPage() {
 
                             {currentStep === 1 && (
                                 <div className="space-y-6">
-                                    <h2 className="text-2xl font-bold text-center">The Royal Mission</h2>
+                                    <h2 className="text-xl font-headline font-bold text-center text-on-surface">The Royal Mission</h2>
                                     <div className="space-y-4">
-                                        <p className="text-center text-muted-foreground">What is the "Crown Jewel" goal you are striving for together?</p>
+                                        <p className="text-center text-on-surface-variant text-sm">What is the &quot;Crown Jewel&quot; goal you are striving for together?</p>
                                         <Input
                                             placeholder="e.g., Build our dream house..."
-                                            className="h-14 text-lg bg-background/50 border-primary/20 focus:border-primary"
+                                            className="h-12 text-base bg-surface-container-high border-outline-variant/60 focus:border-primary text-on-surface rounded-xl"
                                             value={formData.goals}
                                             onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
                                         />
@@ -201,7 +192,7 @@ export default function OnboardingPage() {
                                                 <button
                                                     key={suggestion}
                                                     onClick={() => setFormData({ ...formData, goals: suggestion })}
-                                                    className="px-3 py-1 rounded-full bg-secondary/10 hover:bg-secondary/20 text-xs text-secondary-foreground border border-secondary/20 transition-colors"
+                                                    className="px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface border border-outline-variant/60 transition-colors"
                                                 >
                                                     {suggestion}
                                                 </button>
@@ -213,12 +204,12 @@ export default function OnboardingPage() {
 
                             {currentStep === 2 && (
                                 <div className="space-y-6">
-                                    <h2 className="text-2xl font-bold text-center">Daily Rituals</h2>
+                                    <h2 className="text-xl font-headline font-bold text-center text-on-surface">Daily Rituals</h2>
                                     <div className="space-y-4">
-                                        <p className="text-center text-muted-foreground">Describe your typical schedule or shared habits so the AI can serve you better.</p>
+                                        <p className="text-center text-on-surface-variant text-sm">Describe your typical schedule or shared habits so the AI can serve you better.</p>
                                         <Textarea
                                             placeholder="e.g., We work 9-5, have dinner at 7, and gym on weekends. We want to read more."
-                                            className="min-h-[120px] text-base bg-background/50 border-primary/20 focus:border-primary resize-none"
+                                            className="min-h-[120px] text-base bg-surface-container-high border-outline-variant/60 focus:border-primary text-on-surface rounded-xl resize-none"
                                             value={formData.habits}
                                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, habits: e.target.value })}
                                         />
@@ -228,7 +219,7 @@ export default function OnboardingPage() {
 
                             {currentStep === 3 && (
                                 <div className="space-y-6">
-                                    <h2 className="text-2xl font-bold text-center">Summon The Royal Sage</h2>
+                                    <h2 className="text-xl font-headline font-bold text-center text-on-surface">Summon The Royal Sage</h2>
                                     <div className="grid grid-cols-1 gap-3">
                                         {[
                                             { id: 'sage', name: 'The Wiseman', desc: 'Wise, poetic, ancient wisdom.' },
@@ -238,17 +229,14 @@ export default function OnboardingPage() {
                                             <button
                                                 key={p.id}
                                                 onClick={() => setFormData({ ...formData, personality: p.id })}
-                                                className={`
-                          p-4 rounded-xl border-2 transition-all flex items-center gap-4
-                          ${formData.personality === p.id ? "border-primary bg-primary/10" : "border-transparent bg-muted/30 hover:bg-muted/50"}
-                        `}
+                                                className={`p-4 rounded-xl border transition-colors flex items-center gap-4 active:scale-[0.98] ${formData.personality === p.id ? "border-primary bg-primary/10" : "border-outline-variant/60 bg-surface-container-high hover:bg-surface-container-highest"}`}
                                             >
-                                                <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center text-xl shadow-sm">
+                                                <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-xl">
                                                     {p.id === 'sage' ? '🧙‍♂️' : p.id === 'jester' ? '🃏' : '🤵'}
                                                 </div>
                                                 <div className="text-left">
-                                                    <h3 className="font-semibold">{p.name}</h3>
-                                                    <p className="text-xs text-muted-foreground">{p.desc}</p>
+                                                    <h3 className="font-semibold text-on-surface">{p.name}</h3>
+                                                    <p className="text-xs text-on-surface-variant">{p.desc}</p>
                                                 </div>
                                             </button>
                                         ))}
@@ -258,39 +246,40 @@ export default function OnboardingPage() {
 
                             {currentStep === 4 && (
                                 <div className="space-y-6 text-center h-full flex flex-col justify-center">
-                                    <div className="w-20 h-20 mx-auto bg-gradient-to-tr from-primary to-secondary rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-primary/25">
-                                        <Scroll className="w-10 h-10 text-white" />
+                                    <div className="w-16 h-16 mx-auto bg-primary/12 rounded-full flex items-center justify-center">
+                                        <Scroll className="w-8 h-8 text-primary" />
                                     </div>
-                                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                                    <h2 className="text-xl font-headline font-bold text-on-surface">
                                         Your Royal Decree
                                     </h2>
-                                    <div className="p-6 bg-background/60 backdrop-blur-sm rounded-xl border border-primary/20 italic text-lg leading-relaxed relative shadow-inner">
-                                        <span className="absolute -top-4 -left-2 text-6xl text-primary/10 font-serif">"</span>
-                                        {decree || "The stars are aligning..."}
-                                        <span className="absolute -bottom-8 -right-2 text-6xl text-primary/10 font-serif">"</span>
+                                    <div className="p-5 bg-surface-container-high rounded-xl border border-outline-variant/60 text-base leading-relaxed text-on-surface">
+                                        {decree || "The stars are aligning…"}
                                     </div>
                                 </div>
                             )}
                         </motion.div>
                     </AnimatePresence>
 
-                    <div className="mt-8 flex justify-between items-center">
-                        <Button
-                            variant="ghost"
+                    <div className="mt-8 flex justify-between items-center gap-3">
+                        <button
                             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                             disabled={currentStep === 0 || loading}
-                            className={currentStep === 0 ? "invisible" : ""}
+                            className={`h-11 px-5 rounded-full font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors active:scale-[0.98] ${currentStep === 0 ? "invisible" : ""}`}
                         >
                             Back
-                        </Button>
-                        <Button onClick={handleNext} disabled={loading} className="w-32 group shadow-lg shadow-primary/20">
+                        </button>
+                        <button
+                            onClick={handleNext}
+                            disabled={loading}
+                            className="h-11 px-6 min-w-[8rem] flex items-center justify-center gap-2 rounded-full bg-primary text-on-primary font-semibold active:scale-[0.98] transition-transform disabled:opacity-60"
+                        >
                             {loading ? <Clock className="animate-spin w-4 h-4" /> : (
                                 currentStep === steps.length - 1 ? "Enter" : "Next"
                             )}
-                            {!loading && currentStep !== steps.length - 1 && <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-                        </Button>
+                            {!loading && currentStep !== steps.length - 1 && <ArrowRight className="w-4 h-4" />}
+                        </button>
                     </div>
-                </GlassCard>
+                </div>
             </div>
         </div>
     )

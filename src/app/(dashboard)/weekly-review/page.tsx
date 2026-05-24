@@ -6,7 +6,6 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { format, startOfWeek, endOfWeek } from "date-fns"
 import { CheckCircle2, Heart, Star, ArrowRight, Flame } from "lucide-react"
-import { GlassCard } from "@/components/ui/glass-card"
 import confetti from "canvas-confetti"
 
 interface WeekReview {
@@ -106,129 +105,105 @@ export default function WeeklyReviewPage() {
             <div className="min-h-[60vh] flex items-center justify-center">
                 <div className="space-y-3 text-center">
                     <div className="h-16 w-16 rounded-full bg-primary/20 animate-pulse mx-auto" />
-                    <div className="h-4 w-40 bg-muted/40 rounded-full animate-pulse mx-auto" />
+                    <div className="h-4 w-40 bg-surface-container-high rounded-full animate-pulse mx-auto" />
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="max-w-lg mx-auto space-y-6">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            onAnimationComplete={celebrate}
+            className="space-y-6 max-w-2xl mx-auto"
+        >
             {/* Hero Header */}
-            <motion.div
-                initial={{ opacity: 0, y: -16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 240, damping: 24 }}
-                className="text-center pt-4 space-y-2"
-            >
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 20 }}
-                    className="h-20 w-20 mx-auto rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center mb-4"
-                >
-                    <Star className="h-10 w-10 text-primary" strokeWidth={1.5} />
-                </motion.div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Weekly Review</h1>
-                <p className="text-muted-foreground text-sm">{review.weekLabel}</p>
-            </motion.div>
+            <div className="text-center space-y-2">
+                <div className="h-16 w-16 mx-auto rounded-full bg-primary/12 flex items-center justify-center mb-3">
+                    <Star className="h-8 w-8 text-primary" strokeWidth={1.5} />
+                </div>
+                <h1 className="text-2xl lg:text-3xl font-headline font-extrabold tracking-tight text-on-surface">Weekly Review</h1>
+                <p className="text-on-surface-variant text-sm">{review.weekLabel}</p>
+            </div>
 
             {/* Big Number */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.15, type: "spring", stiffness: 200, damping: 22 }}
-                onAnimationComplete={celebrate}
-            >
-                <GlassCard className="p-8 text-center space-y-2 border-primary/20 bg-primary/5">
-                    <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest">Together you completed</p>
-                    <motion.p
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-7xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-                    >
-                        {review.totalTogether}
-                    </motion.p>
-                    <p className="text-foreground font-semibold text-lg">tasks this week</p>
-                    <div className="flex items-center justify-center gap-1.5 pt-1">
-                        <Heart className="h-4 w-4 text-primary fill-primary" />
-                        <span className="text-sm text-muted-foreground">{review.myName} & {review.partnerName}</span>
-                        <Heart className="h-4 w-4 text-primary fill-primary" />
-                    </div>
-                </GlassCard>
-            </motion.div>
+            <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-8 text-center space-y-2">
+                <p className="text-on-surface-variant text-xs font-medium uppercase tracking-widest">Together you completed</p>
+                <p className="text-6xl lg:text-7xl font-headline font-black text-primary">
+                    {review.totalTogether}
+                </p>
+                <p className="text-on-surface font-semibold text-lg">tasks this week</p>
+                <div className="flex items-center justify-center gap-1.5 pt-1">
+                    <Heart className="h-4 w-4 text-primary fill-primary" />
+                    <span className="text-sm text-on-surface-variant">{review.myName} & {review.partnerName}</span>
+                    <Heart className="h-4 w-4 text-primary fill-primary" />
+                </div>
+            </div>
 
             {/* Split Stats */}
-            <div className="grid grid-cols-2 gap-3">
-                <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
-                    <GlassCard className="p-5 text-center space-y-1">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-primary">{review.myName}</p>
-                        <p className="text-4xl font-black text-foreground">{review.myCompleted}</p>
-                        <p className="text-xs text-muted-foreground">tasks done</p>
-                    </GlassCard>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
-                    <GlassCard className="p-5 text-center space-y-1">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-secondary">{review.partnerName}</p>
-                        <p className="text-4xl font-black text-foreground">{review.partnerCompleted}</p>
-                        <p className="text-xs text-muted-foreground">tasks done</p>
-                    </GlassCard>
-                </motion.div>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 text-center space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary truncate">{review.myName}</p>
+                    <p className="text-4xl font-headline font-black text-on-surface">{review.myCompleted}</p>
+                    <p className="text-xs text-on-surface-variant">tasks done</p>
+                </div>
+                <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 text-center space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-secondary truncate">{review.partnerName}</p>
+                    <p className="text-4xl font-headline font-black text-on-surface">{review.partnerCompleted}</p>
+                    <p className="text-xs text-on-surface-variant">tasks done</p>
+                </div>
             </div>
 
             {/* Highlights */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-                <GlassCard className="p-6 space-y-4">
-                    <h2 className="font-bold text-foreground">Highlights</h2>
-                    <div className="space-y-3">
-                        {review.streak > 0 && (
-                            <HighlightRow
-                                icon={<Flame className="h-5 w-5 text-orange-500" />}
-                                label="Current streak"
-                                value={`${review.streak} day${review.streak !== 1 ? 's' : ''}`}
-                            />
-                        )}
-                        {review.bestDayLabel !== "—" && (
-                            <HighlightRow
-                                icon={<Star className="h-5 w-5 text-amber-500" />}
-                                label="Most productive day"
-                                value={review.bestDayLabel}
-                            />
-                        )}
+            <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 space-y-4">
+                <h2 className="font-headline font-bold text-on-surface">Highlights</h2>
+                <div className="space-y-3">
+                    {review.streak > 0 && (
                         <HighlightRow
-                            icon={<CheckCircle2 className="h-5 w-5 text-green-500" />}
-                            label="Tasks together"
-                            value={`${review.totalTogether} this week`}
+                            icon={<Flame className="h-5 w-5 text-primary" />}
+                            label="Current streak"
+                            value={`${review.streak} day${review.streak !== 1 ? 's' : ''}`}
                         />
-                    </div>
-                </GlassCard>
-            </motion.div>
+                    )}
+                    {review.bestDayLabel !== "—" && (
+                        <HighlightRow
+                            icon={<Star className="h-5 w-5 text-primary" />}
+                            label="Most productive day"
+                            value={review.bestDayLabel}
+                        />
+                    )}
+                    <HighlightRow
+                        icon={<CheckCircle2 className="h-5 w-5 text-primary" />}
+                        label="Tasks together"
+                        value={`${review.totalTogether} this week`}
+                    />
+                </div>
+            </div>
 
             {/* CTA */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-                <button
-                    onClick={() => router.push("/")}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-semibold text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                    Start Fresh This Week
-                    <ArrowRight className="h-5 w-5" />
-                </button>
-            </motion.div>
-        </div>
+            <button
+                onClick={() => router.push("/")}
+                className="w-full h-12 rounded-full bg-primary text-on-primary font-semibold text-base active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+            >
+                Start Fresh This Week
+                <ArrowRight className="h-5 w-5" />
+            </button>
+        </motion.div>
     )
 }
 
 function HighlightRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
     return (
         <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-muted/40 flex items-center justify-center shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
                 {icon}
             </div>
             <div className="flex-1">
-                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="text-sm text-on-surface-variant">{label}</p>
             </div>
-            <p className="font-bold text-foreground text-sm">{value}</p>
+            <p className="font-bold text-on-surface text-sm">{value}</p>
         </div>
     )
 }
