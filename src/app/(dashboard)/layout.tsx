@@ -3,6 +3,7 @@
 import { Header } from "@/components/layout/header"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { SideNav } from "@/components/layout/side-nav"
+import { CommandPalette } from "@/components/command-palette"
 import { AIChatWidget } from "@/components/ai/chat-widget"
 import { NotificationPrompt } from "@/components/settings/notification-prompt"
 import { UpdateChecker } from "@/components/pwa/update-checker"
@@ -69,13 +70,16 @@ export default function DashboardLayout({
     return (
         <div className="min-h-screen bg-background">
             <SideNav />
-            <div className="lg:pl-64">
+            <div className="shell-pl lg:transition-[padding] lg:duration-200 lg:ease-out">
                 <Header partnerId={profile?.partner_id} userRole={profile?.role} userId={user.id} userName={profile?.username} avatarUrl={profile?.avatar_url} />
                 <main className="px-5 sm:px-6 lg:px-10 pt-[calc(env(safe-area-inset-top)+5.5rem)] lg:pt-24 pb-32 lg:pb-16 max-w-6xl mx-auto space-y-8">
                     {children}
                 </main>
             </div>
             <BottomNav />
+
+            {/* Command palette — ⌘/Ctrl+K quick nav + actions */}
+            <CommandPalette />
 
             {/* In-app updater — checks GitHub Releases on launch and on manual request */}
             <UpdateChecker />

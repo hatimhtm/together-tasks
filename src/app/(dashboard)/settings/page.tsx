@@ -74,7 +74,7 @@ export default function SettingsPage() {
 
     return (
         <div className="space-y-6 lg:space-y-8">
-            <h1 className="text-2xl lg:text-3xl font-headline font-extrabold text-on-surface">Settings</h1>
+            <h1 className="text-2xl lg:text-3xl font-headline font-extrabold tracking-tight text-on-surface">Settings</h1>
 
             {/* Profile card */}
             <section className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
@@ -107,7 +107,10 @@ export default function SettingsPage() {
 
             {/* Aesthetic Theme Picker */}
             <section className="space-y-4">
-                <h2 className="text-lg font-headline font-bold text-on-surface">Aesthetic</h2>
+                <div className="space-y-1">
+                    <h2 className="text-lg font-headline font-bold text-on-surface">Aesthetic</h2>
+                    <p className="text-[13px] text-on-surface-variant">Pick a look — or open more themes for the full palette.</p>
+                </div>
                 <ThemeSelector userId={user.id} currentDbTheme={profile?.theme || 'obsidian'} />
             </section>
 
