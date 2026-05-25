@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+/* Inter (body/label) + Plus Jakarta Sans (display) are self-hosted via next/font
+   in src/app/layout.tsx (zero layout shift, preloaded). Only Material Symbols
+   still comes from Google Fonts — it has no next/font equivalent. */
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -54,9 +56,11 @@
   --color-on-primary: var(--on-primary);
   --color-outline-variant: var(--outline-variant);
   --color-secondary: var(--secondary);
-  --font-headline: 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-label: 'Inter', sans-serif;
+  /* Font families resolve to the next/font CSS variables set in layout.tsx,
+     falling back to the named family then the system stack. */
+  --font-headline: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+  --font-body: var(--font-inter), 'Inter', sans-serif;
+  --font-label: var(--font-inter), 'Inter', sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -103,23 +107,47 @@
   --color-glass-border: var(--glass-border);
 }
 
+/*
+  TYPE SCALE — pre-baked ramp (rem on the fluid root). Use these Tailwind recipes
+  instead of ad-hoc sizes so hierarchy stays consistent app-wide:
+
+    display   text-2xl lg:text-3xl  font-headline font-extrabold tracking-tight   (~36px, Jakarta — display only, never < 20px)
+    title-lg  text-2xl              font-headline font-bold      tracking-tight   (24px, Jakarta)
+    title     text-lg               font-headline font-bold                       (~20px, Jakarta)
+    body-lg   text-base             font-body                                     (16px, Inter, line-height ~1.5)
+    body      text-sm               font-body                                     (~15px, Inter)
+    label     text-xs               font-medium uppercase tracking-wide           (~13px, Inter, on-surface-variant)
+    caption   text-[11px]           font-medium tracking-wide                     (~12px, Inter)
+
+  Negative tracking (tracking-tight) only on display/title (>=20px); never tighten body.
+
+  MOTION — durations 150 / 220 / 320ms; ease-out for enter/exit, ease-in-out for
+  on-screen modals. The checkbox-complete spring is the one hero interaction.
+*/
 :root {
   --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px; --radius: 1rem;
+
+  /* Motion tokens — consume from components, never animate everything globally. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --motion-fast: 150ms;
+  --motion: 220ms;
+  --motion-slow: 320ms;
 
   --on-background: var(--foreground);
   --surface: var(--background);
   --surface-dim: var(--background);
-  --surface-bright: color-mix(in srgb, var(--card) 84%, var(--foreground));
+  --surface-bright: color-mix(in oklch, var(--card) 84%, var(--foreground));
   --surface-tint: var(--primary);
-  --surface-variant: color-mix(in srgb, var(--card) 88%, var(--foreground));
+  --surface-variant: color-mix(in oklch, var(--card) 88%, var(--foreground));
   --surface-container-lowest: var(--background);
-  --surface-container-low: color-mix(in srgb, var(--card) 95%, var(--foreground));
+  --surface-container-low: color-mix(in oklch, var(--card) 95%, var(--foreground));
   --surface-container: var(--card);
-  --surface-container-high: color-mix(in srgb, var(--card) 91%, var(--foreground));
-  --surface-container-highest: color-mix(in srgb, var(--card) 87%, var(--foreground));
+  --surface-container-high: color-mix(in oklch, var(--card) 91%, var(--foreground));
+  --surface-container-highest: color-mix(in oklch, var(--card) 87%, var(--foreground));
   --on-surface: var(--foreground);
   --on-surface-variant: var(--muted-foreground);
-  --primary-container: color-mix(in srgb, var(--primary) 24%, var(--card));
+  --primary-container: color-mix(in oklch, var(--primary) 24%, var(--card));
   --primary-fixed: var(--primary);
   --primary-fixed-dim: var(--primary);
   --on-primary: var(--primary-foreground);
@@ -127,7 +155,7 @@
   --on-primary-fixed: var(--primary-foreground);
   --on-primary-fixed-variant: var(--primary-foreground);
   --inverse-primary: var(--primary);
-  --secondary-container: color-mix(in srgb, var(--secondary) 24%, var(--card));
+  --secondary-container: color-mix(in oklch, var(--secondary) 24%, var(--card));
   --secondary-fixed: var(--secondary);
   --secondary-fixed-dim: var(--secondary);
   --on-secondary: var(--secondary-foreground);
@@ -135,9 +163,9 @@
   --on-secondary-fixed: var(--secondary-foreground);
   --on-secondary-fixed-variant: var(--secondary-foreground);
   --tertiary: var(--accent);
-  --tertiary-container: color-mix(in srgb, var(--accent) 24%, var(--card));
+  --tertiary-container: color-mix(in oklch, var(--accent) 24%, var(--card));
   --tertiary-fixed: var(--accent);
-  --tertiary-fixed-dim: color-mix(in srgb, var(--accent) 78%, var(--foreground));
+  --tertiary-fixed-dim: color-mix(in oklch, var(--accent) 78%, var(--foreground));
   --on-tertiary: var(--accent-foreground);
   --on-tertiary-container: var(--accent);
   --on-tertiary-fixed: var(--accent-foreground);
@@ -146,7 +174,7 @@
   --outline-variant: color-mix(in srgb, var(--foreground) 22%, transparent);
   --error: var(--destructive);
   --on-error: var(--destructive-foreground);
-  --error-container: color-mix(in srgb, var(--destructive) 22%, var(--card));
+  --error-container: color-mix(in oklch, var(--destructive) 22%, var(--card));
   --on-error-container: var(--destructive-foreground);
   --inverse-surface: var(--foreground);
   --inverse-on-surface: var(--background);
@@ -185,7 +213,7 @@
   --secondary: #ff5722;
   --secondary-foreground: #ffffff;
   --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: rgba(245, 240, 232, 0.55);
+  --muted-foreground: rgba(245, 240, 232, 0.72);
   --accent: #ffc107;
   --accent-foreground: #0a0a0a;
   --destructive: #ef4444;
@@ -259,7 +287,7 @@
   --secondary: #7c4dff;
   --secondary-foreground: #ffffff;
   --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: rgba(232, 234, 246, 0.55);
+  --muted-foreground: rgba(232, 234, 246, 0.72);
   --accent: #ff4081;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
@@ -296,7 +324,7 @@
   --secondary: #9b1b30;
   --secondary-foreground: #fdf4e7;
   --muted: rgba(232, 184, 75, 0.12);
-  --muted-foreground: rgba(253, 244, 231, 0.55);
+  --muted-foreground: rgba(253, 244, 231, 0.72);
   --accent: #f7d070;
   --accent-foreground: #150008;
   --destructive: #ff4d4d;
@@ -333,7 +361,7 @@
   --secondary: #00bcd4;
   --secondary-foreground: #ffffff;
   --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: rgba(221, 232, 240, 0.55);
+  --muted-foreground: rgba(221, 232, 240, 0.72);
   --accent: #e040fb;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
@@ -370,7 +398,7 @@
   --secondary: #ff5722;
   --secondary-foreground: #ffffff;
   --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: rgba(245, 240, 232, 0.55);
+  --muted-foreground: rgba(245, 240, 232, 0.72);
   --accent: #ffc107;
   --accent-foreground: #0a0a0a;
   --destructive: #ef4444;
@@ -407,7 +435,7 @@
   --secondary: #0288d1;
   --secondary-foreground: #ffffff;
   --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: rgba(224, 244, 255, 0.55);
+  --muted-foreground: rgba(224, 244, 255, 0.72);
   --accent: #69f0ae;
   --accent-foreground: #040d1a;
   --destructive: #ef4444;
@@ -444,7 +472,7 @@
   --secondary: #ad1457;
   --secondary-foreground: #ffffff;
   --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: rgba(252, 228, 236, 0.55);
+  --muted-foreground: rgba(252, 228, 236, 0.72);
   --accent: #ff80ab;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
@@ -473,7 +501,16 @@
   * {
     @apply border-border;
     touch-action: manipulation;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Theme switches should crossfade the page surface — but NOT every element
+     (a global `* { transition }` taxes every paint and causes the "everything
+     fades" feel). Scope the color transition to the root surfaces only;
+     interactive components declare their own transitions. */
+  :root,
+  body {
+    transition: background-color var(--motion) var(--ease-out),
+                color var(--motion) var(--ease-out);
   }
 
   /* Fluid base size — every rem-based size (text, spacing, max-widths) scales
@@ -545,6 +582,14 @@
 }
 
 @layer utilities {
+  /* Desktop shell tracks the live sidebar width (set by side-nav.tsx on
+     :root as --sidenav-w). Falls back to 256px before hydration. On <lg the
+     sidebar is hidden and these are no-ops. */
+  @media (min-width: 1024px) {
+    .shell-pl { padding-left: var(--sidenav-w, 256px); }
+    .shell-left { left: var(--sidenav-w, 256px); }
+  }
+
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -569,11 +614,15 @@
   }
 }
 
-/* Calm motion: no infinite background animation; respect user preference. */
+/* Reduced motion: REDUCE, don't delete. Kill infinite/looping animations and
+   movement, but keep a short crossfade so essential state changes still read
+   (entrances become a quick opacity fade instead of a slide). */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    /* Collapse transforms instantly (no slide/scale) but allow ~120ms color/opacity. */
+    transition-property: opacity, background-color, color, border-color !important;
+    transition-duration: 120ms !important;
   }
 }

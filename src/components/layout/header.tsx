@@ -1,11 +1,13 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import {
     Sheet,
     SheetContent,
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
+import { cn } from "@/lib/utils"
 import { PartnerNotificationCenter } from "@/components/partner/notification-center"
 import { Logo } from "@/components/ui/logo"
 
@@ -20,10 +22,24 @@ interface HeaderProps {
 export function Header({ userRole, userName, avatarUrl }: HeaderProps) {
     const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
     const initial = (userName?.trim()?.[0] || (userRole === "queen" ? "Q" : "K")).toUpperCase()
+    const [scrolled, setScrolled] = useState(false)
+
+    // Glass only when content scrolls under the bar; transparent at rest.
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8)
+        onScroll()
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
 
     return (
         <header
-            className="fixed top-0 left-0 right-0 lg:left-64 z-40 flex items-center justify-between gap-3 px-5 sm:px-6 lg:px-10 pt-safe lg:pt-0 h-14 lg:h-16 bg-background/80 backdrop-blur-md border-b border-outline-variant/40"
+            className={cn(
+                "fixed top-0 left-0 right-0 shell-left z-40 flex items-center justify-between gap-3 px-5 sm:px-6 lg:px-10 pt-safe lg:pt-0 h-14 lg:h-16 transition-colors duration-200 ease-out lg:transition-[left,background-color,border-color]",
+                scrolled
+                    ? "bg-background/80 backdrop-blur-md border-b border-outline-variant/40"
+                    : "bg-transparent border-b border-transparent"
+            )}
             style={{ height: "calc(3.5rem + env(safe-area-inset-top))" }}
             {...(isTauri ? { 'data-tauri-drag-region': 'true' } : {})}
         >

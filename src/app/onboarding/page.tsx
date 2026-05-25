@@ -81,6 +81,41 @@ export default function OnboardingPage() {
 
                 if (profileError) throw profileError
 
+                // Seed a "Welcome" starter set so the first dashboard isn't an empty
+                // void — one task is pre-completed so the check-off delight is
+                // discovered immediately. Best-effort: never block onboarding on it.
+                try {
+                    const nowIso = new Date().toISOString()
+                    await supabase.from("tasks").insert([
+                        {
+                            title: "🎉 Welcome to Together Tasks!",
+                            description: "This one's already done — that's the satisfying part. Swipe or tap the circle to complete your own.",
+                            creator_id: user.id,
+                            assignee_id: user.id,
+                            priority: "low",
+                            is_completed: true,
+                            completed_at: nowIso,
+                        },
+                        {
+                            title: "Add your first shared task",
+                            description: "Tap the box below to jot down something you're working on together.",
+                            creator_id: user.id,
+                            assignee_id: user.id,
+                            priority: "medium",
+                            is_completed: false,
+                        },
+                        {
+                            title: "Set up a routine you'll keep together",
+                            creator_id: user.id,
+                            assignee_id: user.id,
+                            priority: "low",
+                            is_completed: false,
+                        },
+                    ])
+                } catch (seedErr) {
+                    console.error("Welcome seed failed (non-fatal):", seedErr)
+                }
+
                 toast.success("Welcome to your Kingdom!")
 
                 // Queen routes through the love-verification gate; everyone else to the dashboard.
