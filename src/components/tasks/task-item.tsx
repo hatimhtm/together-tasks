@@ -1,7 +1,7 @@
 "use client"
 
 import { Task, Subtask } from "@/types/task"
-import { motion, useMotionValue, useTransform, useReducedMotion } from "framer-motion"
+import { motion, AnimatePresence, useMotionValue, useTransform, useReducedMotion } from "framer-motion"
 import { Trash2, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format, isToday, isTomorrow, isThisWeek, isThisYear } from "date-fns"
@@ -435,9 +435,18 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                     </button>
                                 )}
 
-                                {/* Expanded = inline edit */}
+                                {/* Expanded = inline edit (fast height-grow animation) */}
+                                <AnimatePresence initial={false}>
                                 {isExpanded && (
-                                    <div className="mt-4 space-y-4 animate-in fade-in duration-200">
+                                    <motion.div
+                                        key="tt-expanded"
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={reduceMotion ? { duration: 0 } : { duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                                        className="overflow-hidden"
+                                    >
+                                    <div className="mt-4 space-y-4">
                                         {/* Details / notes — auto-grow textarea seeded with description */}
                                         <textarea
                                             ref={textareaRef}
@@ -575,7 +584,9 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                             </div>
                                         )}
                                     </div>
+                                    </motion.div>
                                 )}
+                                </AnimatePresence>
                             </div>
                         </div>
                     </div>
