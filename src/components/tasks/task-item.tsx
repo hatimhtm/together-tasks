@@ -1,10 +1,10 @@
 "use client"
 
-import { Task } from "@/types/task"
-import { motion, useMotionValue, useTransform } from "framer-motion"
+import { Task, Subtask } from "@/types/task"
+import { motion, useMotionValue, useTransform, useReducedMotion } from "framer-motion"
 import { Trash2, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { format } from "date-fns"
+import { format, isToday, isTomorrow, isThisWeek, isThisYear } from "date-fns"
 import { useState, useEffect, forwardRef } from "react"
 import { triggerHaptic, triggerHapticSuccess } from "@/lib/haptics"
 import { ImpactStyle } from "@capacitor/haptics"
@@ -12,6 +12,7 @@ import { ImpactStyle } from "@capacitor/haptics"
 interface TaskItemProps {
     task: Task
     userId: string
+    partnerId?: string | null
     isExpanded: boolean
     isEditing: boolean
     index?: number
@@ -20,29 +21,67 @@ interface TaskItemProps {
     onCancelEditing: () => void
     onComplete: (isCompleted: boolean) => void
     onDelete: () => void
+    onRequestDelete?: () => void
     onUpdate: (updates: Partial<Task>) => void
+    onClaim?: () => void
+    showClaim?: boolean
+}
+
+const PRIORITY_DOT: Record<string, string> = {
+    urgent: "bg-error",
+    high: "bg-secondary",
+    medium: "bg-on-surface-variant/50",
+    low: "bg-primary",
 }
 
 const getCheckboxBorder = (priority: string) => {
     switch (priority) {
         case "urgent": return "border-error hover:bg-error/10"
-        case "high":   return "border-secondary hover:bg-secondary/10"
-        case "low":    return "border-primary hover:bg-primary/10"
-        default:       return "border-outline-variant hover:border-primary hover:bg-primary/10"
+        case "high": return "border-secondary hover:bg-secondary/10"
+        case "low": return "border-primary hover:bg-primary/10"
+        default: return "border-outline-variant hover:border-primary hover:bg-primary/10"
     }
 }
 
 const checkIconColor = (priority: string) => {
     switch (priority) {
         case "urgent": return "text-error"
-        case "high":   return "text-secondary"
-        default:       return "text-primary"
+        case "high": return "text-secondary"
+        default: return "text-primary"
     }
+}
+
+// Humanize a due date: "Today 7pm", "Tomorrow", "Tue", "Mar 4".
+function humanizeDue(iso: string): string {
+    const d = new Date(iso)
+    const hasTime = !(d.getHours() === 0 && d.getMinutes() === 0)
+    const timePart = hasTime ? format(d, "h:mmaaa").replace(":00", "") : ""
+    if (isToday(d)) return hasTime ? `Today ${timePart}` : "Today"
+    if (isTomorrow(d)) return hasTime ? `Tomorrow ${timePart}` : "Tomorrow"
+    if (isThisWeek(d, { weekStartsOn: 1 })) return hasTime ? `${format(d, "EEE")} ${timePart}` : format(d, "EEE")
+    if (isThisYear(d)) return format(d, "MMM d")
+    return format(d, "MMM d, yyyy")
+}
+
+type Owner = { label: string; initial: string; chip: string }
+function ownerOf(task: Task, userId: string, partnerId?: string | null): Owner | null {
+    if (task.scope === "shared" && task.assignee_id === task.creator_id) {
+        // Unclaimed shared = pool
+        return { label: "In the pool", initial: "⇄", chip: "bg-primary/15 text-primary border-primary/30" }
+    }
+    if (task.assignee_id === userId) {
+        return { label: "Mine", initial: "M", chip: "bg-primary/15 text-primary border-primary/30" }
+    }
+    if (partnerId && task.assignee_id === partnerId) {
+        return { label: "Partner", initial: "P", chip: "bg-secondary/15 text-secondary border-secondary/30" }
+    }
+    return null
 }
 
 export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
     task,
     userId,
+    partnerId,
     isExpanded,
     isEditing,
     index = 0,
@@ -51,9 +90,14 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
     onCancelEditing,
     onComplete,
     onDelete,
-    onUpdate
+    onRequestDelete,
+    onUpdate,
+    onClaim,
+    showClaim,
 }, ref) => {
     const [editForm, setEditForm] = useState<Partial<Task>>({})
+    const [justCompleted, setJustCompleted] = useState(false)
+    const reduceMotion = useReducedMotion()
 
     const x = useMotionValue(0)
     const completeOpacity = useTransform(x, [0, 60], [0, 1])
@@ -69,26 +113,57 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
 
     const handleSubtaskToggle = (subtaskId: string) => {
         if (!task.subtasks) return
-        const updatedSubtasks = task.subtasks.map((st: any) => {
+        const updatedSubtasks = task.subtasks.map((st) => {
             if (typeof st !== 'string' && st.id === subtaskId) return { ...st, is_completed: !st.is_completed }
             return st
         })
         onUpdate({ subtasks: updatedSubtasks })
     }
 
+    const triggerComplete = () => {
+        triggerHaptic(ImpactStyle.Medium)
+        if (!task.is_completed) {
+            setJustCompleted(true)
+            setTimeout(() => setJustCompleted(false), 420)
+        }
+        onComplete(task.is_completed)
+    }
+
     const isOverdue = task.due_date && !task.is_completed && new Date(task.due_date) < new Date()
-    const hasMetadata = task.due_date || task.duration_estimate || task.scope === 'shared'
-        || (task.emergency_level === "high" || task.emergency_level === "critical")
-        || (task.importance_level === "high" || task.importance_level === "critical")
+
+    // Subtask progress
+    const subtasks = (task.subtasks ?? []).filter(Boolean) as Subtask[]
+    const structured = subtasks.filter((st): st is Exclude<Subtask, string> => typeof st !== "string")
+    const subtaskTotal = subtasks.length
+    const subtaskDone = structured.filter(st => st.is_completed).length
+    const subtaskPct = subtaskTotal > 0 ? Math.round((subtaskDone / subtaskTotal) * 100) : 0
+    const firstIncomplete =
+        structured.find(st => !st.is_completed)?.title ??
+        (subtasks.find(st => typeof st === "string") as string | undefined)
+
+    const owner = ownerOf(task, userId, partnerId)
+    const showClaimAction = !!showClaim && !!onClaim
+
+    const hasMetadata = task.due_date || task.duration_estimate || subtaskTotal > 0
+        || (task.priority === "urgent" || task.priority === "high")
+        || !!owner
+
+    // Hero spring config for the checkbox tick (the one celebrated motion).
+    const checkSpring = reduceMotion
+        ? { duration: 0.001 }
+        : { type: "spring" as const, stiffness: 600, damping: 18, mass: 0.6 }
 
     return (
         <div
             ref={ref}
-            className="group relative animate-in fade-in slide-in-from-bottom-1 duration-200"
-            style={{ animationDelay: `${Math.min(index * 30, 240)}ms` }}
+            className={cn(
+                "group relative",
+                !reduceMotion && "animate-in fade-in slide-in-from-bottom-1 duration-200",
+            )}
+            style={!reduceMotion ? { animationDelay: `${Math.min(index * 30, 240)}ms` } : undefined}
         >
             {/* Swipe underlay */}
-            <div className="absolute inset-0 flex items-center justify-between px-5 pointer-events-none rounded-2xl">
+            <div className="absolute inset-0 flex items-center justify-between px-5 pointer-events-none rounded-xl">
                 <motion.div style={{ opacity: completeOpacity }} className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
                 </motion.div>
@@ -107,6 +182,8 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                 onDragEnd={(_, info) => {
                     if ((info.offset.x > 80 || info.velocity.x > 500) && !task.is_completed) {
                         triggerHapticSuccess()
+                        setJustCompleted(true)
+                        setTimeout(() => setJustCompleted(false), 420)
                         onComplete(task.is_completed)
                     } else if (info.offset.x < -80 || info.velocity.x < -500) {
                         triggerHaptic(ImpactStyle.Heavy)
@@ -115,8 +192,8 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                 }}
                 className="relative z-10"
             >
-                <div className="bg-surface-container border border-outline-variant/60 rounded-2xl hover:border-outline-variant transition-colors overflow-hidden">
-                    <div className="p-5">
+                <div className="bg-surface-container border border-outline-variant/50 rounded-xl hover:border-outline-variant transition-colors overflow-hidden">
+                    <div className={cn(isExpanded || isEditing ? "p-4" : "px-4 py-3")}>
                         {isEditing ? (
                             /* ── Edit mode ── */
                             <div className="space-y-3">
@@ -134,7 +211,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                 {editForm.subtasks && editForm.subtasks.length > 0 && (
                                     <div className="space-y-1.5 pl-3 border-l-2 border-outline-variant/60">
                                         <p className="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-[0.12em]">Steps</p>
-                                        {editForm.subtasks.map((st: any, i: number) => (
+                                        {editForm.subtasks.map((st, i: number) => (
                                             <input
                                                 key={typeof st === 'string' ? i : st.id}
                                                 className="w-full bg-surface-container-high border border-outline-variant/60 rounded-lg px-2.5 py-1.5 text-xs text-on-surface focus:border-primary outline-none transition-colors"
@@ -155,15 +232,16 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                             </div>
                         ) : (
                             /* ── View mode ── */
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3.5">
 
-                                {/* Checkbox */}
+                                {/* Hero spring checkbox */}
                                 <button
-                                    onClick={() => { triggerHaptic(ImpactStyle.Medium); onComplete(task.is_completed) }}
+                                    onClick={triggerComplete}
+                                    aria-label={task.is_completed ? "Mark incomplete" : "Complete task"}
                                     className={cn(
-                                        "mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 active:scale-90 group/check",
+                                        "mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 group/check",
                                         getCheckboxBorder(task.priority),
-                                        task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "bg-primary/20 border-primary"
+                                        task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "bg-primary/20 border-primary",
                                     )}
                                     title={
                                         task.scope === 'shared'
@@ -174,10 +252,15 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                     {task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed ? (
                                         <div className="h-2 w-2 rounded-full bg-primary" />
                                     ) : (
-                                        <span className={cn(
-                                            "material-symbols-outlined text-[16px] font-bold opacity-0 group-hover/check:opacity-100 transition-opacity",
-                                            checkIconColor(task.priority)
-                                        )}>check</span>
+                                        <motion.span
+                                            animate={justCompleted ? { scale: [0, 1.35, 1] } : { scale: 1 }}
+                                            transition={checkSpring}
+                                            className={cn(
+                                                "material-symbols-outlined text-[16px] font-bold transition-opacity",
+                                                justCompleted ? "opacity-100" : "opacity-0 group-hover/check:opacity-100",
+                                                checkIconColor(task.priority),
+                                            )}
+                                        >check</motion.span>
                                     )}
                                 </button>
 
@@ -186,81 +269,91 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
 
                                     {/* Title row */}
                                     <div className="flex items-start gap-2">
+                                        {/* Priority dot (urgent/high only, collapsed) */}
+                                        {!isExpanded && (task.priority === 'urgent' || task.priority === 'high') && (
+                                            <span
+                                                className={cn("mt-[7px] h-2 w-2 rounded-full shrink-0", PRIORITY_DOT[task.priority])}
+                                                title={`${task.priority} priority`}
+                                            />
+                                        )}
+
                                         <h4
-                                            className="flex-1 font-body font-semibold text-[15px] text-on-surface leading-snug cursor-pointer"
+                                            className="flex-1 font-body font-semibold text-[15px] text-on-surface leading-snug cursor-pointer min-w-0"
                                             onClick={onToggleExpand}
                                         >
                                             {task.title}
                                         </h4>
 
-                                        {/* Priority badge (urgent/high only, collapsed) */}
-                                        {!isExpanded && (task.priority === 'urgent' || task.priority === 'high') && (
-                                            <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
-                                                <span className={cn(
-                                                    "text-[9px] font-bold font-label uppercase tracking-[0.12em] px-2 py-0.5 rounded-full pointer-events-none",
-                                                    task.priority === 'urgent' ? "text-error bg-error/10" : "text-secondary bg-secondary/10"
-                                                )}>
-                                                    {task.priority}
-                                                </span>
-                                                <select
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                    value={task.priority}
-                                                    onChange={e => onUpdate({ priority: e.target.value as any })}
-                                                >
-                                                    <option value="low">Low</option>
-                                                    <option value="medium">Medium</option>
-                                                    <option value="high">High</option>
-                                                    <option value="urgent">Urgent</option>
-                                                </select>
-                                            </div>
-                                        )}
-
-                                        {/* Chevron */}
+                                        {/* Chevron — hover-revealed on desktop, always tap-reachable */}
                                         <button
                                             onClick={onToggleExpand}
-                                            className="text-on-surface-variant/60 hover:text-on-surface-variant transition-colors p-0.5 shrink-0 -mr-1"
+                                            aria-label={isExpanded ? "Collapse" : "Expand"}
+                                            className="text-on-surface-variant/60 hover:text-on-surface-variant transition-all p-0.5 shrink-0 -mr-1 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
                                         >
                                             <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded && "rotate-180")} />
                                         </button>
                                     </div>
 
-                                    {/* Metadata row — compact, always shown if non-empty */}
+                                    {/* Subtask preview line (first incomplete) */}
+                                    {!isExpanded && subtaskTotal > 0 && firstIncomplete && subtaskDone < subtaskTotal && (
+                                        <p className="mt-1 text-[13px] text-on-surface-variant truncate flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-[14px] text-on-surface-variant/70">subdirectory_arrow_right</span>
+                                            {firstIncomplete}
+                                        </p>
+                                    )}
+
+                                    {/* Subtask progress bar */}
+                                    {!isExpanded && subtaskTotal > 0 && (
+                                        <div className="mt-2 h-[3px] w-full rounded-full bg-surface-container-highest overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                                                style={{ width: `${subtaskPct}%` }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Metadata row — compact chips */}
                                     {hasMetadata && (
-                                        <div className="flex items-center gap-2 mt-2.5 flex-wrap font-label uppercase tracking-[0.1em] text-[10px]">
+                                        <div className="flex items-center gap-2 mt-2 flex-wrap font-label text-[11px]">
                                             {task.due_date && (
                                                 <span className={cn(
-                                                    "flex items-center gap-1 px-2 py-0.5 rounded-full",
-                                                    isOverdue ? "text-error bg-error/10 font-bold" : "text-on-surface-variant bg-surface-container-high"
+                                                    "flex items-center gap-1 px-2 py-0.5 rounded-full font-medium",
+                                                    isOverdue ? "text-error bg-error/10 font-semibold" : "text-on-surface-variant bg-surface-container-high",
                                                 )}>
-                                                    <span className="material-symbols-outlined text-[12px]">schedule</span>
-                                                    {format(new Date(task.due_date), "MMM d, h:mm a")}
+                                                    <span className="material-symbols-outlined text-[13px]">schedule</span>
+                                                    {humanizeDue(task.due_date)}
                                                 </span>
                                             )}
                                             {task.duration_estimate && (
-                                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high">
-                                                    <span className="material-symbols-outlined text-[12px]">timer</span>
+                                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                                    <span className="material-symbols-outlined text-[13px]">timer</span>
                                                     {task.duration_estimate}m
                                                 </span>
                                             )}
-                                            {(task.emergency_level === "high" || task.emergency_level === "critical") && (
-                                                <span className="px-2 py-0.5 rounded-full text-error bg-error/10 font-bold flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-[12px]">local_fire_department</span>
-                                                    {task.emergency_level}
+                                            {subtaskTotal > 0 && (
+                                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                                    <span className="material-symbols-outlined text-[13px]">checklist</span>
+                                                    {subtaskDone}/{subtaskTotal}
                                                 </span>
                                             )}
-                                            {(task.importance_level === "high" || task.importance_level === "critical") && (
-                                                <span className="px-2 py-0.5 rounded-full text-secondary bg-secondary/10 font-bold flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-[12px]">star</span>
-                                                    {task.importance_level}
-                                                </span>
-                                            )}
-                                            {task.scope === 'shared' && (
-                                                <span className="px-2 py-0.5 rounded-full text-primary bg-primary/10 font-bold flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>diversity_1</span>
-                                                    Shared
+                                            {owner && (
+                                                <span className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full border font-semibold", owner.chip)}>
+                                                    <span className="inline-flex items-center justify-center h-[14px] min-w-[14px] rounded-full text-[9px] leading-none">{owner.initial}</span>
+                                                    {owner.label}
                                                 </span>
                                             )}
                                         </div>
+                                    )}
+
+                                    {/* Pool claim action */}
+                                    {showClaimAction && !isExpanded && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); triggerHaptic(ImpactStyle.Light); onClaim?.() }}
+                                            className="mt-2.5 inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-primary text-on-primary text-[13px] font-label font-semibold transition-colors active:scale-[0.98]"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>pan_tool</span>
+                                            I&apos;ve got this
+                                        </button>
                                     )}
 
                                     {/* Expanded content */}
@@ -273,21 +366,15 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                 </p>
                                             )}
 
-                                            {/* Priority selector row (expanded) */}
+                                            {/* Priority selector + actions row */}
                                             <div className="flex items-center justify-between">
                                                 <div className="relative inline-flex items-center gap-2 px-3 py-1.5 bg-surface-container-high rounded-full border border-outline-variant/60" onClick={e => e.stopPropagation()}>
-                                                    <div className={cn(
-                                                        "w-2 h-2 rounded-full",
-                                                        task.priority === 'urgent' ? "bg-error" :
-                                                        task.priority === 'high' ? "bg-secondary" :
-                                                        task.priority === 'low' ? "bg-primary" :
-                                                        "bg-on-surface-variant"
-                                                    )} />
+                                                    <div className={cn("w-2 h-2 rounded-full", PRIORITY_DOT[task.priority] ?? PRIORITY_DOT.medium)} />
                                                     <span className="text-[11px] font-label font-bold text-on-surface uppercase tracking-[0.08em]">{task.priority} prio</span>
                                                     <select
                                                         className="absolute inset-0 opacity-0 cursor-pointer w-full"
                                                         value={task.priority}
-                                                        onChange={e => onUpdate({ priority: e.target.value as any })}
+                                                        onChange={e => onUpdate({ priority: e.target.value as Task["priority"] })}
                                                     >
                                                         <option value="low">Low</option>
                                                         <option value="medium">Medium</option>
@@ -300,23 +387,58 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                     <button
                                                         onClick={onStartEditing}
                                                         className="text-on-surface-variant hover:text-primary p-2 rounded-full bg-surface-container-high hover:bg-primary/10 transition-colors active:scale-[0.98]"
+                                                        aria-label="Edit task"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={onDelete}
+                                                        onClick={onRequestDelete}
                                                         className="text-on-surface-variant hover:text-error p-2 rounded-full bg-surface-container-high hover:bg-error/10 transition-colors active:scale-[0.98]"
+                                                        aria-label="Delete task"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">delete</span>
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            {/* AI Subtasks */}
-                                            {task.subtasks && task.subtasks.length > 0 && (
+                                            {/* Raw urgency / importance (only on expand) */}
+                                            {((task.emergency_level === "high" || task.emergency_level === "critical")
+                                                || (task.importance_level === "high" || task.importance_level === "critical")) && (
+                                                <div className="flex items-center gap-2 flex-wrap font-label text-[11px]">
+                                                    {(task.emergency_level === "high" || task.emergency_level === "critical") && (
+                                                        <span className="px-2 py-0.5 rounded-full text-error bg-error/10 font-semibold flex items-center gap-1">
+                                                            <span className="material-symbols-outlined text-[13px]">local_fire_department</span>
+                                                            {task.emergency_level} urgency
+                                                        </span>
+                                                    )}
+                                                    {(task.importance_level === "high" || task.importance_level === "critical") && (
+                                                        <span className="px-2 py-0.5 rounded-full text-secondary bg-secondary/10 font-semibold flex items-center gap-1">
+                                                            <span className="material-symbols-outlined text-[13px]">star</span>
+                                                            {task.importance_level} importance
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Pool claim (expanded) */}
+                                            {showClaimAction && (
+                                                <button
+                                                    onClick={() => { triggerHaptic(ImpactStyle.Light); onClaim?.() }}
+                                                    className="inline-flex items-center gap-1.5 h-10 px-4 rounded-full bg-primary text-on-primary text-sm font-label font-semibold transition-colors active:scale-[0.98]"
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>pan_tool</span>
+                                                    I&apos;ve got this
+                                                </button>
+                                            )}
+
+                                            {/* Full subtask checklist */}
+                                            {subtaskTotal > 0 && (
                                                 <div className="pt-3 border-t border-outline-variant/60 space-y-2">
-                                                    <p className="text-[10px] font-label font-bold uppercase tracking-[0.12em] text-on-surface-variant">Checklist</p>
-                                                    {task.subtasks.map((st: any, i: number) => {
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-[10px] font-label font-bold uppercase tracking-[0.12em] text-on-surface-variant">Checklist</p>
+                                                        <p className="text-[10px] font-label font-bold uppercase tracking-[0.12em] text-on-surface-variant">{subtaskDone}/{subtaskTotal}</p>
+                                                    </div>
+                                                    {subtasks.map((st, i: number) => {
                                                         if (typeof st === 'string') return (
                                                             <div key={i} className="flex items-center gap-3 text-sm font-body text-on-surface-variant pl-1">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-outline-variant shrink-0" />
@@ -336,7 +458,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                                 </div>
                                                                 <span className={cn(
                                                                     "transition-colors",
-                                                                    st.is_completed ? "text-on-surface-variant line-through" : "text-on-surface font-medium"
+                                                                    st.is_completed ? "text-on-surface-variant line-through" : "text-on-surface font-medium",
                                                                 )}>
                                                                     {st.title}
                                                                 </span>

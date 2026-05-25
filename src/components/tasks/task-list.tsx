@@ -4,7 +4,7 @@ import { Check, Trash2, CheckCircle2, ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 import confetti from "canvas-confetti"
 import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { cn } from "@/lib/utils"
 import {
     AlertDialog,
@@ -19,13 +19,46 @@ import {
 import { Task } from "@/types/task"
 import { TaskItem } from "./task-item"
 
+type Group = "today" | "upcoming" | "anytime"
+
+function groupTasks(activeTasks: Task[]): Record<Group, Task[]> {
+    const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
+    const groups: Record<Group, Task[]> = { today: [], upcoming: [], anytime: [] }
+
+    for (const t of activeTasks) {
+        if (!t.due_date) {
+            groups.anytime.push(t)
+        } else if (new Date(t.due_date) <= todayEnd) {
+            groups.today.push(t) // due today or overdue
+        } else {
+            groups.upcoming.push(t)
+        }
+    }
+
+    // Sort dated groups by soonest due first; anytime keeps insertion (newest-first) order.
+    const byDue = (a: Task, b: Task) =>
+        new Date(a.due_date as string).getTime() - new Date(b.due_date as string).getTime()
+    groups.today.sort(byDue)
+    groups.upcoming.sort(byDue)
+
+    return groups
+}
+
+const GROUP_META: { key: Group; label: string }[] = [
+    { key: "today", label: "Today" },
+    { key: "upcoming", label: "Upcoming" },
+    { key: "anytime", label: "Anytime" },
+]
+
 export function TaskList({
     userId,
     partnerId,
     propTasks,
     propLoading,
     propUpdateTask,
-    propDeleteTask
+    propDeleteTask,
+    onClaim,
+    showPoolClaim,
 }: {
     userId: string
     partnerId?: string | null
@@ -33,6 +66,8 @@ export function TaskList({
     propLoading?: boolean
     propUpdateTask?: (taskId: string, updates: Partial<Task>) => Promise<void>
     propDeleteTask?: (taskId: string) => Promise<void>
+    onClaim?: (taskId: string) => void
+    showPoolClaim?: boolean
 }) {
     // If props are provided, use them (Controlled mode)
     // Otherwise, use the hook locally (Uncontrolled mode)
@@ -88,13 +123,13 @@ export function TaskList({
             updates = {
                 completed_by: newArray,
                 is_completed: newStatus,
-                completed_at: newStatus ? new Date().toISOString() : null
+                completed_at: newStatus ? new Date().toISOString() : null,
             }
         } else {
             // Simple completion: personal task, or completed_by column not yet in DB
             updates = {
                 is_completed: newStatus,
-                completed_at: newStatus ? new Date().toISOString() : null
+                completed_at: newStatus ? new Date().toISOString() : null,
             }
         }
 
@@ -107,7 +142,7 @@ export function TaskList({
                 particleCount: 40,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#FFD700', '#FF69B4', '#00BFFF']
+                colors: ['#FFD700', '#FF69B4', '#00BFFF'],
             })
 
             toast.success("Task completed!", {
@@ -123,17 +158,50 @@ export function TaskList({
         setTaskToDelete(null)
     }
 
+    // Swipe-delete → instant delete with an Undo toast (no destructive modal).
+    const handleSwipeDelete = (taskId: string) => {
+        const task = tasks.find(t => t.id === taskId)
+        if (!task) return
+        const snapshot: Task = { ...task }
+        deleteTask(taskId)
+        toast("Task deleted", {
+            description: snapshot.title,
+            action: {
+                label: "Undo",
+                onClick: () => { void recreateTask(snapshot) },
+            },
+        })
+    }
+
+    // Re-insert a deleted task on Undo by writing the same row back. The realtime
+    // INSERT event re-adds it to the list (optimistic add path stays untouched).
+    const recreateTask = async (snapshot: Task) => {
+        try {
+            const { createClient } = await import("@/lib/supabase/client")
+            const supabase = createClient()
+            const { error } = await supabase.from("tasks").insert(snapshot)
+            if (error) throw error
+            // The realtime INSERT subscription re-adds the row to the list.
+        } catch {
+            toast.error("Couldn't undo — task may have changed.")
+        }
+    }
+
+    const activeTasks = useMemo(() => tasks.filter(t => !t.is_completed), [tasks])
+    const completedTasks = useMemo(() => tasks.filter(t => t.is_completed), [tasks])
+    const grouped = useMemo(() => groupTasks(activeTasks), [activeTasks])
+
     if (loading) {
         return (
-            <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">
+            <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
                     <div
                         key={i}
-                        className="h-24 rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse"
+                        className="h-[68px] rounded-xl bg-surface-container border border-outline-variant/50 animate-pulse"
                     >
-                        <div className="flex items-center gap-4 h-full px-5">
+                        <div className="flex items-center gap-4 h-full px-4">
                             <div className="w-6 h-6 rounded-full bg-surface-container-high" />
-                            <div className="flex-1 space-y-3">
+                            <div className="flex-1 space-y-2.5">
                                 <div className="h-3.5 w-1/2 rounded-full bg-surface-container-high" />
                                 <div className="h-2.5 w-1/4 rounded-full bg-surface-container-high" />
                             </div>
@@ -144,13 +212,11 @@ export function TaskList({
         )
     }
 
-    // Separate active and completed tasks
-    const activeTasks = tasks.filter(t => !t.is_completed)
-    const completedTasks = tasks.filter(t => t.is_completed)
+    let rowIndex = 0
 
     return (
-        <div className="space-y-6">
-            {/* Delete Confirmation Dialog */}
+        <div className="space-y-7">
+            {/* Delete Confirmation Dialog (explicit trash button only) */}
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -166,45 +232,61 @@ export function TaskList({
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Active Tasks */}
-            {activeTasks.length > 0 ? (
-                <div className="grid gap-4 grid-cols-1 xl:grid-cols-2 items-start">
-                    {activeTasks.map((task, i) => (
-                        <TaskItem
-                            key={task.id}
-                            task={task}
-                            index={i}
-                            userId={userId}
-                            isExpanded={expandedTasks.has(task.id)}
-                            isEditing={editingTaskId === task.id}
-                            onToggleExpand={() => toggleExpand(task.id)}
-                            onStartEditing={(e) => startEditing(task, e)}
-                            onCancelEditing={() => setEditingTaskId(null)}
-                            onComplete={(isCompleted) => handleComplete(task.id, isCompleted)}
-                            onDelete={() => setTaskToDelete(task.id)}
-                            onUpdate={(updates) => {
-                                updateTask(task.id, updates)
-                                if (editingTaskId === task.id) {
-                                    setEditingTaskId(null)
-                                }
-                            }}
-                        />
-                    ))}
+            {activeTasks.length === 0 && completedTasks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center rounded-2xl bg-surface-container border border-outline-variant/60 animate-in fade-in duration-200">
+                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-5">
+                        <CheckCircle2 className="h-8 w-8 text-primary" strokeWidth={2} />
+                    </div>
+                    <h3 className="font-headline font-bold text-lg text-on-surface mb-1.5">All clear</h3>
+                    <p className="text-on-surface-variant text-sm max-w-[280px] leading-relaxed">
+                        {partnerId
+                            ? "You and your partner are all caught up. Add a task to keep the momentum going."
+                            : "You're all caught up. Add a task to keep the momentum going."}
+                    </p>
                 </div>
             ) : (
-                tasks.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-16 px-6 text-center rounded-2xl bg-surface-container border border-outline-variant/60 animate-in fade-in duration-200">
-                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-5">
-                            <CheckCircle2 className="h-8 w-8 text-primary" strokeWidth={2} />
-                        </div>
-                        <h3 className="font-headline font-bold text-lg text-on-surface mb-1.5">All clear</h3>
-                        <p className="text-on-surface-variant text-sm max-w-[280px] leading-relaxed">
-                            {partnerId
-                                ? "You and your partner are all caught up. Add a task to keep the momentum going."
-                                : "You're all caught up. Add a task to keep the momentum going."}
-                        </p>
-                    </div>
-                )
+                GROUP_META.map(({ key, label }) => {
+                    const list = grouped[key]
+                    if (list.length === 0) return null
+                    return (
+                        <section key={key} className="space-y-2.5">
+                            <h3 className="px-1 text-xs font-label font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
+                                {label}
+                                <span className="ml-1.5 text-on-surface-variant/60 font-medium">{list.length}</span>
+                            </h3>
+                            <div className="space-y-2.5">
+                                {list.map(task => {
+                                    const i = rowIndex++
+                                    return (
+                                        <TaskItem
+                                            key={task.id}
+                                            task={task}
+                                            index={i}
+                                            userId={userId}
+                                            partnerId={partnerId}
+                                            isExpanded={expandedTasks.has(task.id)}
+                                            isEditing={editingTaskId === task.id}
+                                            onToggleExpand={() => toggleExpand(task.id)}
+                                            onStartEditing={(e) => startEditing(task, e)}
+                                            onCancelEditing={() => setEditingTaskId(null)}
+                                            onComplete={(isCompleted) => handleComplete(task.id, isCompleted)}
+                                            onDelete={() => handleSwipeDelete(task.id)}
+                                            onRequestDelete={() => setTaskToDelete(task.id)}
+                                            onClaim={onClaim ? () => onClaim(task.id) : undefined}
+                                            showClaim={!!showPoolClaim && task.scope === "shared" && task.assignee_id === task.creator_id}
+                                            onUpdate={(updates) => {
+                                                updateTask(task.id, updates)
+                                                if (editingTaskId === task.id) {
+                                                    setEditingTaskId(null)
+                                                }
+                                            }}
+                                        />
+                                    )
+                                })}
+                            </div>
+                        </section>
+                    )
+                })
             )}
 
             {/* Completed Tasks (Collapsible) */}

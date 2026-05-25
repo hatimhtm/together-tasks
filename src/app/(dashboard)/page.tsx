@@ -7,27 +7,38 @@ import { TasksTodayCounter } from "@/components/dashboard/tasks-today-counter"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { getDisplayName } from "@/lib/user"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Profile, Task } from "@/types/task"
 import { scheduleMorningBriefing, scheduleWeeklyReview } from "@/lib/notifications/briefing-scheduler"
 import { format } from "date-fns"
+import { useQuery } from "@tanstack/react-query"
+
+type DashboardProfile = Profile & {
+  briefing_enabled?: boolean
+  briefing_time?: string
+  weekly_review_enabled?: boolean
+}
+
+interface DashboardData {
+  user: { id: string }
+  profile: DashboardProfile | null
+  partnerName?: string
+  initialTasks: Task[]
+}
 
 export default function Home() {
   const supabase = createClient()
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [partnerName, setPartnerName] = useState<string | undefined>(undefined)
-  const [initialTasks, setInitialTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function loadDashboard() {
+  // Bootstrap data lives in React Query so navigating away and back is instant
+  // (served from cache; realtime + optimistic updates keep tasks live after).
+  const { data, isLoading, isError } = useQuery<DashboardData | null>({
+    queryKey: ["dashboard"],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push("/login"); return }
-      setUser(user)
+      if (!user) { router.push("/login"); return null }
 
-      let { data: currentProfile } = await supabase
+      const { data: currentProfile } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
@@ -35,7 +46,7 @@ export default function Home() {
 
       if (currentProfile && !currentProfile.has_completed_onboarding) {
         router.push("/onboarding")
-        return
+        return null
       }
 
       // Self-Healing Hardlink Logic
@@ -51,15 +62,15 @@ export default function Home() {
           currentProfile.partner_id = partnerProfile.id
         }
       }
-      setProfile(currentProfile)
 
+      let partnerName: string | undefined
       if (currentProfile?.partner_id) {
         const { data: partnerProfile } = await supabase
           .from("profiles")
           .select("theme, username, briefing_time, briefing_enabled, weekly_review_enabled")
           .eq("id", currentProfile.partner_id)
           .single()
-        if (partnerProfile?.username) setPartnerName(partnerProfile.username)
+        if (partnerProfile?.username) partnerName = partnerProfile.username
       }
 
       let tasksQuery = supabase.from("tasks").select("*")
@@ -69,43 +80,56 @@ export default function Home() {
         tasksQuery = tasksQuery.or(`creator_id.eq.${user.id},assignee_id.eq.${user.id}`)
       }
       const { data: fetchTasks } = await tasksQuery.order("created_at", { ascending: false })
-      if (fetchTasks) setInitialTasks(fetchTasks)
 
-      if (currentProfile?.briefing_enabled && currentProfile?.briefing_time) {
-        const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
-        const todayTasks = (fetchTasks || []).filter((t: Task) => {
-          if (t.assignee_id !== user.id) return false
-          if (t.is_completed) return false
-          return !t.due_date || new Date(t.due_date) <= todayEnd
-        })
-        const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1); yesterday.setHours(0, 0, 0, 0)
-        const yesterdayEnd = new Date(yesterday); yesterdayEnd.setHours(23, 59, 59, 999)
-        const partnerCompletedYesterday = currentProfile.partner_id
-          ? (fetchTasks || []).filter((t: Task) =>
-              t.assignee_id === currentProfile.partner_id &&
-              t.is_completed && t.completed_at &&
-              new Date(t.completed_at) >= yesterday &&
-              new Date(t.completed_at) <= yesterdayEnd
-            ).length
-          : 0
-        scheduleMorningBriefing({
-          userName: currentProfile.username || "there",
-          partnerName: partnerName || "your partner",
-          todayTaskCount: todayTasks.length,
-          partnerCompletedYesterday,
-          briefingTime: currentProfile.briefing_time,
-        })
-        if (currentProfile?.weekly_review_enabled) {
-          scheduleWeeklyReview(currentProfile.username || "there", currentProfile.briefing_time)
-        }
+      return {
+        user: { id: user.id },
+        profile: currentProfile,
+        partnerName,
+        initialTasks: fetchTasks || [],
       }
+    },
+  })
 
-      setLoading(false)
+  const user = data?.user ?? null
+  const profile = data?.profile ?? null
+  const partnerName = data?.partnerName
+  const initialTasks = data?.initialTasks ?? []
+
+  // Schedule notifications once the bootstrap data is available.
+  useEffect(() => {
+    if (!user || !profile) return
+    if (!profile.briefing_enabled || !profile.briefing_time) return
+
+    const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
+    const todayTasks = initialTasks.filter((t: Task) => {
+      if (t.assignee_id !== user.id) return false
+      if (t.is_completed) return false
+      return !t.due_date || new Date(t.due_date) <= todayEnd
+    })
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1); yesterday.setHours(0, 0, 0, 0)
+    const yesterdayEnd = new Date(yesterday); yesterdayEnd.setHours(23, 59, 59, 999)
+    const partnerCompletedYesterday = profile.partner_id
+      ? initialTasks.filter((t: Task) =>
+          t.assignee_id === profile.partner_id &&
+          t.is_completed && t.completed_at &&
+          new Date(t.completed_at) >= yesterday &&
+          new Date(t.completed_at) <= yesterdayEnd
+        ).length
+      : 0
+    scheduleMorningBriefing({
+      userName: profile.username || "there",
+      partnerName: partnerName || "your partner",
+      todayTaskCount: todayTasks.length,
+      partnerCompletedYesterday,
+      briefingTime: profile.briefing_time,
+    })
+    if (profile.weekly_review_enabled) {
+      scheduleWeeklyReview(profile.username || "there", profile.briefing_time)
     }
-    loadDashboard()
-  }, [router, supabase])
+  }, [user, profile, partnerName, initialTasks])
 
-  if (loading || !user) {
+  // Skeleton only on a true cold load (no cached data yet).
+  if ((isLoading && !data) || (!user && !isError)) {
     return (
       <div className="space-y-6 lg:space-y-8 pb-10 animate-in fade-in duration-200">
         {/* Greeting skeleton */}
@@ -113,32 +137,28 @@ export default function Home() {
           <div className="h-3.5 w-36 rounded-full bg-surface-container-high animate-pulse" />
           <div className="h-9 w-72 rounded-xl bg-surface-container-high animate-pulse" />
         </div>
-        {/* Two-column skeleton */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="w-full lg:w-[380px] shrink-0 space-y-4">
-            <div className="h-32 rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse" />
-            <div className="h-[88px] rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse" />
-          </div>
-          <div className="flex-1 grid gap-4 grid-cols-1 xl:grid-cols-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-24 rounded-2xl bg-surface-container border border-outline-variant/60 animate-pulse"
-              >
-                <div className="flex items-center gap-4 h-full px-5">
-                  <div className="w-6 h-6 rounded-full bg-surface-container-high" />
-                  <div className="flex-1 space-y-3">
-                    <div className="h-3.5 w-1/2 rounded-full bg-surface-container-high" />
-                    <div className="h-2.5 w-1/4 rounded-full bg-surface-container-high" />
-                  </div>
+        {/* Single-column list skeleton */}
+        <div className="mx-auto w-full max-w-2xl space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-[68px] rounded-xl bg-surface-container border border-outline-variant/50 animate-pulse"
+            >
+              <div className="flex items-center gap-4 h-full px-4">
+                <div className="w-6 h-6 rounded-full bg-surface-container-high" />
+                <div className="flex-1 space-y-2.5">
+                  <div className="h-3.5 w-1/2 rounded-full bg-surface-container-high" />
+                  <div className="h-2.5 w-1/4 rounded-full bg-surface-container-high" />
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     )
   }
+
+  if (!user) return null
 
   const displayName = getDisplayName(profile)
   const hour = new Date().getHours()
@@ -149,7 +169,7 @@ export default function Home() {
   return (
     <div className="space-y-6 lg:space-y-8 pb-10 animate-in fade-in duration-200">
       {/* ── Greeting ── */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="mx-auto w-full max-w-2xl flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1.5 min-w-0">
           <p className="font-label text-on-surface-variant text-xs font-medium uppercase tracking-[0.12em]">
             {format(new Date(), "EEEE, MMM d")}
