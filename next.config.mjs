@@ -15,12 +15,6 @@ const withPWA = withPWAInit({
 const nextConfig = {
     eslint: { ignoreDuringBuilds: true },
     typescript: { ignoreBuildErrors: true },
-    // Server-only route handlers use the `.vercel.ts` suffix so they're compiled
-    // on Vercel but skipped by the Capacitor static export (output: 'export'),
-    // which can't host dynamic routes.
-    pageExtensions: isCapacitor
-        ? ['tsx', 'ts', 'jsx', 'js']
-        : ['vercel.ts', 'tsx', 'ts', 'jsx', 'js'],
     ...(isCapacitor && {
         output: 'export',
         images: { unoptimized: true },
