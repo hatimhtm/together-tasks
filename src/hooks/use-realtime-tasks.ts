@@ -14,10 +14,11 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
     const channelName = useRef(`tasks-${userId}-${Math.random().toString(36).slice(2)}`).current
 
     useEffect(() => {
-        // Initial fetch only if we don't have initial tasks
-        if (!initialTasks) {
-            fetchTasks()
-        }
+        // Always reconcile against the DB on mount. With cached initialTasks the
+        // list paints instantly (loading stays false → no spinner) and this fetch
+        // silently refreshes — fixing the stale React Query ["dashboard"] snapshot
+        // after navigating away and back within staleTime.
+        fetchTasks()
 
         // Set up real-time subscription
         let channel: RealtimeChannel | null = null;

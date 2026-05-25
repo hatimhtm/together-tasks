@@ -39,3 +39,6 @@ bun.lock
 
 # TypeScript incremental build info
 tsconfig.tsbuildinfo
+
+# Claude Code worktrees/local
+.claude/
