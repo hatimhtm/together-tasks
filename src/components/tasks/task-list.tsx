@@ -78,22 +78,25 @@ export function TaskList({
     const updateTask = propUpdateTask ?? hookData.updateTask
     const deleteTask = propDeleteTask ?? hookData.deleteTask
 
+    // Expand ⇒ edit: a single set tracks which tasks are open (and therefore editing).
     const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
     const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
-    const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
     const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
 
-    const startEditing = (task: Task, e?: React.MouseEvent) => {
-        if (e) e.stopPropagation();
-        setEditingTaskId(task.id)
-        if (!expandedTasks.has(task.id)) toggleExpand(task.id)
+    const expand = (taskId: string) => {
+        setExpandedTasks(prev => {
+            if (prev.has(taskId)) return prev
+            const newSet = new Set(prev)
+            newSet.add(taskId)
+            return newSet
+        })
     }
 
-    const toggleExpand = (taskId: string) => {
+    const collapse = (taskId: string) => {
         setExpandedTasks(prev => {
+            if (!prev.has(taskId)) return prev
             const newSet = new Set(prev)
-            if (newSet.has(taskId)) newSet.delete(taskId)
-            else newSet.add(taskId)
+            newSet.delete(taskId)
             return newSet
         })
     }
@@ -273,21 +276,14 @@ export function TaskList({
                                             userId={userId}
                                             partnerId={partnerId}
                                             isExpanded={expandedTasks.has(task.id)}
-                                            isEditing={editingTaskId === task.id}
-                                            onToggleExpand={() => toggleExpand(task.id)}
-                                            onStartEditing={(e) => startEditing(task, e)}
-                                            onCancelEditing={() => setEditingTaskId(null)}
+                                            onExpand={() => expand(task.id)}
+                                            onCollapse={() => collapse(task.id)}
                                             onComplete={(isCompleted) => handleComplete(task.id, isCompleted)}
                                             onDelete={() => handleSwipeDelete(task.id)}
                                             onRequestDelete={() => setTaskToDelete(task.id)}
                                             onClaim={onClaim ? () => onClaim(task.id) : undefined}
                                             showClaim={!!showPoolClaim && task.scope === "shared" && task.assignee_id === task.creator_id}
-                                            onUpdate={(updates) => {
-                                                updateTask(task.id, updates)
-                                                if (editingTaskId === task.id) {
-                                                    setEditingTaskId(null)
-                                                }
-                                            }}
+                                            onUpdate={(updates) => updateTask(task.id, updates)}
                                         />
                                     )
                                 })}
