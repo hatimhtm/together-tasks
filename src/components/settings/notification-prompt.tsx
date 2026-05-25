@@ -26,9 +26,28 @@ export function NotificationPrompt({ userId, userName, onComplete }: Notificatio
     const [saving, setSaving] = useState(false)
     const supabase = createClient()
 
+    async function requestOsPermission() {
+        try {
+            const { Capacitor } = await import('@capacitor/core')
+            if (Capacitor.isNativePlatform()) {
+                const { LocalNotifications } = await import('@capacitor/local-notifications')
+                await LocalNotifications.requestPermissions()
+            } else if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+                await Notification.requestPermission()
+            }
+        } catch (e) {
+            console.warn('Notification permission request failed:', e)
+        }
+    }
+
     async function handleSave() {
         setSaving(true)
         try {
+            // If the user opted into any reminder, ask the OS for permission now.
+            if (briefingEnabled || weeklyEnabled) {
+                await requestOsPermission()
+            }
+
             await supabase
                 .from('profiles')
                 .update({

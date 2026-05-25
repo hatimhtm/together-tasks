@@ -15,25 +15,31 @@ export function ThinkingOfYouButton({ partnerId }: { partnerId: string }) {
         setLoading(true)
 
         try {
+            const { createClient } = await import("@/lib/supabase/client")
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (!user) {
+                toast.error("Sign in to send love.")
+                return
+            }
+
+            const { error } = await supabase.from('partner_notifications').insert({
+                task_owner_id: user.id,
+                partner_id: partnerId,
+                message: "Thinking of you! ❤️",
+                notification_type: "nudge",
+                ai_reasoning: "Your partner manually sent you some love.",
+            })
+
+            if (error) throw error
+
             confetti({
                 particleCount: 24,
                 spread: 55,
                 origin: { y: 0.15, x: 0.85 },
                 colors: ['#FF1493', '#FF69B4', '#FFB6C1', '#ff80ab'],
             })
-
-            const { createClient } = await import("@/lib/supabase/client")
-            const supabase = createClient()
-            const { data: { user } } = await supabase.auth.getUser()
-
-            if (user) {
-                await supabase.from('partner_notifications').insert({
-                    partner_id: partnerId,
-                    message: "Thinking of you! ❤️",
-                    notification_type: "nudge",
-                    ai_reasoning: "Your partner manually sent you some love.",
-                })
-            }
 
             setSent(true)
             toast.success("Sent some love! ❤️")

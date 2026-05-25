@@ -52,16 +52,10 @@ export function useAiNudge() {
                                     });
                                 }
                             } else {
-                                // Desktop Web / Electron Native
-                                if ('Notification' in window) {
-                                    if (Notification.permission === 'granted') {
-                                        new Notification("Together Tasks 💌", { body: randomNudge });
-                                    } else if (Notification.permission !== 'denied') {
-                                        const perm = await Notification.requestPermission();
-                                        if (perm === 'granted') {
-                                            new Notification("Together Tasks 💌", { body: randomNudge });
-                                        }
-                                    }
+                                // Desktop Web / Electron Native — never prompt here.
+                                // Only fire if the user already opted in via Settings.
+                                if ('Notification' in window && Notification.permission === 'granted') {
+                                    new Notification("Together Tasks 💌", { body: randomNudge });
                                 }
                             }
                             localStorage.setItem('last_ai_nudge_time', now.toString());

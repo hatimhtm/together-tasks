@@ -27,6 +27,10 @@ export interface Database {
                     partner_id: string | null
                     streak: number | null
                     last_active_date: string | null
+                    briefing_time: string | null
+                    briefing_enabled: boolean | null
+                    weekly_review_enabled: boolean | null
+                    notification_prefs_set: boolean | null
                 }
                 Insert: {
                     id: string
@@ -45,6 +49,10 @@ export interface Database {
                     partner_id?: string | null
                     streak?: number | null
                     last_active_date?: string | null
+                    briefing_time?: string | null
+                    briefing_enabled?: boolean | null
+                    weekly_review_enabled?: boolean | null
+                    notification_prefs_set?: boolean | null
                 }
                 Update: {
                     id?: string
@@ -63,6 +71,10 @@ export interface Database {
                     partner_id?: string | null
                     streak?: number | null
                     last_active_date?: string | null
+                    briefing_time?: string | null
+                    briefing_enabled?: boolean | null
+                    weekly_review_enabled?: boolean | null
+                    notification_prefs_set?: boolean | null
                 }
                 Relationships: [
                     {
@@ -219,6 +231,63 @@ export interface Database {
                     {
                         foreignKeyName: "push_subscriptions_user_id_fkey"
                         columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            partner_notifications: {
+                Row: {
+                    id: string
+                    task_id: string | null
+                    task_owner_id: string
+                    partner_id: string
+                    notification_type: string | null
+                    ai_reasoning: string | null
+                    message: string | null
+                    sent_at: string | null
+                    read_at: string | null
+                    action_taken: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    task_id?: string | null
+                    task_owner_id: string
+                    partner_id: string
+                    notification_type?: string | null
+                    ai_reasoning?: string | null
+                    message?: string | null
+                    sent_at?: string | null
+                    read_at?: string | null
+                    action_taken?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    task_id?: string | null
+                    task_owner_id?: string
+                    partner_id?: string
+                    notification_type?: string | null
+                    ai_reasoning?: string | null
+                    message?: string | null
+                    sent_at?: string | null
+                    read_at?: string | null
+                    action_taken?: string | null
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "partner_notifications_task_owner_id_fkey"
+                        columns: ["task_owner_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "partner_notifications_partner_id_fkey"
+                        columns: ["partner_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]

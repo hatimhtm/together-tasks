@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { ThemeSelector } from "@/components/settings/theme-selector"
+import { PushNotifier } from "@/components/pwa/push-notifier"
 import { APP_VERSION } from "@/lib/version"
 import { requestUpdateCheck } from "@/lib/updater"
 
@@ -16,6 +17,8 @@ export default function SettingsPage() {
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [briefingEnabled, setBriefingEnabled] = useState(true)
+    const [weeklyReviewEnabled, setWeeklyReviewEnabled] = useState(true)
+    const [briefingTime, setBriefingTime] = useState("08:00")
     const [savingNotifs, setSavingNotifs] = useState(false)
 
     useEffect(() => {
@@ -32,6 +35,8 @@ export default function SettingsPage() {
 
             setProfile(profile)
             if (profile?.briefing_enabled != null) setBriefingEnabled(profile.briefing_enabled)
+            if (profile?.weekly_review_enabled != null) setWeeklyReviewEnabled(profile.weekly_review_enabled)
+            if (profile?.briefing_time) setBriefingTime(String(profile.briefing_time).slice(0, 5))
             setLoading(false)
         }
         loadProfile()
@@ -52,6 +57,36 @@ export default function SettingsPage() {
         } catch {
             setBriefingEnabled(!newVal)
             toast.error("Failed to update notification settings.")
+        } finally {
+            setSavingNotifs(false)
+        }
+    }
+
+    async function toggleWeeklyReview() {
+        if (!user) return
+        const newVal = !weeklyReviewEnabled
+        setWeeklyReviewEnabled(newVal)
+        setSavingNotifs(true)
+        try {
+            await supabase.from('profiles').update({ weekly_review_enabled: newVal }).eq('id', user.id)
+        } catch {
+            setWeeklyReviewEnabled(!newVal)
+            toast.error("Failed to update notification settings.")
+        } finally {
+            setSavingNotifs(false)
+        }
+    }
+
+    async function updateBriefingTime(value: string) {
+        if (!user) return
+        const prev = briefingTime
+        setBriefingTime(value)
+        setSavingNotifs(true)
+        try {
+            await supabase.from('profiles').update({ briefing_time: value }).eq('id', user.id)
+        } catch {
+            setBriefingTime(prev)
+            toast.error("Failed to update briefing time.")
         } finally {
             setSavingNotifs(false)
         }
@@ -117,36 +152,91 @@ export default function SettingsPage() {
             {/* Notifications Section */}
             <section className="space-y-4">
                 <h2 className="text-lg font-headline font-bold text-on-surface">Notifications</h2>
+
+                {/* Morning AI Briefing */}
+                <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 space-y-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-11 h-11 rounded-full bg-primary/12 flex items-center justify-center text-primary shrink-0">
+                                <span className="material-symbols-outlined text-[22px]">auto_awesome</span>
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="font-headline font-bold text-on-surface text-[15px]">Morning AI Briefing</h3>
+                                <p className="text-[13px] text-on-surface-variant mt-0.5">Daily summary of shared goals</p>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={briefingEnabled}
+                            aria-label="Morning AI Briefing"
+                            onClick={() => toggleBriefing()}
+                            disabled={savingNotifs}
+                            className="relative inline-flex items-center active:scale-[0.98] transition-transform shrink-0"
+                        >
+                            <div className={`w-14 h-8 rounded-full transition-colors duration-200 ${briefingEnabled ? 'bg-primary' : 'bg-surface-container-highest border border-outline-variant/60'}`}>
+                                <motion.div
+                                    className="absolute top-[4px] left-[4px] bg-on-primary rounded-full h-6 w-6"
+                                    animate={{ x: briefingEnabled ? 24 : 0 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
+                                />
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* Briefing time picker (editable) */}
+                    {briefingEnabled && (
+                        <div className="flex items-center justify-between gap-4 pl-[60px]">
+                            <label htmlFor="briefing-time" className="text-[13px] text-on-surface-variant flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-[18px]">schedule</span>
+                                Delivery time
+                            </label>
+                            <input
+                                id="briefing-time"
+                                type="time"
+                                value={briefingTime}
+                                onChange={(e) => updateBriefingTime(e.target.value)}
+                                disabled={savingNotifs}
+                                className="rounded-xl bg-surface-container-high border border-outline-variant/60 px-3 py-2 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Weekly Review */}
                 <div className="rounded-2xl bg-surface-container border border-outline-variant/60 p-5 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-11 h-11 rounded-full bg-primary/12 flex items-center justify-center text-primary shrink-0">
-                            <span className="material-symbols-outlined text-[22px]">auto_awesome</span>
+                        <div className="w-11 h-11 rounded-full bg-secondary/12 flex items-center justify-center text-secondary shrink-0">
+                            <span className="material-symbols-outlined text-[22px]">calendar_month</span>
                         </div>
                         <div className="min-w-0">
-                            <h3 className="font-headline font-bold text-on-surface text-[15px]">Morning AI Briefing</h3>
-                            <p className="text-[13px] text-on-surface-variant mt-0.5">Daily summary of shared goals</p>
+                            <h3 className="font-headline font-bold text-on-surface text-[15px]">Weekly Review</h3>
+                            <p className="text-[13px] text-on-surface-variant mt-0.5">Sunday recap of your week together</p>
                         </div>
                     </div>
 
-                    {/* Toggle Switch */}
                     <button
                         type="button"
                         role="switch"
-                        aria-checked={briefingEnabled}
-                        aria-label="Morning AI Briefing"
-                        onClick={() => toggleBriefing()}
+                        aria-checked={weeklyReviewEnabled}
+                        aria-label="Weekly Review"
+                        onClick={() => toggleWeeklyReview()}
                         disabled={savingNotifs}
                         className="relative inline-flex items-center active:scale-[0.98] transition-transform shrink-0"
                     >
-                        <div className={`w-14 h-8 rounded-full transition-colors duration-200 ${briefingEnabled ? 'bg-primary' : 'bg-surface-container-highest border border-outline-variant/60'}`}>
+                        <div className={`w-14 h-8 rounded-full transition-colors duration-200 ${weeklyReviewEnabled ? 'bg-primary' : 'bg-surface-container-highest border border-outline-variant/60'}`}>
                             <motion.div
                                 className="absolute top-[4px] left-[4px] bg-on-primary rounded-full h-6 w-6"
-                                animate={{ x: briefingEnabled ? 24 : 0 }}
+                                animate={{ x: weeklyReviewEnabled ? 24 : 0 }}
                                 transition={{ duration: 0.2, ease: "easeOut" }}
                             />
                         </div>
                     </button>
                 </div>
+
+                {/* Explicit per-device push opt-in — requests OS permission only on tap */}
+                <PushNotifier />
             </section>
 
             {/* App updates + Sign out */}

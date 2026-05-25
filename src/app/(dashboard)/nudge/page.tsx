@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils"
 
 type NudgeType = 'love' | 'sparkle' | 'mood' | 'support'
 
+// Nudges persist in the shared `partner_notifications` table (notification_type='nudge').
+// sender → task_owner_id, receiver → partner_id. There's no `type` column, so the
+// intent is derived from the message on the way back out.
 interface Nudge {
     id: string
     sender_id: string
@@ -32,6 +35,12 @@ const ICON_STYLES: Record<NudgeType, { icon: string; color: string; bg: string }
     sparkle: { icon: "auto_awesome", color: "text-primary", bg: "bg-primary/12" },
     mood:    { icon: "call", color: "text-tertiary", bg: "bg-tertiary/15" },
     support: { icon: "restaurant", color: "text-primary", bg: "bg-primary/12" },
+}
+
+// Map a stored message back to its intent type for icon styling.
+function typeFromMessage(message: string): NudgeType {
+    const match = INTENTS.find(i => i.message === message)
+    return match?.type ?? 'love'
 }
 
 export default function NudgePage() {
@@ -69,13 +78,23 @@ export default function NudgePage() {
                 setPartner(partnerProfile)
 
                 const { data: nudgesData } = await supabase
-                    .from('nudges')
+                    .from('partner_notifications')
                     .select('*')
-                    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+                    .eq('notification_type', 'nudge')
+                    .or(`task_owner_id.eq.${user.id},partner_id.eq.${user.id}`)
                     .order('created_at', { ascending: false })
                     .limit(10)
 
-                if (nudgesData) setNudges(nudgesData as Nudge[])
+                if (nudgesData) {
+                    setNudges((nudgesData as any[]).map((n) => ({
+                        id: n.id,
+                        sender_id: n.task_owner_id,
+                        receiver_id: n.partner_id,
+                        message: n.message ?? "",
+                        type: typeFromMessage(n.message ?? ""),
+                        created_at: n.created_at,
+                    })))
+                }
             }
 
             setLoading(false)
@@ -102,11 +121,12 @@ export default function NudgePage() {
         }
         setNudges(prev => [optimistic, ...prev])
 
-        const { error } = await supabase.from('nudges').insert({
-            sender_id: user.id,
-            receiver_id: partner.id,
+        const { error } = await supabase.from('partner_notifications').insert({
+            task_owner_id: user.id,
+            partner_id: partner.id,
             message,
-            type,
+            notification_type: 'nudge',
+            ai_reasoning: 'Your partner sent you a nudge.',
         })
 
         if (error) {

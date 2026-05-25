@@ -161,6 +161,8 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
     }
 
     const updateTask = async (taskId: string, updates: Partial<Task>) => {
+        const before = tasks.find(t => t.id === taskId)
+
         // 1. Optimistic Update
         setTasks(prev => prev.map(t =>
             t.id === taskId ? { ...t, ...updates } : t
@@ -174,6 +176,25 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                 .eq('id', taskId)
 
             if (updateError) throw updateError
+
+            // When I complete a task my partner created for me, persist a
+            // partner_notification so they see it (and the push cron can deliver).
+            if (
+                partnerId &&
+                updates.is_completed === true &&
+                before &&
+                !before.is_completed &&
+                before.creator_id === partnerId
+            ) {
+                await supabase.from('partner_notifications').insert({
+                    task_id: taskId,
+                    task_owner_id: userId,
+                    partner_id: partnerId,
+                    notification_type: 'celebrate',
+                    message: `Done! "${before.title}" is handled. 💕`,
+                    ai_reasoning: 'Partner completed a task you created for them.',
+                })
+            }
         } catch (error) {
             console.error("Update failed, rolling back", error)
             // 3. Rollback (re-fetch or undo)

@@ -5,6 +5,7 @@ import { GoogleGenAI } from '@google/genai'
 const BRIEFING_NOTIF_ID = 1001
 const WEEKLY_REVIEW_NOTIF_ID = 1002
 const BRIEFING_SCHEDULED_KEY = 'briefing_scheduled_date'
+const WEEKLY_REVIEW_SCHEDULED_KEY = 'weekly_review_scheduled_week'
 
 interface BriefingContext {
     userName: string
@@ -107,9 +108,14 @@ export async function scheduleWeeklyReview(userName: string, briefingTime: strin
         const permStatus = await LocalNotifications.requestPermissions()
         if (permStatus.display !== 'granted') return
 
-        await LocalNotifications.cancel({ notifications: [{ id: WEEKLY_REVIEW_NOTIF_ID }] })
-
         const fireAt = getNextSunday(briefingTime)
+
+        // Avoid rescheduling the same upcoming review more than once per period.
+        const period = fireAt.toDateString()
+        const lastScheduled = localStorage.getItem(WEEKLY_REVIEW_SCHEDULED_KEY)
+        if (lastScheduled === period) return
+
+        await LocalNotifications.cancel({ notifications: [{ id: WEEKLY_REVIEW_NOTIF_ID }] })
 
         await LocalNotifications.schedule({
             notifications: [{
@@ -122,6 +128,8 @@ export async function scheduleWeeklyReview(userName: string, briefingTime: strin
                 extra: { type: 'weekly_review' }
             }]
         })
+
+        localStorage.setItem(WEEKLY_REVIEW_SCHEDULED_KEY, period)
     } catch (e) {
         console.warn('Weekly review scheduling failed:', e)
     }
