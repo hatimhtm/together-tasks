@@ -270,15 +270,16 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
 
             const newTaskData = {
                 title: parsed?.title || finalTitle,
-                description: parsed?.description || null,
+                description: null,
                 due_date,
                 priority: parsed?.priority || "medium",
                 creator_id: userId,
                 assignee_id: finalAssigneeId,
                 scope,  // explicit null beats DB default 'shared'
-                // AI-generated subtasks (jsonb column, base schema) — these were
-                // being parsed but never saved, so they never appeared on the card.
-                subtasks: Array.isArray(parsed?.subtasks) ? parsed.subtasks : [],
+                // AI-generated subtasks: a plain bullet list of step strings.
+                subtasks: Array.isArray(parsed?.subtasks)
+                    ? parsed.subtasks.filter((s: unknown): s is string => typeof s === "string")
+                    : [],
                 is_completed: false,
                 // emergency_level, importance_level, duration_estimate omitted intentionally —
                 // they require migration 20260220000001 which may not be applied in prod

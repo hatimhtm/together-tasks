@@ -1,4 +1,7 @@
-export type Subtask = { id: string; title: string; is_completed: boolean } | string
+// Subtasks are a plain editable bullet list (no completion state, no count).
+// Legacy rows may still carry object-shaped entries; we normalize those to
+// their title string when reading, so the UI only ever deals with strings.
+export type Subtask = string
 
 export interface Task {
     id: string
@@ -15,7 +18,7 @@ export interface Task {
     importance_level?: "low" | "medium" | "high" | "critical"
     duration_estimate?: number
     scope?: string | null
-    subtasks?: Subtask[] | null
+    subtasks?: (Subtask | { id?: string; title?: string; is_completed?: boolean })[] | null
     completed_by?: string[] | null
 }
 

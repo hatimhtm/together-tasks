@@ -1,8 +1,8 @@
 "use client"
 
-import { Task, Subtask } from "@/types/task"
+import { Task } from "@/types/task"
 import { motion, AnimatePresence, useMotionValue, useTransform, useReducedMotion } from "framer-motion"
-import { Trash2, ChevronDown } from "lucide-react"
+import { Trash2, ChevronDown, X, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format, isToday, isTomorrow, isThisWeek, isThisYear } from "date-fns"
 import { useState, useEffect, useRef, useCallback, forwardRef } from "react"
@@ -76,21 +76,19 @@ function ownerOf(task: Task, userId: string, partnerId?: string | null): Owner |
     return null
 }
 
-// Compare two subtask arrays for value equality (so we only persist real edits).
-function subtasksEqual(a?: Subtask[] | null, b?: Subtask[] | null): boolean {
-    const x = a ?? []
-    const y = b ?? []
-    if (x.length !== y.length) return false
-    for (let i = 0; i < x.length; i++) {
-        const sa = x[i]
-        const sb = y[i]
-        const ta = typeof sa === "string" ? sa : sa.title
-        const tb = typeof sb === "string" ? sb : sb.title
-        if (ta !== tb) return false
-        const ca = typeof sa === "string" ? false : sa.is_completed
-        const cb = typeof sb === "string" ? false : sb.is_completed
-        if (ca !== cb) return false
-    }
+// Subtasks are a plain bullet list. Legacy rows may store object-shaped entries
+// ({ title, is_completed }); normalize everything to a clean array of strings.
+function normalizeSubtasks(raw: Task["subtasks"]): string[] {
+    if (!Array.isArray(raw)) return []
+    return raw
+        .map(st => (typeof st === "string" ? st : st?.title ?? ""))
+        .filter((s): s is string => typeof s === "string")
+}
+
+// Compare two string-bullet arrays for value equality (only persist real edits).
+function bulletsEqual(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
     return true
 }
 
@@ -110,13 +108,11 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
     showClaim,
 }, ref) => {
     const [draftTitle, setDraftTitle] = useState(task.title)
-    const [draftDescription, setDraftDescription] = useState(task.description ?? "")
-    const [draftSubtasks, setDraftSubtasks] = useState<Subtask[]>(task.subtasks ?? [])
+    const [draftSubtasks, setDraftSubtasks] = useState<string[]>(() => normalizeSubtasks(task.subtasks))
     const [justCompleted, setJustCompleted] = useState(false)
     const reduceMotion = useReducedMotion()
 
     const cardRef = useRef<HTMLDivElement>(null)
-    const textareaRef = useRef<HTMLTextAreaElement>(null)
     const isDraggingRef = useRef(false)
 
     const x = useMotionValue(0)
@@ -127,8 +123,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
     useEffect(() => {
         if (isExpanded) {
             setDraftTitle(task.title)
-            setDraftDescription(task.description ?? "")
-            setDraftSubtasks(task.subtasks ?? [])
+            setDraftSubtasks(normalizeSubtasks(task.subtasks))
         }
     }, [isExpanded, task])
 
@@ -140,13 +135,12 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
         const nextTitle = trimmedTitle.length > 0 ? trimmedTitle : task.title
         if (nextTitle !== task.title) updates.title = nextTitle
 
-        const nextDescription = draftDescription.trim().length > 0 ? draftDescription : null
-        if (nextDescription !== (task.description ?? null)) updates.description = nextDescription
-
-        if (!subtasksEqual(draftSubtasks, task.subtasks)) updates.subtasks = draftSubtasks
+        // Persist the bullet list as plain strings, dropping blank rows.
+        const nextSubtasks = draftSubtasks.map(s => s.trim()).filter(s => s.length > 0)
+        if (!bulletsEqual(nextSubtasks, normalizeSubtasks(task.subtasks))) updates.subtasks = nextSubtasks
 
         return updates
-    }, [draftTitle, draftDescription, draftSubtasks, task])
+    }, [draftTitle, draftSubtasks, task])
 
     // Persist edited fields (only if changed), then collapse.
     const saveAndCollapse = useCallback(() => {
@@ -173,34 +167,18 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
         }
     }, [isExpanded, saveAndCollapse])
 
-    // Auto-grow the notes textarea so it never clips.
-    useEffect(() => {
-        if (!isExpanded) return
-        const el = textareaRef.current
-        if (!el) return
-        el.style.height = "auto"
-        el.style.height = `${el.scrollHeight}px`
-    }, [isExpanded, draftDescription])
-
     // Tapping the title/chevron toggles: expand opens edit, collapse saves.
     const toggleOpen = () => {
         if (isExpanded) saveAndCollapse()
         else onExpand()
     }
 
-    const handleSubtaskToggle = (subtaskId: string) => {
-        // Live persist the checklist toggle (matches prior behavior) and keep the
-        // draft in sync so the outside-click save doesn't clobber it.
-        const updatedSubtasks = (task.subtasks ?? []).map((st) => {
-            if (typeof st !== "string" && st.id === subtaskId) return { ...st, is_completed: !st.is_completed }
-            return st
-        })
-        setDraftSubtasks(prev => prev.map((st) => {
-            if (typeof st !== "string" && st.id === subtaskId) return { ...st, is_completed: !st.is_completed }
-            return st
-        }))
-        onUpdate({ subtasks: updatedSubtasks })
-    }
+    // Bullet-list editing helpers (plain strings — no completion state).
+    const updateBullet = (i: number, value: string) =>
+        setDraftSubtasks(prev => prev.map((s, idx) => (idx === i ? value : s)))
+    const removeBullet = (i: number) =>
+        setDraftSubtasks(prev => prev.filter((_, idx) => idx !== i))
+    const addBullet = () => setDraftSubtasks(prev => [...prev, ""])
 
     const triggerComplete = () => {
         triggerHaptic(ImpactStyle.Medium)
@@ -213,26 +191,16 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
 
     const isOverdue = task.due_date && !task.is_completed && new Date(task.due_date) < new Date()
 
-    // Subtask progress (from the live task — collapsed preview + counters).
-    const subtasks = (task.subtasks ?? []).filter(Boolean) as Subtask[]
-    const structured = subtasks.filter((st): st is Exclude<Subtask, string> => typeof st !== "string")
-    const subtaskTotal = subtasks.length
-    const subtaskDone = structured.filter(st => st.is_completed).length
-    const subtaskPct = subtaskTotal > 0 ? Math.round((subtaskDone / subtaskTotal) * 100) : 0
-
-    // Inline preview: title of each not-yet-done subtask. Show up to the first 2.
-    const incompleteTitles = subtasks
-        .filter(st => typeof st === "string" || !st.is_completed)
-        .map(st => (typeof st === "string" ? st : st.title))
-        .filter(Boolean)
-    const previewSubtasks = incompleteTitles.slice(0, 2)
-    const extraSubtasks = incompleteTitles.length - previewSubtasks.length
+    // Bullet list (from the live task) for the collapsed preview.
+    const bullets = normalizeSubtasks(task.subtasks).filter(Boolean)
+    const previewSubtasks = bullets.slice(0, 2)
+    const extraSubtasks = bullets.length - previewSubtasks.length
 
     const owner = ownerOf(task, userId, partnerId)
     const showClaimAction = !!showClaim && !!onClaim
 
-    // Compact meta line below the title (due / duration / done-of-total).
-    const hasMetaLine = task.due_date || task.duration_estimate || subtaskTotal > 0
+    // Compact meta line below the title (due / duration only).
+    const hasMetaLine = task.due_date || task.duration_estimate
 
     // Hero spring config for the checkbox tick (the one celebrated motion).
     const checkSpring = reduceMotion
@@ -376,17 +344,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                     </div>
                                 </div>
 
-                                {/* Collapsed: 2-line description preview */}
-                                {!isExpanded && task.description && (
-                                    <p
-                                        className="mt-0.5 text-[13px] text-on-surface-variant/80 leading-snug line-clamp-2 cursor-pointer"
-                                        onClick={() => { if (!isDraggingRef.current) onExpand() }}
-                                    >
-                                        {task.description}
-                                    </p>
-                                )}
-
-                                {/* Collapsed: inline subtask preview (up to 2 incomplete) + N more */}
+                                {/* Collapsed: inline bullet preview (up to 2) + N more */}
                                 {!isExpanded && previewSubtasks.length > 0 && (
                                     <div className="mt-0.5 space-y-0.5">
                                         {previewSubtasks.map((title, i) => (
@@ -400,7 +358,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                     </div>
                                 )}
 
-                                {/* Collapsed: compact meta line — due / duration / done-of-total */}
+                                {/* Collapsed: compact meta line — due / duration */}
                                 {!isExpanded && hasMetaLine && (
                                     <div className="flex items-center gap-2.5 mt-1 font-label text-[12px] text-on-surface-variant/80">
                                         {task.due_date && (
@@ -413,15 +371,6 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                             <span className="flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-[13px]">timer</span>
                                                 {task.duration_estimate}m
-                                            </span>
-                                        )}
-                                        {subtaskTotal > 0 && (
-                                            <span className="flex items-center gap-1.5">
-                                                <span className="material-symbols-outlined text-[13px]">checklist</span>
-                                                {subtaskDone}/{subtaskTotal}
-                                                <span className="h-[3px] w-10 rounded-full bg-surface-container-highest overflow-hidden">
-                                                    <span className="block h-full rounded-full bg-primary transition-[width] duration-300 ease-out" style={{ width: `${subtaskPct}%` }} />
-                                                </span>
                                             </span>
                                         )}
                                     </div>
@@ -450,16 +399,6 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                         className="overflow-hidden"
                                     >
                                     <div className="mt-4 space-y-4">
-                                        {/* Details / notes — auto-grow textarea seeded with description */}
-                                        <textarea
-                                            ref={textareaRef}
-                                            className="w-full bg-surface-container-high border border-outline-variant/60 rounded-xl px-3 py-2.5 text-[13px] font-body text-on-surface-variant focus:border-primary outline-none resize-none min-h-[64px] leading-relaxed transition-colors"
-                                            value={draftDescription}
-                                            onChange={e => setDraftDescription(e.target.value)}
-                                            placeholder="Add details or notes…"
-                                            aria-label="Task details"
-                                        />
-
                                         {/* Priority selector + actions row */}
                                         <div className="flex items-center justify-between">
                                             <div className="relative inline-flex items-center gap-2 px-3 py-1.5 bg-surface-container-high rounded-full border border-outline-variant/60">
@@ -525,67 +464,42 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                             </button>
                                         )}
 
-                                        {/* Editable subtask checklist — toggle done + edit step text */}
-                                        {draftSubtasks.length > 0 && (
-                                            <div className="pt-3 border-t border-outline-variant/60 space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <p className="text-[10px] font-label font-bold uppercase tracking-[0.12em] text-on-surface-variant">Checklist</p>
-                                                    <p className="text-[10px] font-label font-bold uppercase tracking-[0.12em] text-on-surface-variant">{subtaskDone}/{subtaskTotal}</p>
+                                        {/* Editable bullet list — plain steps, add / edit / remove */}
+                                        <div className="pt-3 border-t border-outline-variant/60 space-y-2">
+                                            <p className="text-[10px] font-label font-bold uppercase tracking-[0.12em] text-on-surface-variant">Steps</p>
+                                            {draftSubtasks.map((step, i) => (
+                                                <div key={i} className="flex items-center gap-2 bg-surface-container-high px-2.5 py-1.5 rounded-lg">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-outline-variant shrink-0" />
+                                                    <input
+                                                        className="flex-1 min-w-0 bg-transparent text-[13px] font-body text-on-surface outline-none"
+                                                        value={step}
+                                                        onChange={e => updateBullet(i, e.target.value)}
+                                                        onKeyDown={e => {
+                                                            if (e.key === "Enter") { e.preventDefault(); addBullet() }
+                                                            if (e.key === "Escape") { e.preventDefault(); saveAndCollapse() }
+                                                        }}
+                                                        aria-label={`Step ${i + 1}`}
+                                                        placeholder="Describe a step…"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeBullet(i)}
+                                                        aria-label="Remove step"
+                                                        className="shrink-0 h-9 w-9 -m-1 flex items-center justify-center rounded-full text-on-surface-variant/60 hover:text-error hover:bg-error/10 transition-colors"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
                                                 </div>
-                                                {draftSubtasks.map((st, i: number) => {
-                                                    if (typeof st === "string") {
-                                                        return (
-                                                            <div key={i} className="flex items-center gap-3 bg-surface-container-high px-2.5 py-1.5 rounded-lg">
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-outline-variant shrink-0" />
-                                                                <input
-                                                                    className="flex-1 min-w-0 bg-transparent text-[13px] font-body text-on-surface outline-none"
-                                                                    value={st}
-                                                                    onChange={e => {
-                                                                        const next = [...draftSubtasks]
-                                                                        next[i] = e.target.value
-                                                                        setDraftSubtasks(next)
-                                                                    }}
-                                                                    aria-label="Step"
-                                                                />
-                                                            </div>
-                                                        )
-                                                    }
-                                                    return (
-                                                        <div key={st.id} className="flex items-center gap-3 bg-surface-container-high hover:bg-surface-container-highest px-2.5 py-1.5 rounded-lg transition-colors">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleSubtaskToggle(st.id)}
-                                                                aria-label={st.is_completed ? "Mark step incomplete" : "Mark step complete"}
-                                                                className="relative flex items-center justify-center shrink-0 h-[22px] w-[22px] -m-[11px] p-[11px] box-content"
-                                                            >
-                                                                <span className={cn(
-                                                                    "h-4 w-4 rounded-sm border-2 flex items-center justify-center transition-colors",
-                                                                    st.is_completed ? "border-primary bg-primary" : "border-outline-variant",
-                                                                )}>
-                                                                    <span className={cn(
-                                                                        "material-symbols-outlined text-[14px] text-on-primary font-bold transition-opacity",
-                                                                        st.is_completed ? "opacity-100" : "opacity-0",
-                                                                    )} style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
-                                                                </span>
-                                                            </button>
-                                                            <input
-                                                                className={cn(
-                                                                    "flex-1 min-w-0 bg-transparent text-[13px] font-body outline-none transition-colors",
-                                                                    st.is_completed ? "text-on-surface-variant line-through" : "text-on-surface font-medium",
-                                                                )}
-                                                                value={st.title}
-                                                                onChange={e => {
-                                                                    const next = [...draftSubtasks]
-                                                                    next[i] = { ...st, title: e.target.value }
-                                                                    setDraftSubtasks(next)
-                                                                }}
-                                                                aria-label="Step"
-                                                            />
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        )}
+                                            ))}
+                                            <button
+                                                type="button"
+                                                onClick={addBullet}
+                                                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-[13px] font-label font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                Add step
+                                            </button>
+                                        </div>
                                     </div>
                                     </motion.div>
                                 )}
