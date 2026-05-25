@@ -171,7 +171,7 @@ export default function Home() {
   return (
     <div className="space-y-6 lg:space-y-8 pb-10 animate-in fade-in duration-200">
       {/* ── Greeting ── */}
-      <div className="mx-auto w-full max-w-5xl flex flex-wrap items-start justify-between gap-4">
+      <div className="mx-auto w-full max-w-3xl flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1.5 min-w-0">
           <p className="font-label text-on-surface-variant text-xs font-medium uppercase tracking-[0.12em]">
             {format(new Date(), "EEEE, MMM d")}
@@ -191,24 +191,22 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Two-column on desktop: task list is the hero (visible immediately);
-            the AI nudge moves to a right rail. Mobile stacks (nudge first). ── */}
-      <div className="mx-auto w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-        <div id="tasks" className="order-2 lg:order-1 min-w-0">
-          <TasksContainer
-            userId={user.id}
-            partnerId={profile?.partner_id}
-            tasks={taskState.tasks}
-            loading={taskState.loading}
-            addTask={taskState.addTask}
-            updateTask={taskState.updateTask}
-            deleteTask={taskState.deleteTask}
-          />
-        </div>
-        <aside className="order-1 lg:order-2 lg:sticky lg:top-24">
-          <AiNudge />
-        </aside>
+      {/* Single centered column — the task list is the whole stage (Google-Tasks
+          style); the nudge is a notification, not a rail card. */}
+      <div id="tasks" className="mx-auto w-full max-w-3xl">
+        <TasksContainer
+          userId={user.id}
+          partnerId={profile?.partner_id}
+          tasks={taskState.tasks}
+          loading={taskState.loading}
+          addTask={taskState.addTask}
+          updateTask={taskState.updateTask}
+          deleteTask={taskState.deleteTask}
+        />
       </div>
+
+      {/* Affectionate nudge — fires as a notification/toast, renders nothing. */}
+      <AiNudge />
     </div>
   )
 }
