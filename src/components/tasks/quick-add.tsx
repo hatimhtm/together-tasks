@@ -1,11 +1,54 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Loader2, Send } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { VoiceButton } from "@/components/tasks/voice-button"
+
+// Lightweight, client-only heuristic preview of how the input will be parsed.
+// The authoritative parse still happens server-side in addTask → parseTaskInput;
+// this just builds trust by echoing what we detect, with zero API calls.
+type ParsePreview = { title: string; due?: string; priority?: string; duration?: string }
+
+function previewParse(raw: string): ParsePreview {
+    let title = raw.replace(/@partner/gi, "").replace(/@shared/gi, "").trim()
+    let due: string | undefined
+    let priority: string | undefined
+    let duration: string | undefined
+
+    const lower = raw.toLowerCase()
+
+    const dueMatchers: [RegExp, string][] = [
+        [/\btoday\b/, "Today"],
+        [/\btomorrow\b|\btmrw\b/, "Tomorrow"],
+        [/\btonight\b/, "Tonight"],
+        [/\bthis morning\b|\bmorning\b/, "Morning"],
+        [/\bthis afternoon\b|\bafternoon\b/, "Afternoon"],
+        [/\bthis evening\b|\bevening\b/, "Evening"],
+        [/\bmon(day)?\b/, "Mon"], [/\btue(s|sday)?\b/, "Tue"], [/\bwed(nesday)?\b/, "Wed"],
+        [/\bthu(r|rs|rsday)?\b/, "Thu"], [/\bfri(day)?\b/, "Fri"], [/\bsat(urday)?\b/, "Sat"], [/\bsun(day)?\b/, "Sun"],
+    ]
+    for (const [re, label] of dueMatchers) {
+        if (re.test(lower)) { due = label; break }
+    }
+    const timeMatch = lower.match(/\b(\d{1,2})(:\d{2})?\s?(am|pm)\b/)
+    if (timeMatch) due = due ? `${due} ${timeMatch[0].replace(/\s/g, "")}` : timeMatch[0].replace(/\s/g, "")
+
+    if (/\burgent\b|\basap\b|!!/.test(lower)) priority = "urgent"
+    else if (/\bimportant\b|\bhigh prio\b|\bhigh priority\b/.test(lower)) priority = "high"
+    else if (/\bwhenever\b|\blow prio\b|\blow priority\b/.test(lower)) priority = "low"
+
+    const durMatch = lower.match(/\b(\d{1,3})\s?(min|mins|minutes|m|h|hr|hrs|hours?)\b/)
+    if (durMatch) {
+        const n = parseInt(durMatch[1], 10)
+        const unit = durMatch[2]
+        duration = /h/.test(unit) ? `${n}h` : `${n}m`
+    }
+
+    return { title, due, priority, duration }
+}
 
 export function QuickAdd({
     onTaskCreated,
@@ -30,6 +73,9 @@ export function QuickAdd({
     const channelRef = useRef<any>(null)
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const preview = useMemo(() => previewParse(input), [input])
+    const hasPreviewMeta = !!(preview.due || preview.priority || preview.duration) && input.trim().length > 0
 
     const autoGrow = (el: HTMLTextAreaElement | null) => {
         if (!el) return
@@ -152,6 +198,7 @@ export function QuickAdd({
     }
 
     const assignLabel = assignMode === 'partner' ? 'Partner 💕' : assignMode === 'shared' ? 'Shared 🤝' : 'Mine 👤'
+    const assignHint = assignMode === 'shared' ? 'Goes to the shared pool — either of you can claim it' : undefined
 
     return (
         <div
@@ -183,12 +230,42 @@ export function QuickAdd({
                         }
                     }}
                     placeholder="What needs to be done?"
-                    className="w-full min-h-[44px] max-h-[200px] py-2.5 px-3 rounded-xl bg-surface-container-high border border-outline-variant/60 resize-none outline-none focus:border-primary/60 transition-colors text-[15px] leading-relaxed text-on-surface placeholder:text-on-surface-variant/60"
+                    className="w-full min-h-[44px] max-h-[40vh] overflow-y-auto py-2.5 px-3 rounded-xl bg-surface-container-high border border-outline-variant/60 resize-none outline-none focus:border-primary/60 transition-colors text-[15px] leading-relaxed text-on-surface placeholder:text-on-surface-variant/60"
                     disabled={loading}
                     rows={1}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                 />
+
+                {/* Live parse preview */}
+                {hasPreviewMeta && (
+                    <div className="flex items-center gap-1.5 flex-wrap font-label text-[11px] animate-in fade-in duration-150">
+                        <span className="text-on-surface-variant/70 font-medium pr-0.5">Detected</span>
+                        {preview.due && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                <span className="material-symbols-outlined text-[13px]">schedule</span>
+                                {preview.due}
+                            </span>
+                        )}
+                        {preview.duration && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                <span className="material-symbols-outlined text-[13px]">timer</span>
+                                {preview.duration}
+                            </span>
+                        )}
+                        {preview.priority && (
+                            <span className={cn(
+                                "flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold capitalize",
+                                preview.priority === "urgent" ? "text-error bg-error/10"
+                                    : preview.priority === "high" ? "text-secondary bg-secondary/10"
+                                    : "text-primary bg-primary/10",
+                            )}>
+                                <span className="material-symbols-outlined text-[13px]">flag</span>
+                                {preview.priority}
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 <div className="flex items-center gap-2">
                     {hasPartner && (
@@ -199,11 +276,17 @@ export function QuickAdd({
                                 else if (assignMode === "partner") setAssignMode("shared")
                                 else setAssignMode("me")
                             }}
-                            title={`Assigning to: ${assignMode}`}
+                            title={assignHint || `Assigning to: ${assignMode}`}
                             className="shrink-0 h-11 px-4 rounded-full bg-surface-container-high border border-outline-variant/60 text-on-surface text-sm font-medium hover:bg-surface-container-highest transition-colors active:scale-[0.98]"
                         >
                             {assignLabel}
                         </button>
+                    )}
+
+                    {assignHint && (
+                        <span className="hidden md:inline text-[11px] font-label text-on-surface-variant/70 leading-tight max-w-[200px]">
+                            {assignHint}
+                        </span>
                     )}
 
                     <div className="flex-1" />

@@ -9,7 +9,17 @@ export default function Providers({ children }: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
             queries: {
-                staleTime: 60 * 1000,
+                // Data stays "fresh" for 2 min: revisiting a route inside that
+                // window reads straight from cache — no spinner, no refetch.
+                staleTime: 2 * 60 * 1000,
+                // Keep cached data around for 30 min after a route unmounts so
+                // back-navigation is instant.
+                gcTime: 30 * 60 * 1000,
+                // Realtime subscriptions already keep tasks live; don't thrash
+                // the network on every focus/reconnect.
+                refetchOnWindowFocus: false,
+                refetchOnReconnect: false,
+                retry: 1,
             },
         },
     }))
