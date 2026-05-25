@@ -1,11 +1,9 @@
 "use client"
 
-import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { CheckCircle2 } from "lucide-react"
+import { Task } from "@/types/task"
 
-export function TasksTodayCounter({ userId, partnerId }: { userId: string, partnerId?: string | null }) {
-    const { tasks } = useRealtimeTasks(userId, partnerId)
-
+export function TasksTodayCounter({ userId, tasks }: { userId: string, tasks: Task[] }) {
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
     const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999)
 

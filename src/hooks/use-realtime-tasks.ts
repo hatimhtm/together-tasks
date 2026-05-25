@@ -14,6 +14,8 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
     const channelName = useRef(`tasks-${userId}-${Math.random().toString(36).slice(2)}`).current
 
     useEffect(() => {
+        // No user yet (parent still loading) — wait; the deps re-run when it arrives.
+        if (!userId) return
         // Always reconcile against the DB on mount. With cached initialTasks the
         // list paints instantly (loading stays false → no spinner) and this fetch
         // silently refreshes — fixing the stale React Query ["dashboard"] snapshot
@@ -253,6 +255,9 @@ export function useRealtimeTasks(userId: string, partnerId?: string | null, init
                 creator_id: userId,
                 assignee_id: finalAssigneeId,
                 scope,  // explicit null beats DB default 'shared'
+                // AI-generated subtasks (jsonb column, base schema) — these were
+                // being parsed but never saved, so they never appeared on the card.
+                subtasks: Array.isArray(parsed?.subtasks) ? parsed.subtasks : [],
                 is_completed: false,
                 // emergency_level, importance_level, duration_estimate omitted intentionally —
                 // they require migration 20260220000001 which may not be applied in prod

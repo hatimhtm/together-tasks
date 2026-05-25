@@ -1,6 +1,7 @@
 "use client"
 
 import { TasksContainer } from "@/components/dashboard/tasks-container"
+import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { AiNudge } from "@/components/dashboard/ai-nudge"
 import { ThinkingOfYouButton } from "@/components/dashboard/thinking-of-you-button"
 import { TasksTodayCounter } from "@/components/dashboard/tasks-today-counter"
@@ -95,6 +96,10 @@ export default function Home() {
   const partnerName = data?.partnerName
   const initialTasks = data?.initialTasks ?? []
 
+  // Single source of truth for tasks (optimistic + realtime). Both the task list
+  // AND the today-counter read from THIS one instance, so they never drift.
+  const taskState = useRealtimeTasks(user?.id || "", profile?.partner_id, initialTasks, partnerName)
+
   // Schedule notifications once the bootstrap data is available.
   useEffect(() => {
     if (!user || !profile) return
@@ -169,12 +174,12 @@ export default function Home() {
   return (
     <div className="space-y-6 lg:space-y-8 pb-10 animate-in fade-in duration-200">
       {/* ── Greeting ── */}
-      <div className="mx-auto w-full max-w-2xl flex flex-wrap items-start justify-between gap-4">
+      <div className="mx-auto w-full max-w-5xl flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1.5 min-w-0">
           <p className="font-label text-on-surface-variant text-xs font-medium uppercase tracking-[0.12em]">
             {format(new Date(), "EEEE, MMM d")}
           </p>
-          <h1 className="font-headline font-extrabold text-2xl lg:text-3xl text-on-surface">
+          <h1 className="font-headline font-extrabold text-2xl lg:text-3xl text-on-surface tracking-tight">
             {greeting}, <span className="text-primary">{displayName}</span>
           </h1>
         </div>
@@ -184,20 +189,28 @@ export default function Home() {
             <ThinkingOfYouButton partnerId={profile.partner_id} />
           )}
           {user && (
-            <TasksTodayCounter userId={user.id} partnerId={profile?.partner_id} />
+            <TasksTodayCounter userId={user.id} tasks={taskState.tasks} />
           )}
         </div>
       </div>
 
-      {/* ── Main Tasks Container ── */}
-      <div id="tasks">
-        <TasksContainer
-          userId={user.id}
-          partnerId={profile?.partner_id}
-          partnerName={partnerName}
-          initialTasks={initialTasks}
-          sidebarSlot={<AiNudge />}
-        />
+      {/* ── Two-column on desktop: task list is the hero (visible immediately);
+            the AI nudge moves to a right rail. Mobile stacks (nudge first). ── */}
+      <div className="mx-auto w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+        <div id="tasks" className="order-2 lg:order-1 min-w-0">
+          <TasksContainer
+            userId={user.id}
+            partnerId={profile?.partner_id}
+            tasks={taskState.tasks}
+            loading={taskState.loading}
+            addTask={taskState.addTask}
+            updateTask={taskState.updateTask}
+            deleteTask={taskState.deleteTask}
+          />
+        </div>
+        <aside className="order-1 lg:order-2 lg:sticky lg:top-24">
+          <AiNudge />
+        </aside>
       </div>
     </div>
   )

@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react"
 import { QuickAdd } from "@/components/tasks/quick-add"
 import { TaskList } from "@/components/tasks/task-list"
-import { useRealtimeTasks } from "@/hooks/use-realtime-tasks"
 import { cn } from "@/lib/utils"
 import { Task } from "@/types/task"
 
@@ -40,17 +39,20 @@ function matchesOwnership(
 export function TasksContainer({
     userId,
     partnerId,
-    partnerName,
-    initialTasks,
-    sidebarSlot,
+    tasks,
+    loading,
+    addTask,
+    updateTask,
+    deleteTask,
 }: {
     userId: string
     partnerId?: string | null
-    partnerName?: string
-    initialTasks?: Task[]
-    sidebarSlot?: React.ReactNode
+    tasks: Task[]
+    loading: boolean
+    addTask: (input: string) => Promise<any>
+    updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>
+    deleteTask: (taskId: string) => Promise<void>
 }) {
-    const { tasks, loading, addTask, updateTask, deleteTask } = useRealtimeTasks(userId, partnerId, initialTasks, partnerName)
     const [filter, setFilter] = useState<OwnershipFilter>("mine")
 
     const poolCount = useMemo(
@@ -75,10 +77,7 @@ export function TasksContainer({
     ]
 
     return (
-        <div className="mx-auto w-full max-w-2xl space-y-5">
-            {/* Floating intro card (AI nudge) */}
-            {sidebarSlot}
-
+        <div className="w-full space-y-5">
             {/* Quick add */}
             <QuickAdd onAddTask={addTask} hasPartner={!!partnerId} userId={userId} partnerId={partnerId} />
 
