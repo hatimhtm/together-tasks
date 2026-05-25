@@ -1,15 +1,5 @@
 {
     "framework": "nextjs",
     "installCommand": "npm install",
-    "buildCommand": "npx next build",
-    "crons": [
-        {
-            "path": "/api/cron/notify?type=morning",
-            "schedule": "0 * * * *"
-        },
-        {
-            "path": "/api/cron/notify?type=weekly",
-            "schedule": "0 * * * 0"
-        }
-    ]
+    "buildCommand": "npx next build"
 }
