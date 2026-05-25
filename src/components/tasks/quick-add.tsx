@@ -200,13 +200,13 @@ export function QuickAdd({
     const assignLabel = assignMode === 'partner' ? 'Partner 💕' : assignMode === 'shared' ? 'Shared 🤝' : 'Mine 👤'
     const assignHint = assignMode === 'shared' ? 'Goes to the shared pool — either of you can claim it' : undefined
 
+    // Light & inline (Google "+ Add a task"): a quiet row until you engage with it.
+    // It opens the moment the field is focused or has content, and the extra
+    // controls (assign / voice / preview) only appear once open.
+    const isOpen = focused || input.trim().length > 0
+
     return (
-        <div
-            className={cn(
-                "rounded-2xl bg-surface-container border p-3 transition-colors relative",
-                focused ? "border-primary/60" : "border-outline-variant/60"
-            )}
-        >
+        <div className="relative">
             {isPartnerTyping && (
                 <div className="absolute -top-3 left-4 flex items-center gap-2 text-xs font-semibold text-primary bg-surface-container-high border border-outline-variant/60 px-3 py-1 rounded-full z-20 animate-in fade-in duration-200">
                     <span className="flex gap-1">
@@ -218,98 +218,119 @@ export function QuickAdd({
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-                <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={handleInput}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSubmit(e);
-                        }
-                    }}
-                    placeholder="What needs to be done?"
-                    className="w-full min-h-[44px] max-h-[40vh] overflow-y-auto py-2.5 px-3 rounded-xl bg-surface-container-high border border-outline-variant/60 resize-none outline-none focus:border-primary/60 transition-colors text-[15px] leading-relaxed text-on-surface placeholder:text-on-surface-variant/60"
-                    disabled={loading}
-                    rows={1}
-                    onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
-                />
+            <form
+                onSubmit={handleSubmit}
+                className={cn(
+                    "rounded-xl transition-colors",
+                    isOpen ? "bg-surface-container-low" : "hover:bg-surface-container-low/60",
+                )}
+            >
+                {/* Input row — a circular "+" leads it, mirroring a task's checkbox column */}
+                <div className="flex items-start gap-2.5 px-1 py-1.5">
+                    <span className="mt-1 shrink-0 h-[22px] w-[22px] rounded-full flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined text-[20px]">add</span>
+                    </span>
+                    <textarea
+                        ref={textareaRef}
+                        value={input}
+                        onChange={handleInput}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSubmit(e);
+                            }
+                        }}
+                        placeholder="Add a task"
+                        className="flex-1 min-h-[28px] max-h-[40vh] overflow-y-auto py-1 bg-transparent resize-none outline-none text-[15px] leading-relaxed text-on-surface placeholder:text-on-surface-variant/70"
+                        disabled={loading}
+                        rows={1}
+                        onFocus={() => setFocused(true)}
+                        onBlur={(e) => {
+                            // Keep the panel open if focus moves to one of its own controls
+                            // (assign toggle, voice, submit) — only collapse on a true exit.
+                            if (e.currentTarget.form?.contains(e.relatedTarget as Node)) return
+                            setFocused(false)
+                        }}
+                    />
+                </div>
 
-                {/* Live parse preview */}
-                {hasPreviewMeta && (
-                    <div className="flex items-center gap-1.5 flex-wrap font-label text-[11px] animate-in fade-in duration-150">
-                        <span className="text-on-surface-variant/70 font-medium pr-0.5">Detected</span>
-                        {preview.due && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
-                                <span className="material-symbols-outlined text-[13px]">schedule</span>
-                                {preview.due}
-                            </span>
+                {isOpen && (
+                    <div className="px-1 pb-2 space-y-2.5 animate-in fade-in duration-150">
+                        {/* Live parse preview */}
+                        {hasPreviewMeta && (
+                            <div className="flex items-center gap-1.5 flex-wrap font-label text-[11px] pl-[34px]">
+                                <span className="text-on-surface-variant/70 font-medium pr-0.5">Detected</span>
+                                {preview.due && (
+                                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                        <span className="material-symbols-outlined text-[13px]">schedule</span>
+                                        {preview.due}
+                                    </span>
+                                )}
+                                {preview.duration && (
+                                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                        <span className="material-symbols-outlined text-[13px]">timer</span>
+                                        {preview.duration}
+                                    </span>
+                                )}
+                                {preview.priority && (
+                                    <span className={cn(
+                                        "flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold capitalize",
+                                        preview.priority === "urgent" ? "text-error bg-error/10"
+                                            : preview.priority === "high" ? "text-secondary bg-secondary/10"
+                                            : "text-primary bg-primary/10",
+                                    )}>
+                                        <span className="material-symbols-outlined text-[13px]">flag</span>
+                                        {preview.priority}
+                                    </span>
+                                )}
+                            </div>
                         )}
-                        {preview.duration && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
-                                <span className="material-symbols-outlined text-[13px]">timer</span>
-                                {preview.duration}
-                            </span>
-                        )}
-                        {preview.priority && (
-                            <span className={cn(
-                                "flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold capitalize",
-                                preview.priority === "urgent" ? "text-error bg-error/10"
-                                    : preview.priority === "high" ? "text-secondary bg-secondary/10"
-                                    : "text-primary bg-primary/10",
-                            )}>
-                                <span className="material-symbols-outlined text-[13px]">flag</span>
-                                {preview.priority}
-                            </span>
-                        )}
+
+                        <div className="flex items-center gap-2 pl-[34px]">
+                            {hasPartner && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (assignMode === "me") setAssignMode("partner")
+                                        else if (assignMode === "partner") setAssignMode("shared")
+                                        else setAssignMode("me")
+                                    }}
+                                    title={assignHint || `Assigning to: ${assignMode}`}
+                                    className="shrink-0 h-9 px-3 rounded-full bg-surface-container-high text-on-surface-variant text-[13px] font-label font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors active:scale-[0.98]"
+                                >
+                                    {assignLabel}
+                                </button>
+                            )}
+
+                            {assignHint && (
+                                <span className="hidden md:inline text-[11px] font-label text-on-surface-variant/70 leading-tight max-w-[200px]">
+                                    {assignHint}
+                                </span>
+                            )}
+
+                            <div className="flex-1" />
+
+                            <VoiceButton
+                                disabled={loading}
+                                onInterim={(text) => { setInput(text); autoGrow(textareaRef.current) }}
+                                onTranscript={(text) => { setInput(text); autoGrow(textareaRef.current) }}
+                            />
+
+                            <button
+                                type="submit"
+                                disabled={loading || !input.trim()}
+                                className="h-9 px-4 shrink-0 rounded-full bg-primary text-on-primary text-sm font-semibold flex items-center gap-2 transition-colors active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+                            >
+                                {loading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Send className="h-4 w-4" />
+                                )}
+                                <span>Add</span>
+                            </button>
+                        </div>
                     </div>
                 )}
-
-                <div className="flex items-center gap-2">
-                    {hasPartner && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (assignMode === "me") setAssignMode("partner")
-                                else if (assignMode === "partner") setAssignMode("shared")
-                                else setAssignMode("me")
-                            }}
-                            title={assignHint || `Assigning to: ${assignMode}`}
-                            className="shrink-0 h-11 px-4 rounded-full bg-surface-container-high border border-outline-variant/60 text-on-surface text-sm font-medium hover:bg-surface-container-highest transition-colors active:scale-[0.98]"
-                        >
-                            {assignLabel}
-                        </button>
-                    )}
-
-                    {assignHint && (
-                        <span className="hidden md:inline text-[11px] font-label text-on-surface-variant/70 leading-tight max-w-[200px]">
-                            {assignHint}
-                        </span>
-                    )}
-
-                    <div className="flex-1" />
-
-                    <VoiceButton
-                        disabled={loading}
-                        onInterim={(text) => { setInput(text); autoGrow(textareaRef.current) }}
-                        onTranscript={(text) => { setInput(text); autoGrow(textareaRef.current) }}
-                    />
-
-                    <button
-                        type="submit"
-                        disabled={loading || !input.trim()}
-                        className="h-11 px-5 shrink-0 rounded-full bg-primary text-on-primary font-semibold flex items-center gap-2 transition-colors active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
-                    >
-                        {loading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Send className="h-4 w-4" />
-                        )}
-                        <span className="hidden sm:inline">Add</span>
-                    </button>
-                </div>
             </form>
         </div>
     )

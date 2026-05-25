@@ -173,13 +173,24 @@ export function TaskList({
         })
     }
 
-    // Re-insert a deleted task on Undo by writing the same row back. The realtime
-    // INSERT event re-adds it to the list (optimistic add path stays untouched).
+    // Re-insert a deleted task on Undo by writing back only a safe column subset.
+    // (The full row may carry columns that don't exist in every environment;
+    // inserting those would fail. The realtime INSERT event re-adds it to the list.)
     const recreateTask = async (snapshot: Task) => {
         try {
             const { createClient } = await import("@/lib/supabase/client")
             const supabase = createClient()
-            const { error } = await supabase.from("tasks").insert(snapshot)
+            const safeRow = {
+                title: snapshot.title,
+                description: snapshot.description,
+                creator_id: snapshot.creator_id,
+                assignee_id: snapshot.assignee_id,
+                priority: snapshot.priority,
+                scope: snapshot.scope,
+                due_date: snapshot.due_date,
+                is_completed: snapshot.is_completed,
+            }
+            const { error } = await supabase.from("tasks").insert(safeRow)
             if (error) throw error
             // The realtime INSERT subscription re-adds the row to the list.
         } catch {
@@ -193,15 +204,12 @@ export function TaskList({
 
     if (loading) {
         return (
-            <div className="space-y-3">
+            <div className="divide-y divide-outline-variant/40">
                 {[1, 2, 3, 4].map((i) => (
-                    <div
-                        key={i}
-                        className="h-[68px] rounded-xl bg-surface-container border border-outline-variant/50 animate-pulse"
-                    >
-                        <div className="flex items-center gap-4 h-full px-4">
-                            <div className="w-6 h-6 rounded-full bg-surface-container-high" />
-                            <div className="flex-1 space-y-2.5">
+                    <div key={i} className="animate-pulse">
+                        <div className="flex items-center gap-3 py-3">
+                            <div className="w-[22px] h-[22px] rounded-full bg-surface-container-high" />
+                            <div className="flex-1 space-y-2">
                                 <div className="h-3.5 w-1/2 rounded-full bg-surface-container-high" />
                                 <div className="h-2.5 w-1/4 rounded-full bg-surface-container-high" />
                             </div>
@@ -215,7 +223,7 @@ export function TaskList({
     let rowIndex = 0
 
     return (
-        <div className="space-y-7">
+        <div className="space-y-6">
             {/* Delete Confirmation Dialog (explicit trash button only) */}
             <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
                 <AlertDialogContent>
@@ -233,9 +241,9 @@ export function TaskList({
             </AlertDialog>
 
             {activeTasks.length === 0 && completedTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-6 text-center rounded-2xl bg-surface-container border border-outline-variant/60 animate-in fade-in duration-200">
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-5">
-                        <CheckCircle2 className="h-8 w-8 text-primary" strokeWidth={2} />
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-in fade-in duration-200">
+                    <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <CheckCircle2 className="h-7 w-7 text-primary" strokeWidth={2} />
                     </div>
                     <h3 className="font-headline font-bold text-lg text-on-surface mb-1.5">All clear</h3>
                     <p className="text-on-surface-variant text-sm max-w-[280px] leading-relaxed">
@@ -249,12 +257,12 @@ export function TaskList({
                     const list = grouped[key]
                     if (list.length === 0) return null
                     return (
-                        <section key={key} className="space-y-2.5">
-                            <h3 className="px-1 text-xs font-label font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
+                        <section key={key}>
+                            <h3 className="flex items-baseline gap-1.5 px-1 pb-1 text-[11px] font-label font-semibold uppercase tracking-[0.1em] text-on-surface-variant/80">
                                 {label}
-                                <span className="ml-1.5 text-on-surface-variant/60 font-medium">{list.length}</span>
+                                <span className="text-on-surface-variant/50 font-medium">{list.length}</span>
                             </h3>
-                            <div className="space-y-2.5">
+                            <div className="divide-y divide-outline-variant/40">
                                 {list.map(task => {
                                     const i = rowIndex++
                                     return (
@@ -291,33 +299,38 @@ export function TaskList({
 
             {/* Completed Tasks (Collapsible) */}
             {completedTasks.length > 0 && (
-                <div className="space-y-3">
+                <div>
                     <button
                         onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
-                        className="flex items-center gap-2 px-1 text-on-surface-variant hover:text-on-surface transition-colors w-full active:scale-[0.98]"
+                        className="flex items-center gap-1.5 px-1 h-11 -my-1 text-on-surface-variant/80 hover:text-on-surface transition-colors w-full active:opacity-80"
                     >
-                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isCompletedExpanded && "rotate-180")} />
-                        <span className="text-xs font-semibold uppercase tracking-[0.12em]">
-                            {completedTasks.length} completed
+                        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", isCompletedExpanded && "rotate-180")} />
+                        <span className="text-[11px] font-label font-semibold uppercase tracking-[0.1em]">
+                            Completed
                         </span>
+                        <span className="text-on-surface-variant/50 font-medium text-[11px]">{completedTasks.length}</span>
                     </button>
 
                     {isCompletedExpanded && (
-                        <div className="rounded-2xl bg-surface-container border border-outline-variant/60 divide-y divide-outline-variant/40 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="divide-y divide-outline-variant/40 animate-in fade-in slide-in-from-top-1 duration-200">
                             {completedTasks.map(task => (
-                                <div key={task.id} className="group flex items-center gap-3 px-4 py-3">
+                                <div key={task.id} className="group flex items-center gap-3 py-2.5">
                                     <button
                                         onClick={() => handleComplete(task.id, task.is_completed)}
-                                        className="h-6 w-6 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center shrink-0 transition-colors hover:bg-primary/25 active:scale-[0.98]"
+                                        aria-label="Mark incomplete"
+                                        className="h-[22px] w-[22px] -m-[11px] p-[11px] box-content rounded-full flex items-center justify-center shrink-0 active:opacity-80"
                                     >
-                                        <Check className="h-3 w-3 text-primary" strokeWidth={3} />
+                                        <span className="h-[22px] w-[22px] rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center transition-colors group-hover:bg-primary/25">
+                                            <Check className="h-3 w-3 text-primary" strokeWidth={3} />
+                                        </span>
                                     </button>
                                     <span className="flex-1 text-sm text-on-surface-variant line-through truncate">
                                         {task.title}
                                     </span>
                                     <button
                                         onClick={() => setTaskToDelete(task.id)}
-                                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-full text-on-surface-variant hover:text-error transition-all shrink-0"
+                                        aria-label="Delete task"
+                                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 h-9 w-9 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error transition-all shrink-0"
                                     >
                                         <Trash2 className="h-3.5 w-3.5" />
                                     </button>

@@ -137,16 +137,21 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
     const subtaskTotal = subtasks.length
     const subtaskDone = structured.filter(st => st.is_completed).length
     const subtaskPct = subtaskTotal > 0 ? Math.round((subtaskDone / subtaskTotal) * 100) : 0
-    const firstIncomplete =
-        structured.find(st => !st.is_completed)?.title ??
-        (subtasks.find(st => typeof st === "string") as string | undefined)
+
+    // Inline preview: title of each not-yet-done subtask (structured "is_completed: false"
+    // or plain strings, which we always treat as not-done). Show up to the first 2.
+    const incompleteTitles = subtasks
+        .filter(st => typeof st === "string" || !st.is_completed)
+        .map(st => (typeof st === "string" ? st : st.title))
+        .filter(Boolean)
+    const previewSubtasks = incompleteTitles.slice(0, 2)
+    const extraSubtasks = incompleteTitles.length - previewSubtasks.length
 
     const owner = ownerOf(task, userId, partnerId)
     const showClaimAction = !!showClaim && !!onClaim
 
-    const hasMetadata = task.due_date || task.duration_estimate || subtaskTotal > 0
-        || (task.priority === "urgent" || task.priority === "high")
-        || !!owner
+    // Compact meta line below the title (due / duration / done-of-total).
+    const hasMetaLine = task.due_date || task.duration_estimate || subtaskTotal > 0
 
     // Hero spring config for the checkbox tick (the one celebrated motion).
     const checkSpring = reduceMotion
@@ -163,7 +168,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
             style={!reduceMotion ? { animationDelay: `${Math.min(index * 30, 240)}ms` } : undefined}
         >
             {/* Swipe underlay */}
-            <div className="absolute inset-0 flex items-center justify-between px-5 pointer-events-none rounded-xl">
+            <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none">
                 <motion.div style={{ opacity: completeOpacity }} className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
                 </motion.div>
@@ -192,8 +197,13 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                 }}
                 className="relative z-10"
             >
-                <div className="bg-surface-container border border-outline-variant/50 rounded-xl hover:border-outline-variant transition-colors overflow-hidden">
-                    <div className={cn(isExpanded || isEditing ? "p-4" : "px-4 py-3")}>
+                <div className={cn(
+                    "rounded-xl transition-colors",
+                    isExpanded || isEditing
+                        ? "bg-surface-container-low my-1"
+                        : "bg-surface hover:bg-surface-container-low/60",
+                )}>
+                    <div className={cn(isExpanded || isEditing ? "p-3 sm:p-4" : "py-2.5 px-1")}>
                         {isEditing ? (
                             /* ── Edit mode ── */
                             <div className="space-y-3">
@@ -232,114 +242,111 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                             </div>
                         ) : (
                             /* ── View mode ── */
-                            <div className="flex items-start gap-3.5">
+                            <div className="flex items-start gap-2.5">
 
-                                {/* Hero spring checkbox */}
+                                {/* Hero spring checkbox — 22px circle, 44px hit target */}
                                 <button
                                     onClick={triggerComplete}
                                     aria-label={task.is_completed ? "Mark incomplete" : "Complete task"}
-                                    className={cn(
-                                        "mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 group/check",
-                                        getCheckboxBorder(task.priority),
-                                        task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "bg-primary/20 border-primary",
-                                    )}
+                                    className="mt-px shrink-0 h-[22px] w-[22px] -m-[11px] p-[11px] box-content flex items-center justify-center group/check"
                                     title={
                                         task.scope === 'shared'
                                             ? (task.completed_by?.includes(userId) ? "Waiting for partner…" : task.completed_by?.length === 1 ? "Partner finished! Your turn." : "Mark complete")
                                             : "Complete"
                                     }
                                 >
-                                    {task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed ? (
-                                        <div className="h-2 w-2 rounded-full bg-primary" />
-                                    ) : (
-                                        <motion.span
-                                            animate={justCompleted ? { scale: [0, 1.35, 1] } : { scale: 1 }}
-                                            transition={checkSpring}
-                                            className={cn(
-                                                "material-symbols-outlined text-[16px] font-bold transition-opacity",
-                                                justCompleted ? "opacity-100" : "opacity-0 group-hover/check:opacity-100",
-                                                checkIconColor(task.priority),
-                                            )}
-                                        >check</motion.span>
-                                    )}
+                                    <span className={cn(
+                                        "h-[22px] w-[22px] rounded-full border-2 flex items-center justify-center transition-colors",
+                                        getCheckboxBorder(task.priority),
+                                        task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed && "bg-primary/20 border-primary",
+                                    )}>
+                                        {task.scope === 'shared' && task.completed_by?.includes(userId) && !task.is_completed ? (
+                                            <div className="h-2 w-2 rounded-full bg-primary" />
+                                        ) : (
+                                            <motion.span
+                                                animate={justCompleted ? { scale: [0, 1.35, 1] } : { scale: 1 }}
+                                                transition={checkSpring}
+                                                className={cn(
+                                                    "material-symbols-outlined text-[15px] font-bold transition-opacity",
+                                                    justCompleted ? "opacity-100" : "opacity-0 group-hover/check:opacity-100",
+                                                    checkIconColor(task.priority),
+                                                )}
+                                            >check</motion.span>
+                                        )}
+                                    </span>
                                 </button>
 
                                 {/* Content */}
                                 <div className="flex-1 min-w-0">
 
-                                    {/* Title row */}
-                                    <div className="flex items-start gap-2">
-                                        {/* Priority dot (urgent/high only, collapsed) */}
-                                        {!isExpanded && (task.priority === 'urgent' || task.priority === 'high') && (
+                                    {/* Title row — circle + dot + title on one line */}
+                                    <div className="flex items-center gap-2 min-h-[24px]">
+                                        {/* Priority dot (urgent/high only) */}
+                                        {(task.priority === 'urgent' || task.priority === 'high') && (
                                             <span
-                                                className={cn("mt-[7px] h-2 w-2 rounded-full shrink-0", PRIORITY_DOT[task.priority])}
+                                                className={cn("h-2 w-2 rounded-full shrink-0", PRIORITY_DOT[task.priority])}
                                                 title={`${task.priority} priority`}
                                             />
                                         )}
 
                                         <h4
-                                            className="flex-1 font-body font-semibold text-[15px] text-on-surface leading-snug cursor-pointer min-w-0"
+                                            className={cn(
+                                                "flex-1 font-body font-medium text-[15px] leading-snug cursor-pointer min-w-0 truncate",
+                                                isExpanded ? "text-on-surface whitespace-normal" : "text-on-surface",
+                                            )}
                                             onClick={onToggleExpand}
                                         >
                                             {task.title}
                                         </h4>
 
-                                        {/* Chevron — hover-revealed on desktop, always tap-reachable */}
-                                        <button
-                                            onClick={onToggleExpand}
-                                            aria-label={isExpanded ? "Collapse" : "Expand"}
-                                            className="text-on-surface-variant/60 hover:text-on-surface-variant transition-all p-0.5 shrink-0 -mr-1 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-                                        >
-                                            <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded && "rotate-180")} />
-                                        </button>
+                                        {/* Row actions — hover-revealed on desktop, always tap-reachable */}
+                                        <div className="flex items-center shrink-0 -mr-1">
+                                            <button
+                                                onClick={onToggleExpand}
+                                                aria-label={isExpanded ? "Collapse" : "Expand"}
+                                                className="h-9 w-9 flex items-center justify-center rounded-full text-on-surface-variant/60 hover:text-on-surface-variant hover:bg-surface-container-high transition-all sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+                                            >
+                                                <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded && "rotate-180")} />
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    {/* Subtask preview line (first incomplete) */}
-                                    {!isExpanded && subtaskTotal > 0 && firstIncomplete && subtaskDone < subtaskTotal && (
-                                        <p className="mt-1 text-[13px] text-on-surface-variant truncate flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-[14px] text-on-surface-variant/70">subdirectory_arrow_right</span>
-                                            {firstIncomplete}
-                                        </p>
-                                    )}
-
-                                    {/* Subtask progress bar */}
-                                    {!isExpanded && subtaskTotal > 0 && (
-                                        <div className="mt-2 h-[3px] w-full rounded-full bg-surface-container-highest overflow-hidden">
-                                            <div
-                                                className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
-                                                style={{ width: `${subtaskPct}%` }}
-                                            />
+                                    {/* Inline subtask preview (up to 2 incomplete) + N more */}
+                                    {!isExpanded && previewSubtasks.length > 0 && (
+                                        <div className="mt-0.5 space-y-0.5">
+                                            {previewSubtasks.map((title, i) => (
+                                                <p key={i} className="text-[13px] text-on-surface-variant/90 truncate leading-snug">
+                                                    <span className="text-on-surface-variant/50">– </span>{title}
+                                                </p>
+                                            ))}
+                                            {extraSubtasks > 0 && (
+                                                <p className="text-[12px] text-on-surface-variant/60 leading-snug">+{extraSubtasks} more</p>
+                                            )}
                                         </div>
                                     )}
 
-                                    {/* Metadata row — compact chips */}
-                                    {hasMetadata && (
-                                        <div className="flex items-center gap-2 mt-2 flex-wrap font-label text-[11px]">
+                                    {/* Compact meta line — due / duration / done-of-total */}
+                                    {!isExpanded && hasMetaLine && (
+                                        <div className="flex items-center gap-2.5 mt-1 font-label text-[12px] text-on-surface-variant/80">
                                             {task.due_date && (
-                                                <span className={cn(
-                                                    "flex items-center gap-1 px-2 py-0.5 rounded-full font-medium",
-                                                    isOverdue ? "text-error bg-error/10 font-semibold" : "text-on-surface-variant bg-surface-container-high",
-                                                )}>
+                                                <span className={cn("flex items-center gap-1", isOverdue && "text-error font-medium")}>
                                                     <span className="material-symbols-outlined text-[13px]">schedule</span>
                                                     {humanizeDue(task.due_date)}
                                                 </span>
                                             )}
                                             {task.duration_estimate && (
-                                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                                <span className="flex items-center gap-1">
                                                     <span className="material-symbols-outlined text-[13px]">timer</span>
                                                     {task.duration_estimate}m
                                                 </span>
                                             )}
                                             {subtaskTotal > 0 && (
-                                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-on-surface-variant bg-surface-container-high font-medium">
+                                                <span className="flex items-center gap-1.5">
                                                     <span className="material-symbols-outlined text-[13px]">checklist</span>
                                                     {subtaskDone}/{subtaskTotal}
-                                                </span>
-                                            )}
-                                            {owner && (
-                                                <span className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full border font-semibold", owner.chip)}>
-                                                    <span className="inline-flex items-center justify-center h-[14px] min-w-[14px] rounded-full text-[9px] leading-none">{owner.initial}</span>
-                                                    {owner.label}
+                                                    <span className="h-[3px] w-10 rounded-full bg-surface-container-highest overflow-hidden">
+                                                        <span className="block h-full rounded-full bg-primary transition-[width] duration-300 ease-out" style={{ width: `${subtaskPct}%` }} />
+                                                    </span>
                                                 </span>
                                             )}
                                         </div>
@@ -349,7 +356,7 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                     {showClaimAction && !isExpanded && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); triggerHaptic(ImpactStyle.Light); onClaim?.() }}
-                                            className="mt-2.5 inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-primary text-on-primary text-[13px] font-label font-semibold transition-colors active:scale-[0.98]"
+                                            className="mt-2 inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-primary text-on-primary text-[13px] font-label font-semibold transition-colors active:scale-[0.98]"
                                         >
                                             <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>pan_tool</span>
                                             I&apos;ve got this
@@ -401,10 +408,17 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                                 </div>
                                             </div>
 
-                                            {/* Raw urgency / importance (only on expand) */}
-                                            {((task.emergency_level === "high" || task.emergency_level === "critical")
+                                            {/* Secondary chips — owner + raw urgency / importance (only on expand) */}
+                                            {(!!owner
+                                                || (task.emergency_level === "high" || task.emergency_level === "critical")
                                                 || (task.importance_level === "high" || task.importance_level === "critical")) && (
                                                 <div className="flex items-center gap-2 flex-wrap font-label text-[11px]">
+                                                    {owner && (
+                                                        <span className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full border font-semibold", owner.chip)}>
+                                                            <span className="inline-flex items-center justify-center h-[14px] min-w-[14px] rounded-full text-[9px] leading-none">{owner.initial}</span>
+                                                            {owner.label}
+                                                        </span>
+                                                    )}
                                                     {(task.emergency_level === "high" || task.emergency_level === "critical") && (
                                                         <span className="px-2 py-0.5 rounded-full text-error bg-error/10 font-semibold flex items-center gap-1">
                                                             <span className="material-symbols-outlined text-[13px]">local_fire_department</span>

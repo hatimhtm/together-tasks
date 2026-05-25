@@ -143,15 +143,12 @@ export default function Home() {
           <div className="h-9 w-72 rounded-xl bg-surface-container-high animate-pulse" />
         </div>
         {/* Single-column list skeleton */}
-        <div className="mx-auto w-full max-w-2xl space-y-3">
+        <div className="mx-auto w-full max-w-2xl divide-y divide-outline-variant/40">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-[68px] rounded-xl bg-surface-container border border-outline-variant/50 animate-pulse"
-            >
-              <div className="flex items-center gap-4 h-full px-4">
-                <div className="w-6 h-6 rounded-full bg-surface-container-high" />
-                <div className="flex-1 space-y-2.5">
+            <div key={i} className="animate-pulse">
+              <div className="flex items-center gap-3 py-3">
+                <div className="w-[22px] h-[22px] rounded-full bg-surface-container-high" />
+                <div className="flex-1 space-y-2">
                   <div className="h-3.5 w-1/2 rounded-full bg-surface-container-high" />
                   <div className="h-2.5 w-1/4 rounded-full bg-surface-container-high" />
                 </div>

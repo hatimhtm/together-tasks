@@ -77,29 +77,29 @@ export function TasksContainer({
     ]
 
     return (
-        <div className="w-full space-y-5">
+        <div className="w-full space-y-4">
             {/* Quick add */}
             <QuickAdd onAddTask={addTask} hasPartner={!!partnerId} userId={userId} partnerId={partnerId} />
 
-            {/* Ownership filter */}
+            {/* Ownership filter — subtle, secondary segmented row */}
             {partnerId && (
-                <nav className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5">
+                <nav className="flex items-center gap-1 overflow-x-auto -mx-1 px-1">
                     {filters.map(({ key, label, count }) => (
                         <button
                             key={key}
                             onClick={() => setFilter(key)}
                             className={cn(
-                                "shrink-0 inline-flex items-center gap-1.5 px-4 h-9 rounded-full font-label text-sm transition-colors active:scale-[0.98]",
+                                "shrink-0 inline-flex items-center gap-1 px-2.5 h-9 rounded-full font-label text-[13px] transition-colors active:opacity-80",
                                 filter === key
-                                    ? "bg-primary text-on-primary font-semibold"
-                                    : "bg-surface-container border border-outline-variant/60 text-on-surface-variant font-medium hover:bg-surface-container-high",
+                                    ? "bg-surface-container-high text-on-surface font-semibold"
+                                    : "text-on-surface-variant/80 font-medium hover:text-on-surface hover:bg-surface-container-low",
                             )}
                         >
                             {label}
                             {typeof count === "number" && count > 0 && (
                                 <span className={cn(
-                                    "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold",
-                                    filter === key ? "bg-on-primary/20 text-on-primary" : "bg-primary/15 text-primary",
+                                    "inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold",
+                                    filter === key ? "bg-primary/15 text-primary" : "bg-primary/10 text-primary",
                                 )}>
                                     {count}
                                 </span>
