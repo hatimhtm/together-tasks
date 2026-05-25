@@ -292,11 +292,14 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                     )}
                 >
                     <div className={cn(isExpanded ? "p-3 sm:p-4" : "py-2.5 px-1")}>
-                        <div className="flex items-start gap-2.5">
+                        <div
+                            className={cn("flex items-start gap-2.5", !isExpanded && "cursor-pointer")}
+                            onClick={() => { if (!isExpanded && !isDraggingRef.current) onExpand() }}
+                        >
 
                             {/* Hero spring checkbox — 22px circle, 44px hit target */}
                             <button
-                                onClick={triggerComplete}
+                                onClick={(e) => { e.stopPropagation(); triggerComplete() }}
                                 aria-label={task.is_completed ? "Mark incomplete" : "Complete task"}
                                 className="mt-px shrink-0 h-[22px] w-[22px] -m-[11px] p-[11px] box-content flex items-center justify-center group/check"
                                 title={
