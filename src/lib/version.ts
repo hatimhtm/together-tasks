@@ -1,6 +1,6 @@
 // Single source of truth for the app version + where updates come from.
 // Bump APP_VERSION in lockstep with the git tag you release (e.g. tag v2.5.0 → "2.5.0").
-export const APP_VERSION = "3.0.2"
+export const APP_VERSION = "3.0.3"
 
 // Public GitHub repo the in-app updater reads releases from.
 export const GITHUB_REPO = "hatimhtm/together-tasks"

@@ -1,6 +1,6 @@
 [package]
 name = "together-tasks"
-version = "3.0.2"
+version = "3.0.3"
 description = "Together Tasks — A couple's shared task manager"
 authors = ["Hatim"]
 edition = "2021"
