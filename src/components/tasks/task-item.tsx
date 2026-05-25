@@ -2,7 +2,7 @@
 
 import { Task } from "@/types/task"
 import { motion, AnimatePresence, useMotionValue, useTransform, useReducedMotion } from "framer-motion"
-import { Trash2, ChevronDown, X, Plus } from "lucide-react"
+import { Trash2, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format, isToday, isTomorrow, isThisWeek, isThisYear } from "date-fns"
 import { useState, useEffect, useRef, useCallback, forwardRef } from "react"
@@ -173,12 +173,6 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
         else onExpand()
     }
 
-    // Bullet-list editing helpers (plain strings — no completion state).
-    const updateBullet = (i: number, value: string) =>
-        setDraftSubtasks(prev => prev.map((s, idx) => (idx === i ? value : s)))
-    const removeBullet = (i: number) =>
-        setDraftSubtasks(prev => prev.filter((_, idx) => idx !== i))
-    const addBullet = () => setDraftSubtasks(prev => [...prev, ""])
 
     const triggerComplete = () => {
         triggerHaptic(ImpactStyle.Medium)
@@ -464,41 +458,18 @@ export const TaskItem = forwardRef<HTMLDivElement, TaskItemProps>(({
                                             </button>
                                         )}
 
-                                        {/* Editable bullet list — plain steps, add / edit / remove */}
+                                        {/* Steps — one per line, a single compact, copyable text block */}
                                         <div className="pt-3 border-t border-outline-variant/60 space-y-2">
                                             <p className="text-[10px] font-label font-bold uppercase tracking-[0.12em] text-on-surface-variant">Steps</p>
-                                            {draftSubtasks.map((step, i) => (
-                                                <div key={i} className="flex items-center gap-2 bg-surface-container-high px-2.5 py-1.5 rounded-lg">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-outline-variant shrink-0" />
-                                                    <input
-                                                        className="flex-1 min-w-0 bg-transparent text-[13px] font-body text-on-surface outline-none"
-                                                        value={step}
-                                                        onChange={e => updateBullet(i, e.target.value)}
-                                                        onKeyDown={e => {
-                                                            if (e.key === "Enter") { e.preventDefault(); addBullet() }
-                                                            if (e.key === "Escape") { e.preventDefault(); saveAndCollapse() }
-                                                        }}
-                                                        aria-label={`Step ${i + 1}`}
-                                                        placeholder="Describe a step…"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeBullet(i)}
-                                                        aria-label="Remove step"
-                                                        className="shrink-0 h-9 w-9 -m-1 flex items-center justify-center rounded-full text-on-surface-variant/60 hover:text-error hover:bg-error/10 transition-colors"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            <button
-                                                type="button"
-                                                onClick={addBullet}
-                                                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-[13px] font-label font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                                Add step
-                                            </button>
+                                            <textarea
+                                                className="w-full bg-surface-container-high border border-outline-variant/60 rounded-xl px-3 py-2.5 text-[13px] font-body text-on-surface leading-relaxed outline-none focus:border-primary/60 transition-colors resize-y min-h-[72px]"
+                                                value={draftSubtasks.join("\n")}
+                                                onChange={e => setDraftSubtasks(e.target.value.split("\n"))}
+                                                onKeyDown={e => { if (e.key === "Escape") { e.preventDefault(); saveAndCollapse() } }}
+                                                rows={Math.min(Math.max(draftSubtasks.length + 1, 3), 14)}
+                                                placeholder="One step per line…"
+                                                aria-label="Steps"
+                                            />
                                         </div>
                                     </div>
                                     </motion.div>
