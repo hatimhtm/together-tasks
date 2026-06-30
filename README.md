@@ -192,7 +192,7 @@ for f in supabase/migrations/*.sql; do psql "$DATABASE_URL" < "$f"; done
 
 **Source-visible, no production reuse.** Together Tasks is a personal household project published for the curiosity of other engineers — read the code, fork it for a single private instance, study the AI parsing prompts and Realtime patterns. **You are not welcome** to sell it, re-host it as SaaS, strip the two-seat gate for multi-tenant use, or train ML models on it.
 
-For commercial licensing, [get in touch](mailto:king@example.com).
+For commercial licensing, [get in touch](mailto:hatimelhassak.official@gmail.com).
 
 ---
 
@@ -200,7 +200,7 @@ For commercial licensing, [get in touch](mailto:king@example.com).
   <a href="https://hatimelhassak.is-a.dev"><img src="https://img.shields.io/badge/PORTFOLIO-1A1A1A?style=for-the-badge&logo=vercel&logoColor=CCFF00" alt="Portfolio" /></a>
   <a href="https://cal.com/hatimelhassak/engineering-discovery"><img src="https://img.shields.io/badge/BOOK_A_CALL-CCFF00?style=for-the-badge&logo=googlecalendar&logoColor=1A1A1A" alt="Book a call" /></a>
   <a href="https://www.linkedin.com/in/hatim-elhassak/"><img src="https://img.shields.io/badge/LINKEDIN-1A1A1A?style=for-the-badge&logo=linkedin&logoColor=CCFF00" alt="LinkedIn" /></a>
-  <a href="mailto:king@example.com"><img src="https://img.shields.io/badge/EMAIL-1A1A1A?style=for-the-badge&logo=gmail&logoColor=CCFF00" alt="Email" /></a>
+  <a href="mailto:hatimelhassak.official@gmail.com"><img src="https://img.shields.io/badge/EMAIL-1A1A1A?style=for-the-badge&logo=gmail&logoColor=CCFF00" alt="Email" /></a>
 </p>
 
 <p align="center">
